@@ -47,7 +47,7 @@ STATIC_CONSTANT int one = 1;
 STATIC_CONSTANT struct descriptor done = {sizeof(one),DTYPE_L,CLASS_S,(char *)&one};
 STATIC_CONSTANT DESCRIPTOR_A(adsc0,sizeof(int),DTYPE_L,0,0);
 STATIC_CONSTANT unsigned char dtype_l = DTYPE_L;
-STATIC_CONSTANT unsigned short size_l = sizeof(int);
+STATIC_CONSTANT unsigned long size_l = sizeof(int);
 
 TdiRefStandard(Tdi1Bound)
 array_bounds			*pa=0;

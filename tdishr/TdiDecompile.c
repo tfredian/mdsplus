@@ -146,7 +146,7 @@ int	n = cdsc_ptr->length;
 char	*pwas = cdsc_ptr->pointer, *pnow = pwas;
 
 	while (--n >= 0) if (*pwas != ' ') *pnow++ = *pwas++; else pwas++;
-	cdsc_ptr->length = (unsigned short)(pnow - cdsc_ptr->pointer);
+	cdsc_ptr->length = pnow - cdsc_ptr->pointer;
 	return 1;
 }
 
@@ -377,14 +377,14 @@ char n1c;
 					c0[3] = (char)((*cptr & 7) | '0');
 					break;
 				}
-				if (status & 1 && (t2.length = (unsigned short)(cptr - t2.pointer)) > 0)
+				if (status & 1 && (t2.length = cptr - t2.pointer) > 0)
 				  status = StrAppend(out_ptr, &t2);
 				t2.pointer = cptr + 1;
 				c0[0] = '\\';
 				if (status & 1) status = StrAppend(out_ptr, &cdsc);
 				cdsc.length = 2;
 			}
-			if (status & 1 && (t2.length = (unsigned short)(cptr - t2.pointer)) > 0) 
+			if (status & 1 && (t2.length = cptr - t2.pointer) > 0) 
                           status = StrAppend(out_ptr, &t2);
 			if (status & 1) status = StrAppend(out_ptr, &QUOTE);
 			break;
@@ -401,12 +401,12 @@ char n1c;
 		case DTYPE_BU :
 		case DTYPE_WU :
 		case DTYPE_LU :
-			cdsc.length = (unsigned short)(in_ptr->length * 8 * .30103 + 2);
+			cdsc.length = in_ptr->length * 8 * .30103 + 2;
 			status = TdiConvert(in_ptr, &cdsc MDS_END_ARG);
 			if (status & 1) status = noblanks(&cdsc);
 			if (status & 1) {
 			struct descriptor	sdsc = {0,DTYPE_T,CLASS_S,0};
-                                sdsc.length = (unsigned short)strlen(TdiREF_CAT[dtype].name);
+                                sdsc.length = strlen(TdiREF_CAT[dtype].name);
                                 sdsc.pointer = TdiREF_CAT[dtype].name;
 				status = StrConcat((struct descriptor *)out_ptr, (struct descriptor *)out_ptr, &cdsc, &sdsc MDS_END_ARG);
 			}
@@ -435,9 +435,9 @@ char n1c;
 			}
 #endif
 			while (cdsc.pointer < cptr-1 && *cdsc.pointer == '0') {cdsc.pointer++;}
-			cdsc.length = (unsigned short)(cptr - cdsc.pointer);
+			cdsc.length = cptr - cdsc.pointer;
 			{struct descriptor	sdsc = {0,DTYPE_T,CLASS_S,0};
-                                sdsc.length = (unsigned short)strlen(TdiREF_CAT[dtype].name);
+                                sdsc.length = strlen(TdiREF_CAT[dtype].name);
                                 sdsc.pointer = TdiREF_CAT[dtype].name;
 				status = StrConcat((struct descriptor *)out_ptr, (struct descriptor *)out_ptr, &HEX, &cdsc, &sdsc MDS_END_ARG);
 		  }
@@ -449,7 +449,7 @@ char n1c;
 		case DTYPE_H :
 		case DTYPE_FS :
 		case DTYPE_FT :
-			cdsc.length = (unsigned short)((in_ptr->length - 1) * 8 * .30103 + 6.8);
+			cdsc.length = (in_ptr->length - 1) * 8 * .30103 + 6.8;
 			status = closeup((char)TdiREF_CAT[dtype].fname[0], in_ptr, &cdsc);
 			if (status & 1) status = StrAppend(out_ptr, &cdsc);
 			break;
@@ -590,7 +590,7 @@ char n1c;
 			}
 			if (bptr) {
 			struct descriptor text = {0,DTYPE_T,CLASS_S,0};
-				text.length = (unsigned short)strlen(bptr);
+				text.length = strlen(bptr);
 				text.pointer = bptr;
 				status = StrAppend(out_ptr, &text);
 			}

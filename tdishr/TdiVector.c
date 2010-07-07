@@ -33,6 +33,7 @@ struct descriptor_xd	(*psig)[], (*puni)[]=0, (*pdat)[]=0;
 struct TdiCatStruct		(*pcats)[]=0;
 int	cmode = -1, j, n, (*pnelem)[]=0, jd, mind = MAXDIM, maxd = 0, nmiss = 0;
 int	virt = (sizeof(struct descriptor_xd)*3 + sizeof(int *))*narg + sizeof(struct TdiCatStruct)*(narg+1);
+unsigned long len;
 
         if (narg == 0) return MdsCopyDxXd((struct descriptor *)&miss, out_ptr);
 	/************************************
@@ -118,7 +119,8 @@ simple:		arr.dimct = 1;
 	Get an array to hold it all.
 	Size is 1 so arsize = nelem.
 	***************************/
-	if (status & 1) status = MdsGet1DxA((struct descriptor_a *)&arr, &(*pcats)[narg].digits, &(*pcats)[narg].out_dtype, 
+        len=(*pcats)[narg].digits;
+	if (status & 1) status = MdsGet1DxA((struct descriptor_a *)&arr,&len, &(*pcats)[narg].out_dtype, 
                       out_ptr);
 
 	/*********************************

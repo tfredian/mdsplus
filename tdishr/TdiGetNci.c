@@ -184,14 +184,14 @@ struct descriptor_d		string = EMPTY_D;
 struct descriptor_xd	nids = EMPTY_XD, tmp = EMPTY_XD, holdxd = EMPTY_XD;
 struct item			*key_ptr=0;
 int				class=0, j, outcount = 0;
-unsigned short step;
+unsigned long step;
 int				dtype=0, flag, nelem=0, retlen, len=0;
 int 				nid;
 char				*hold_ptr=0, *dat_ptr=0;
 unsigned char omits[] = {DTYPE_NID,DTYPE_PATH,0};
 int				wild, usage_mask;
 void			*pctx = NULL;
-unsigned short                  maxlen = 0;
+unsigned long                  maxlen = 0;
 
 	if (list[0]) {
 		status = TdiGetData(omits, list[0], &nids);
@@ -367,7 +367,7 @@ more:		switch (dtype) {
 		*************************/
 		else if (key_ptr->item_test) {
                 unsigned char dtype = (unsigned char)DTYPE_NID;
-                unsigned short dlen = sizeof(nid);
+                unsigned long dlen = sizeof(nid);
 		array arr = *(array *)&arr0;
 		NCI_ITM tested[2] = {{sizeof(int),0,0,0},EOL};
                         tested[0].code = key_ptr->item_test;
@@ -455,7 +455,7 @@ skip:		if (status & 1 && wild) goto more;
                         
                   }
 		else {
-                       unsigned short dlen = sizeof(int *);
+                       unsigned long dlen = sizeof(int *);
                        unsigned char dtype = (unsigned char)DTYPE_L;
 			status = MdsGet1DxA(holda_ptr, &dlen, &dtype, &tmp);
 			if (status & 1) {

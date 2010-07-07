@@ -24,12 +24,14 @@
 #define _DSCA_(field) dscA_##field
 #define _DSCB_(field) dscB_##field
 #define _DSCL_(field) dscL_##field
+#define _DSCLL_(field) dscLL_##field
 #define _DSCW_(field) dscW_##field
 #define _DSCV_(field) dscV_##field
 #else
 #define _DSCA_(field) field
 #define _DSCB_(field) field
 #define _DSCL_(field) field
+#define _DSCLL_(field) field
 #define _DSCW_(field) field
 #define _DSCV_(field) field
 #endif
@@ -41,7 +43,7 @@
 /*
  *	Descriptor Prototype - each class of descriptor consists of at least the following fields:
  */
-struct	descriptor
+struct	descriptor_short
 {
 	unsigned short	_DSCW_(length);	/* specific to descriptor class;  typically a 16-bit (unsigned) length */
 	unsigned char	_DSCB_(dtype);	/* data type code */
@@ -50,11 +52,35 @@ struct	descriptor
 };
 
 /*
+ *	Descriptor Prototype - each class of descriptor consists of at least the following fields:
+ */
+struct	descriptor
+{
+	unsigned long	_DSCW_(length);	/* specific to descriptor class;  typically a 16-bit (unsigned) length */
+	unsigned char	_DSCB_(dtype);	/* data type code */
+	unsigned char	_DSCB_(class);	/* descriptor class code */
+	char		*_DSCA_(pointer);	/* address of first byte of data element */
+};
+
+/*
+ *	Fixed-Length Descriptor:
+ */
+struct	descriptor_s_short
+{
+	unsigned short	_DSCW_(length);	/* length of data item in bytes,
+					     or if dtype is K_DTYPE_V, bits,
+					     or if dtype is K_DTYPE_P, digits (4 bits each) */
+	unsigned char	_DSCB_(dtype);	/* data type code */
+	unsigned char	_DSCB_(class);	/* descriptor class code = K_CLASS_S */
+	char		*_DSCA_(pointer);	/* address of first byte of data storage */
+};
+
+/*
  *	Fixed-Length Descriptor:
  */
 struct	descriptor_s
 {
-	unsigned short	_DSCW_(length);	/* length of data item in bytes,
+	unsigned long	_DSCL_(length);	/* length of data item in bytes,
 					     or if dtype is K_DTYPE_V, bits,
 					     or if dtype is K_DTYPE_P, digits (4 bits each) */
 	unsigned char	_DSCB_(dtype);	/* data type code */
@@ -66,9 +92,21 @@ struct	descriptor_s
 /*
  *	Dynamic String Descriptor:
  */
-struct	descriptor_d
+struct	descriptor_d_short
 {
 	unsigned short	_DSCW_(length);	/* length of data item in bytes,
+					     or if dtype is K_DTYPE_V, bits,
+					     or if dtype is K_DTYPE_P, digits (4 bits each) */
+	unsigned char	_DSCB_(dtype);	/* data type code */
+	unsigned char	_DSCB_(class);	/* descriptor class code = K_CLASS_D */
+	char		*_DSCA_(pointer);	/* address of first byte of data storage */
+};
+/*
+ *	Dynamic String Descriptor:
+ */
+struct	descriptor_d
+{
+	unsigned long	_DSCL_(length);	/* length of data item in bytes,
 					     or if dtype is K_DTYPE_V, bits,
 					     or if dtype is K_DTYPE_P, digits (4 bits each) */
 	unsigned char	_DSCB_(dtype);	/* data type code */
@@ -92,7 +130,7 @@ typedef	struct _aflags
 		unsigned __char_align__ _DSCV_(bounds) : 1;	/* if set, indicates the bounds block is present */
 	} aflags;	/* array flag bits */
 
-struct	descriptor_a
+struct	descriptor_a_short
 {
 	unsigned short	_DSCW_(length);	/* length of an array element in bytes,
 					     or if dtype is K_DTYPE_V, bits,
@@ -129,13 +167,50 @@ struct	descriptor_a
 	 */
 };
 
+struct	descriptor_a
+{
+	unsigned long	_DSCL_(length);	/* length of an array element in bytes,
+					     or if dtype is K_DTYPE_V, bits,
+					     or if dtype is K_DTYPE_P, digits (4 bits each) */
+	unsigned char	_DSCB_(dtype);	/* data type code */
+	unsigned char	_DSCB_(class);	/* descriptor class code = K_CLASS_A */
+	char		*_DSCA_(pointer);	/* address of first actual byte of data storage */
+	char		_DSCB_(scale);	/* signed power-of-two or -ten multiplier, as specified by
+					     binscale, to convert from internal to external form */
+	unsigned char	_DSCB_(digits);	/* if nonzero, number of decimal digits in internal representation */
+	aflags aflags;
+	unsigned char	_DSCB_(dimct);	/* number of dimensions */
+	unsigned long long	_DSCLL_(arsize);	/* total size of array in bytes,
+					     or if dtype is K_DTYPE_P, digits (4 bits each) */
+	/*
+	 * One or two optional blocks of information may follow contiguously at this point;
+	 * the first block contains information about the dimension multipliers (if present,
+	 * aflags.coeff is set), the second block contains information about
+	 * the dimension bounds (if present, aflags.bounds is set).  If the
+	 * bounds information is present, the multipliers information must also be present.
+	 *
+	 * The multipliers block has the following format:
+	 *	char	*_DSCA_(a0);		Address of the element whose subscripts are all zero
+	 *	int	_DSCL_(m) [DIMCT];	Addressing coefficients (multipliers)
+	 *
+	 * The bounds block has the following format:
+	 *	struct
+	 *	{
+	 *		unsigned int	_DSCL_(l);	Lower bound
+	 *		unsigned int	_DSCL_(u);	Upper bound
+	 *	} bounds [DIMCT];
+	 *
+	 * (DIMCT represents the value contained in dimct.)
+	 */
+};
+
 
 /************************************************
   Supplementary definitons for array classes.
   Useful for classes A, CA, and APD.
 *************************************************/
 
-#define ARRAY_HEAD(ptr_type)		\
+#define ARRAY_HEAD_SHORT(ptr_type)		\
 		unsigned short	_DSCW_(length);	\
 		unsigned char	_DSCB_(dtype);	\
 		unsigned char	_DSCB_(class);	\
@@ -146,14 +221,14 @@ struct	descriptor_a
 		unsigned char	_DSCB_(dimct);	\
 		unsigned int	_DSCL_(arsize);
 
-#define ARRAY(ptr_type)		struct {	ARRAY_HEAD(ptr_type)}
+#define ARRAY_SHORT(ptr_type)		struct {	ARRAY_HEAD_SHORT(ptr_type)}
 
-#define ARRAY_COEFF(ptr_type, dimct)	struct {	ARRAY_HEAD(ptr_type)	\
+#define ARRAY_COEFF_SHORT(ptr_type, dimct)	struct {	ARRAY_HEAD_SHORT(ptr_type)	\
 							ptr_type	*_DSCA_(a0);	\
 							unsigned int		_DSCL_(m)[dimct];	\
 					}
 
-#define ARRAY_BOUNDS(ptr_type, dimct)	struct {	ARRAY_HEAD(ptr_type)	\
+#define ARRAY_BOUNDS_SHORT(ptr_type, dimct)	struct {	ARRAY_HEAD_SHORT(ptr_type)	\
 							ptr_type	*_DSCA_(a0);	\
 							unsigned int		_DSCL_(m)[dimct];	\
 							struct {			\
@@ -161,6 +236,45 @@ struct	descriptor_a
 								int	_DSCL_(u);	\
 							} bounds[dimct];		\
 						}
+#define ARRAY_HEAD(ptr_type)		\
+		unsigned long	_DSCL_(length);	\
+		unsigned char	_DSCB_(dtype);	\
+		unsigned char	_DSCB_(class);	\
+		ptr_type	*_DSCA_(pointer);	\
+		char		_DSCB_(scale);	\
+		unsigned char	_DSCB_(digits);	\
+		aflags    aflags;   \
+		unsigned char	_DSCB_(dimct);	\
+		unsigned long long	_DSCLL_(arsize);
+
+#define ARRAY(ptr_type)		struct {	ARRAY_HEAD(ptr_type)}
+
+#define ARRAY_COEFF(ptr_type, dimct)	struct {	ARRAY_HEAD(ptr_type)	\
+							ptr_type	*_DSCA_(a0);	\
+							unsigned long long		_DSCLL_(m)[dimct];	\
+					}
+
+#define ARRAY_BOUNDS(ptr_type, dimct)	struct {	ARRAY_HEAD(ptr_type)	\
+							ptr_type	*_DSCA_(a0);	\
+							unsigned long long		_DSCLL_(m)[dimct];	\
+							struct {			\
+								long long	_DSCLL_(l);	\
+								long long	_DSCLL_(u);	\
+							} bounds[dimct];		\
+						}
+
+#define DESCRIPTOR_A_SHORT(name, len, type, ptr, arsize) \
+	ARRAY_SHORT(char) name = {len, type, CLASS_A_SHORT, (char *)ptr, 0, 0, {0,1,1,0,0}, 1, arsize}
+
+#define DESCRIPTOR_A_COEFF_SHORT(name, len, type, ptr, dimct, arsize) \
+	ARRAY_COEFF_SHORT(char, dimct) name = {len, type, CLASS_A_SHORT, (char *)ptr, 0, 0, {0,1,1,1,0}, dimct, arsize}
+
+#define DESCRIPTOR_A_COEFF_2_SHORT(name, len, type, ptr, arsize, rows, columns) \
+	ARRAY_COEFF_SHORT(char, 2) name = {len, type, CLASS_A_SHORT, (char *)ptr, 0, 0, {0,1,1,1,0}, 2, arsize, (char *)ptr,\
+            rows, columns}
+
+#define DESCRIPTOR_A_BOUNDS_SHORT(name, len, type, ptr, dimct, arsize) \
+	ARRAY_BOUNDS_SHORT(char, dimct) name = {len, type, CLASS_A_SHORT, (char *)ptr, 0, 0, {0,1,1,1,1}, dimct, arsize}
 
 #define DESCRIPTOR_A(name, len, type, ptr, arsize) \
 	ARRAY(char) name = {len, type, CLASS_A, (char *)ptr, 0, 0, {0,1,1,0,0}, 1, arsize}
@@ -182,9 +296,10 @@ struct	descriptor_a
 	The descriptor is usually on the stack.
 *************************************************/
 
-#define CLASS_XD 192
+#define CLASS_XD 172
+#define CLASs_XD_SHORT 192
 
-struct descriptor_xd {
+struct descriptor_xd_short {
 				unsigned short		_DSCW_(length);
 				unsigned char		_DSCB_(dtype);
 				unsigned char		_DSCB_(class);
@@ -192,35 +307,73 @@ struct descriptor_xd {
 				unsigned int		_DSCL_(l_length);
 			};
 
+struct descriptor_xd {
+                                unsigned long		_DSCL_(length);
+				unsigned char		_DSCB_(dtype);
+				unsigned char		_DSCB_(class);
+                                struct descriptor	        *_DSCA_(pointer);
+				unsigned long long		_DSCLL_(l_length);
+			};
 
+
+#define EMPTYXD_SHORT(name) struct descriptor_xd_short name = {0, DTYPE_DSC, CLASS_XD_SHORT, 0, 0}
 #define EMPTYXD(name) struct descriptor_xd name = {0, DTYPE_DSC, CLASS_XD, 0, 0}
 
 /************************************************
   CLASS_XS extended static descriptor definition.
 *************************************************/
 
-#define CLASS_XS 193
+#define CLASS_XS 173
+#define CLASS_XS_SHORT 193
 
-struct descriptor_xs {
+struct descriptor_xs_short {
 				unsigned short		_DSCW_(length);
 				unsigned char		_DSCB_(dtype);
 				unsigned char		_DSCB_(class);
 				struct descriptor     	*_DSCA_(pointer);
 				unsigned int		_DSCL_(l_length);
 			};
+struct descriptor_xs {
+                                unsigned long		_DSCL_(length);
+				unsigned char		_DSCB_(dtype);
+				unsigned char		_DSCB_(class);
+				struct descriptor     	*_DSCA_(pointer);
+                                unsigned long long _DSCLL_(l_length);
+			};
+
 
 /************************************************
   CLASS_R Record descriptor definition.
 *************************************************/
 
-#define CLASS_R 194
+#define CLASS_R 174
+#define CLASS_R_SHORT 194
 
-#define RECORD_HEAD				\
+#define RECORD_HEAD_SHORT				\
 		unsigned short	_DSCW_(length);	\
 		unsigned char	_DSCB_(dtype);	\
 		unsigned char	_DSCB_(class);	\
 		unsigned char	*_DSCA_(pointer);	\
 		unsigned char	_DSCB_(ndesc);	\
+		unsigned __fill_name__ : 24;
+
+struct descriptor_r_short	{	RECORD_HEAD_SHORT
+					struct descriptor *_DSCA_(dscptrs)[1];
+				};
+
+#define RECORD_SHORT(ndesc)	struct	{	RECORD_HEAD_SHORT \
+					struct descriptor *_DSCA_(dscptrs)[ndesc];	\
+				}
+
+#define DESCRIPTOR_R_SHORT(name, type, ndesc) \
+	RECORD_SHORT(ndesc) name = {0, type, CLASS_R_SHORT, 0, ndesc, __fill_value__ 0}
+
+#define RECORD_HEAD				\
+		unsigned long	_DSCL_(length);	\
+		unsigned char	_DSCB_(dtype);	\
+		unsigned char	_DSCB_(class);	\
+		unsigned char	*_DSCA_(pointer);	\
+		unsigned int	_DSCB_(ndesc);	\
 		unsigned __fill_name__ : 24;
 
 struct descriptor_r		{	RECORD_HEAD
@@ -247,7 +400,20 @@ struct descriptor_r		{	RECORD_HEAD
 	It must have all length and type info.
 *************************************************/
 
-#define CLASS_CA 195
+#define CLASS_CA 175
+#define CLASS_CA_SHORT 195
+
+#define DESCRIPTOR_CA_SHORT(name, len, type, ptr, arsize) \
+	ARRAY_SHORT(struct descriptor) name = {len, type, CLASS_CA_SHORT, (struct descriptor *)ptr, 0, 0, \
+            {0,1,1,0,0}, 1, arsize}
+
+#define DESCRIPTOR_CA_COEFF_SHORT(name, len, type, ptr, dimct, arsize) \
+	ARRAY_COEFF_SHORT(struct descriptor, dimct) name = {len, type, CLASS_CA_SHORT, (struct descriptor *)ptr, 0, 0, \
+            {0,1,1,1,0}, dimct, arsize}
+
+#define DESCRIPTOR_CA_BOUNDS_SHORT(name, len, type, ptr, dimct, arsize) \
+	ARRAY_BOUNDS(struct descriptor, dimct) name = {len, type, CLASS_CA_SHORT, (struct descriptor *)ptr, 0, 0, \
+	    {0,1,1,1,1}, dimct, arsize}
 
 #define DESCRIPTOR_CA(name, len, type, ptr, arsize) \
 	ARRAY(struct descriptor) name = {len, type, CLASS_CA, (struct descriptor *)ptr, 0, 0, \
@@ -277,8 +443,21 @@ struct descriptor_r		{	RECORD_HEAD
 	the list of pointers to descriptors.
 *************************************************/
 
-#define CLASS_APD 196
+#define CLASS_APD 176
+#define CLASS_APD_SHORT 196
 
+
+#define DESCRIPTOR_APD_SHORT(name, type, ptr, ndesc) \
+	ARRAY_SHORT(struct descriptor *) name = {sizeof(struct descriptor *), type, CLASS_APD_SHORT, \
+		(struct descriptor **)ptr, 0, 0, {0,1,1,0,0}, 1, ndesc*sizeof(struct descriptor *)}
+
+#define DESCRIPTOR_APD_COEFF_SHORT(name, type, ptr, dimct, ndesc) \
+	ARRAY_COEFF_SHORT(struct descriptor *, dimct) name = {sizeof(struct descriptor *), type, CLASS_APD_SHORT, \
+		(struct descriptor **)ptr, 0, 0, {0,1,1,1,0}, dimct, ndesc*sizeof(struct descriptor *)}
+
+#define DESCRIPTOR_APD_BOUNDS_SHORT(name, type, ptr, dimct, ndesc) \
+	ARRAY_BOUNDS_SHORT(struct descriptor *, dimct) name = {sizeof(struct descriptor *), type, CLASS_APD_SHORT, \
+		(struct descriptor **)ptr, 0, 0, {0,1,1,1,1}, dimct, ndesc*sizeof(struct descriptor *)}
 
 #define DESCRIPTOR_APD(name, type, ptr, ndesc) \
 	ARRAY(struct descriptor *) name = {sizeof(struct descriptor *), type, CLASS_APD, \
@@ -716,10 +895,13 @@ struct descriptor_with_error {	RECORD_HEAD
 /*
  *	Codes for dsc$b_class:
  */
-#define CLASS_S	1		/* fixed-length descriptor */
-#define CLASS_D	2		/* dynamic string descriptor */
+#define CLASS_S_SHORT	1		/* fixed-length descriptor */
+#define CLASS_S 101
+#define CLASS_D_SHORT	2		/* dynamic string descriptor */
+#define CLASS_D 102
 /*	CLASS_V			** variable buffer descriptor;  reserved for use by DIGITAL */
-#define CLASS_A	4		/* array descriptor */
+#define CLASS_A_SHORT	4		/* array descriptor */
+#define CLASS_A 104
 #define CLASS_P	5		/* procedure descriptor */
 /*	CLASS_PI			** procedure incarnation descriptor;  obsolete */
 /*	CLASS_J			** label descriptor;  reserved for use by the VMS Debugger */

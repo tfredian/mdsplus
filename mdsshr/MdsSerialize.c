@@ -81,12 +81,12 @@ union __bswap { char   b[8];
 #endif
 
 STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr, 
-                        unsigned int *b_out, unsigned int *b_in)
+                        unsigned long *b_out, unsigned long *b_in)
 {
-  unsigned int status = 1,
+  unsigned int status = 1,i,j;
+  unsigned long
               bytes_out = 0,
               bytes_in = 0,
-              i,j,
               size_out,
               size_in;
   if (in_ptr && (in_ptr[0] || in_ptr[1] || in_ptr[2] || in_ptr[3]))
@@ -431,8 +431,8 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
 
 int MdsSerializeDscIn(char *in, struct descriptor_xd *out)
 {
-  unsigned int size_out;
-  unsigned int size_in;
+  unsigned long size_out;
+  unsigned long size_in;
   int       status;
   STATIC_CONSTANT const unsigned char dsc_dtype = DTYPE_DSC;
   status = copy_rec_dx(in, 0, &size_out, &size_in);
@@ -447,15 +447,14 @@ int MdsSerializeDscIn(char *in, struct descriptor_xd *out)
   return status;
 }
 
-STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,unsigned int *b_out, unsigned int *b_in)
+STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,unsigned long long *b_out, unsigned long long *b_in)
 {
-  unsigned int status = 1,
+  unsigned int status = 1,j,num_dsc;
+  unsigned long long
               bytes_out = 0,
               bytes_in = 0,
-              j,
               size_out,
-              size_in,
-              num_dsc;
+              size_in;
   if (in_ptr)
     switch (in_ptr->class)
     {
@@ -773,16 +772,16 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,unsigned
   return status;
 }
 
-STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc_ptr, unsigned int *reclen)
+STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc_ptr, unsigned long long *reclen)
 {
-  unsigned int size_out;
-  unsigned int size_in;
+  unsigned long long size_out;
+  unsigned long long size_in;
   int       status;
   STATIC_CONSTANT const unsigned char dsc_dtype = DTYPE_B;
   status = copy_dx_rec((struct descriptor *)inp, 0, &size_out, &size_in);
   if (status & 1 && size_out)
   {
-    unsigned short nlen = 1;
+    unsigned long nlen = 1;
     array out_template = {1,DTYPE_B,CLASS_A,0,0,0,{0,1,1,0,0},1,0};
     out_template.arsize = *reclen = size_out;
     status = MdsGet1DxA((struct descriptor_a *)&out_template, &nlen, (unsigned char *) &dsc_dtype, out_dsc_ptr);
@@ -797,7 +796,7 @@ STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc
   return status;
 }
 
-STATIC_CONSTANT int PointerToOffset(struct descriptor *dsc_ptr, unsigned int *length)
+STATIC_CONSTANT int PointerToOffset(struct descriptor *dsc_ptr, unsigned long long *length)
 {
   int       status = 1;
   if ((dsc_ptr->dtype == DTYPE_DSC) && (dsc_ptr->class != CLASS_A) && (dsc_ptr->class != CLASS_APD))
@@ -881,7 +880,7 @@ STATIC_CONSTANT int PointerToOffset(struct descriptor *dsc_ptr, unsigned int *le
      case CLASS_CA:
       if (dsc_ptr->pointer)
       {
-	unsigned int dummy_length;
+	unsigned long long dummy_length;
 	struct descriptor_a *a_ptr = (struct descriptor_a *) dsc_ptr;
 	*length += sizeof(struct descriptor_a)
 		+ (a_ptr->aflags.coeff ? sizeof(int) * (a_ptr->dimct + 1) : 0)
@@ -907,8 +906,8 @@ int MdsSerializeDscOutZ(struct descriptor *in,
              void *fixupPathArg,
              int compress,
              int *compressible_out,
-             unsigned int *length_out,
-             unsigned int *reclen_out,
+             unsigned long long *length_out,
+             unsigned long long *reclen_out,
              unsigned char *dtype_out,
              unsigned char *class_out,
              int  altbuflen,
@@ -919,8 +918,8 @@ int MdsSerializeDscOutZ(struct descriptor *in,
   struct descriptor *out_ptr;
   struct descriptor_xd tempxd;
   int compressible = 0;
-  unsigned int length = 0;
-  unsigned int reclen = 0;
+  unsigned long long length = 0;
+  unsigned long long reclen = 0;
   unsigned char dtype = 0;
   unsigned char class = 0;
   int data_in_altbuf = 0;

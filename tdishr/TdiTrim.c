@@ -98,7 +98,7 @@ STATIC_CONSTANT unsigned char dtype = (unsigned char)DTYPE_T;
 	if (status & 1 && ind < (unsigned int)TdiFUNCTION_MAX) {
 	char *name_ptr = TdiRefFunction[ind].name;
 	struct descriptor str2 = {0,DTYPE_T,CLASS_S,0};
-	unsigned short total;
+	unsigned long total;
                 str2.length = (unsigned short)strlen(name_ptr);
                 str2.pointer = name_ptr;
 	        total = (unsigned short)(str1.length + str2.length);

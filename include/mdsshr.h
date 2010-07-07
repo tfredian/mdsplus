@@ -32,9 +32,9 @@ EXPORT extern int MdsCopyDxXdZ(struct descriptor *in, struct descriptor_xd *out,
                         int (*fixup_path) (), void *fixup_path_arg);
 EXPORT extern char *MdsDescrToCstring(struct descriptor *);
 EXPORT extern void MdsFree(void *);
-EXPORT extern int MdsGet1Dx(unsigned int *len, unsigned char *dtype, struct descriptor_xd *dsc, void **zone);
-EXPORT extern int MdsGet1DxA(struct descriptor_a * in, unsigned short *len, unsigned char *dtype, struct descriptor_xd *out);
-EXPORT extern int MdsGet1DxS(unsigned short *len, unsigned char *dtype, struct descriptor_xd *out);
+EXPORT extern int MdsGet1Dx(unsigned long *len, unsigned char *dtype, struct descriptor_xd *dsc, void **zone);
+EXPORT extern int MdsGet1DxA(struct descriptor_a * in, unsigned long *len, unsigned char *dtype, struct descriptor_xd *out);
+EXPORT extern int MdsGet1DxS(unsigned long *len, unsigned char *dtype, struct descriptor_xd *out);
 EXPORT extern int MdsGetCurrentShotId(char *experiment);
 EXPORT extern char *MdsGetMsg(int sts);
 EXPORT extern int MdsFree1Dx(struct descriptor_xd *dsc, void **zone);
@@ -45,7 +45,7 @@ EXPORT extern int MdsSerializeDscIn(char *in, struct descriptor_xd *out);
 EXPORT extern int MdsSerializeDscOutZ(struct descriptor *in,struct descriptor_xd *out,
     int (*fixupNid)(), void *fixupNidArg, int (*fixupPath)(),
     void *fixupPathArg, int compress, int *compressible,
-    unsigned int *length, unsigned int *reclen,  unsigned char *dtype,
+    unsigned long long *length, unsigned long long *reclen,  unsigned char *dtype,
     unsigned char *class, int  altbuflen, void *altbuf, int *data_in_altbuf);
 EXPORT extern int MdsSerializeDscOut(struct descriptor *in,struct descriptor_xd *out);
 EXPORT extern void MdsUnpk(char *nbits, int *nitems, int pack[], int items[], int *bit);

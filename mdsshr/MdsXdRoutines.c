@@ -34,7 +34,7 @@ void MdsFixDscLength(struct descriptor *in);
 
 STATIC_CONSTANT void *MdsVM_ZONE = 0;
 
-int  MdsGet1Dx(unsigned int *length_ptr, unsigned char *dtype_ptr, struct descriptor_xd *dsc_ptr, void **zone)
+int  MdsGet1Dx(unsigned long *length_ptr, unsigned char *dtype_ptr, struct descriptor_xd *dsc_ptr, void **zone)
 {
   int       status;
   if (dsc_ptr->class == CLASS_XD)
@@ -97,15 +97,15 @@ STATIC_ROUTINE struct descriptor *FixedArray();
 STATIC_ROUTINE int copy_dx(
 		               struct descriptor_xd *in_dsc_ptr,
 		               struct descriptor_xd *out_dsc_ptr,
-		               unsigned int *bytes_used_ptr,
+		               unsigned long *bytes_used_ptr,
 		               int (*fixup_nid) (),
 		               void  *fixup_nid_arg,
 		               int (*fixup_path) (),
 		               void  *fixup_path_arg, int *compressible)
 {
-  unsigned int status = 1,
+  unsigned int status = 1,j;
+  unsigned long
               bytes = 0,
-              j,
               size;
   struct descriptor *in_ptr = (struct descriptor *) in_dsc_ptr;
   int align_size;
@@ -343,7 +343,7 @@ STATIC_ROUTINE int copy_dx(
 int MdsCopyDxXdZ(struct descriptor *in_dsc_ptr, struct descriptor_xd *out_dsc_ptr, void **zone,
                   int (*fixup_nid) (), void *fixup_nid_arg, int (*fixup_path) (), void *fixup_path_arg)
 {
-  unsigned int size;
+  unsigned long size;
   int       status;
   STATIC_CONSTANT unsigned char dsc_dtype = DTYPE_DSC;
 /************************************************

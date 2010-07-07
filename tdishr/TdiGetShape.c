@@ -23,14 +23,14 @@ STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 int				TdiGetShape(
 int				narg,
 struct descriptor_xd	dat[1],
-unsigned short			length,
+unsigned long			length,
 unsigned char			dtype,
 int				*cmode_ptr,
 struct descriptor_xd	*out_ptr)
 {
-unsigned short ulen;
-int	cmode = -1, status = 1, count = 0x7fffffff, j, len, nelem;
-struct descriptor_a		*aptr;
+  unsigned long ulen,len;
+  int	cmode = -1, status = 1, count = 0x7fffffff, j, nelem;
+  struct descriptor_a		*aptr;
 
 	/*******************************
 	Find the smallest array, if any.
@@ -59,7 +59,7 @@ struct descriptor_a		*aptr;
 	*****************************/
 	if (status & 1) {
 		if ((len = length) == 0 && dtype < TdiCAT_MAX) len = TdiREF_CAT[dtype].length;
-                ulen = (unsigned short)len;
+                ulen = len;
 		if (cmode < 0) 
 	          status = MdsGet1DxS(&ulen, &dtype, out_ptr);
 		else status = MdsGet1DxA((struct descriptor_a *)dat[cmode].pointer, &ulen, &dtype, 

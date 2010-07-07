@@ -290,7 +290,8 @@ Compact/copy from work.
   if (status & 1)
 #endif
   {
-    status = MdsGet1Dx(&work.l_length, &dsc_dtype, out_ptr, NULL);
+    unsigned long len=(unsigned long)work.l_length;
+    status = MdsGet1Dx(&len, &dsc_dtype, out_ptr, NULL);
     if (status & 1)
     {
       int orig_len = work.l_length;

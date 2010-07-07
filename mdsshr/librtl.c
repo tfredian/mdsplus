@@ -33,7 +33,7 @@ STATIC_ROUTINE char *GetTdiLogical(char *name);
 
 char *MdsDescrToCstring(struct descriptor *in);
 int StrFree1Dx(struct descriptor *out);
-int StrGet1Dx(unsigned short *len, struct descriptor *out);
+int StrGet1Dx(unsigned long *len, struct descriptor *out);
 int StrCopyDx(struct descriptor *out, struct descriptor *in);
 int StrAppend(struct descriptor *out, struct descriptor *tail);
 void TranslateLogicalFree(char *value);
@@ -1240,7 +1240,7 @@ int StrPosition(struct descriptor *source, struct descriptor *substring, int *st
   return answer;
 }
 
-int StrCopyR(struct descriptor *dest, unsigned short *len, char *source)
+int StrCopyR(struct descriptor *dest, unsigned long *len, char *source)
 {
   struct descriptor s = {0,DTYPE_T,CLASS_S,0};
   s.length = *len;
@@ -1248,10 +1248,10 @@ int StrCopyR(struct descriptor *dest, unsigned short *len, char *source)
   return StrCopyDx(dest,&s);
 }
 
-int StrLenExtr(struct descriptor *dest, struct descriptor *source, int *start_in, int *len_in)
+int StrLenExtr(struct descriptor *dest, struct descriptor *source, unsigned long *start_in, unsigned long *len_in)
 {
-  unsigned short len = (unsigned short)((*len_in < 0) ? 0 : *len_in & 0xffff);
-  unsigned short start = (unsigned short)((*start_in > 1) ? *start_in & 0xffff : 1);
+  unsigned long len = *len_in;
+  unsigned long start = (*start_in > 1) ? *start_in : 1;
   struct descriptor s = {0,DTYPE_T,CLASS_D,0};
   int status = StrGet1Dx(&len, &s);
   int i,j;
@@ -1263,7 +1263,7 @@ int StrLenExtr(struct descriptor *dest, struct descriptor *source, int *start_in
   return status;
 }
 
-int StrGet1Dx(unsigned short *len, struct descriptor *out)
+int StrGet1Dx(unsigned long *len, struct descriptor *out)
 {
   if (out->class != CLASS_D) return LibINVSTRDES;
   if (out->length == *len) return 1;
@@ -1682,7 +1682,7 @@ int LibSysAscTim(unsigned short *len, struct descriptor *str, int *time_in)
 {
   char *time_str;
   char time_out[23];
-  unsigned short slen=sizeof(time_out);
+  unsigned long slen=sizeof(time_out);
   time_t bintim = LibCvtTim(time_in,0);
   _int64 chunks=0;
   _int64 *time_q=(_int64 *)time_in;
@@ -1740,9 +1740,10 @@ int StrAppend(struct descriptor *out, struct descriptor *tail)
   if (tail->length != 0 && tail->pointer != NULL)
   {
     struct descriptor new = {0,DTYPE_T,CLASS_D,0};
-    unsigned short len = (unsigned short)(out->length + tail->length);
-    if (((unsigned int)out->length + (unsigned int)tail->length) > 0xffff)
+    unsigned long len = out->length + tail->length;
+    /*    if (((unsigned int)out->length + (unsigned int)tail->length) > 0xffff)
       return StrSTRTOOLON;
+    */
     StrGet1Dx(&len,&new);
     memcpy(new.pointer, out->pointer, out->length);
     memcpy(new.pointer + out->length, tail->pointer, tail->length);
@@ -2100,7 +2101,7 @@ int StrElement(struct descriptor *dest, int *num, struct descriptor *delim, stru
   char *src_ptr = src->pointer;
   char *se_ptr = src_ptr+src->length;
   char *e_ptr;
-  unsigned short len;
+  unsigned long len;
   int cnt;
   int status;
   if (delim->length != 1) return StrINVDELIM;
@@ -2109,7 +2110,7 @@ int StrElement(struct descriptor *dest, int *num, struct descriptor *delim, stru
   if (cnt < *num) return StrNOELEM;
   for(e_ptr=src_ptr; src_ptr<se_ptr; src_ptr++)
     if (*src_ptr == *delim->pointer) break;
-  len = (unsigned short)(src_ptr-e_ptr);
+  len = src_ptr-e_ptr;
   status = StrCopyR(dest, &len, e_ptr);
   return status;
 }
@@ -2154,13 +2155,13 @@ int StrReplace(struct descriptor *dest, struct descriptor *src, int *start_idx, 
   int status;
   int start;
   int end;
-  unsigned short int dstlen;
+  unsigned long dstlen;
   char *dst;
   char *sptr;
   char *dptr;
   start = MAX(1,MIN(*start_idx, src->length));
   end = MAX(1,MIN(*end_idx, src->length));
-  dstlen = (unsigned short) (start-1+rep->length+src->length-end+1);
+  dstlen = start-1+rep->length+src->length-end+1;
   dst = (char *)malloc(dstlen);
   for (sptr=src->pointer, dptr=dst; (dptr-dst) < (start-1) ;*dptr++=*sptr++) ;
   for (sptr=rep->pointer; (sptr-rep->pointer) < rep->length ;*dptr++=*sptr++) ; 

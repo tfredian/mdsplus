@@ -45,7 +45,7 @@ int			*data,
 struct descriptor_xd *out_ptr) {
 int	status;
 STATIC_CONSTANT unsigned char dtype = (unsigned char)DTYPE_L;
-STATIC_CONSTANT unsigned short len = sizeof(int);
+STATIC_CONSTANT unsigned long len = sizeof(int);
 
 	if (out_ptr == 0) return 1;
 	status = MdsGet1DxS(&len, &dtype, out_ptr);
@@ -98,9 +98,9 @@ STATIC_ROUTINE int TdiGetInUnit(struct descriptor *in_ptr, FILE **unit)
 */
 TdiRefStandard(Tdi1DateTime)
 int	time[2] = {0,0}, *ptime;
-unsigned short len;
+unsigned long len;
 STATIC_CONSTANT unsigned char dtype = (unsigned char)DTYPE_T;
-STATIC_CONSTANT unsigned short length = 23;
+STATIC_CONSTANT unsigned long length = 23;
 
 	if (narg > 0 && list[0]) {
 	struct descriptor dtime = {sizeof(time),DTYPE_Q,CLASS_S,0};
@@ -259,7 +259,7 @@ STATIC_CONSTANT int width = 132;
 			case CLASS_S : case CLASS_D :
 				if (col > 0 && col + len > width) col = 0, bytes += kprintf(unit, "\n");
 				col += len;
-				bytes += kprintf2(unit, "%.*s", len, pt);
+				bytes += kprintf2(unit, "%.*s", (int)len, pt);
 				continue;
 			case CLASS_A :
 				plim = pt + ((struct descriptor_a *)ptmp)->arsize;
@@ -267,7 +267,7 @@ STATIC_CONSTANT int width = 132;
 				for (; pt < plim; pt += len) {
 					if (col > 0 && col + len > width) col = 0, bytes += kprintf(unit, "\n");
 					col += len;
-					bytes += kprintf2(unit, "%.*s", len, pt);
+					bytes += kprintf2(unit, "%.*s", (int)len, pt);
 				}
 				col = 0, bytes += kprintf(unit, "\n");
 				continue;
@@ -279,7 +279,7 @@ none:			stat1 = TdiDecompile(&tmp, &tmp MDS_END_ARG);
 			if (col > 0) col = 0, bytes += kprintf(unit, "\n");
 			break;
 		}
-		bytes += kprintf2(unit, "%.*s\n", pd->length, pd->pointer);
+		bytes += kprintf2(unit, "%.*s\n", (int)pd->length, pd->pointer);
 	}
 	if (col > 0) bytes += kprintf(unit, "\n");
 	if (status & 1) status = TdiPutLong((int *)&bytes, out_ptr);

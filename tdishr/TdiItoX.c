@@ -97,7 +97,8 @@ STATIC_CONSTANT DESCRIPTOR_A(duo, sizeof(int), DTYPE_L, 0, 2*sizeof(int));
 STATIC_CONSTANT DESCRIPTOR_RANGE(fake0, 0, 0, 0);
 STATIC_CONSTANT DESCRIPTOR_FUNCTION_0(vector0,&OpcVector);
 TdiRefStandard(Tdi1ItoX)
-int				j1, left, right, *pcnt=0, *ptest;
+unsigned long			j1;
+int left, right, *pcnt=0, *ptest;
 int				k0,k1;
 int				special = narg > 1 && list[1] == TdiItoXSpecial;
 int				arg1 = narg > 1 && list[1] && list[1] != TdiItoXSpecial;
@@ -547,7 +548,7 @@ plain:		status = TdiData(&axis, &axis MDS_END_ARG);
 		if (status & 1)
 		if (special) {
 			if (flag) {
-				unsigned short num = (unsigned short)j1;
+				unsigned long num = j1;
 				status = MdsGet1DxA((struct descriptor_a *)&duo, &num, &paxis->dtype,
                                                                      out_ptr);
 				if (status & 1) {

@@ -98,7 +98,7 @@ DBI_ITM lst[] = {{sizeof(index),DbiINDEX,0,0},EOL,EOL};
 	if (status & 1) {
 		lst[1].code = key_ptr->item_code;
 		if ((lst[1].buffer_length = key_ptr->item_length) != 0) {
-			status = MdsGet1DxS((unsigned short *)&lst[1].buffer_length, &key_ptr->item_dtype, out_ptr);
+			status = MdsGet1DxS(&lst[1].buffer_length, &key_ptr->item_dtype, out_ptr);
 			if (status & 1) {
 				lst[1].pointer = (unsigned char *)out_ptr->pointer->pointer;
 				status = TreeGetDbi(lst);

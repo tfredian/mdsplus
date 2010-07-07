@@ -124,7 +124,7 @@ struct TdiCatStruct		cats[])
 struct TdiCatStruct		*cptr;
 struct TdiFunctionStruct	*fun_ptr = (struct TdiFunctionStruct *)&TdiRefFunction[opcode];
 int				nc=0, j, status = 1;
-unsigned short			i1 = TdiREF_CAT[fun_ptr->i1].cat,
+unsigned long			i1 = TdiREF_CAT[fun_ptr->i1].cat,
 				i2 = TdiREF_CAT[fun_ptr->i2].cat,
 				o1 = TdiREF_CAT[fun_ptr->o1].cat,
 				o2 = TdiREF_CAT[fun_ptr->o2].cat;
@@ -149,7 +149,7 @@ int use_native = (fun_ptr->f2 != Tdi2Keep && fun_ptr->f2 != Tdi2Long2 && fun_ptr
 		cptr = &cats[j];
 		cptr->out_dtype = cptr->in_dtype = jd = dat_ptr->dtype;
 		if (jd > nd && (nd = jd) >= TdiCAT_MAX) {status = TdiINVDTYDSC; break;}
-		cptr->out_cat = (unsigned short)(((cptr->in_cat = TdiREF_CAT[jd].cat) | i1) & i2);
+		cptr->out_cat = (((cptr->in_cat = TdiREF_CAT[jd].cat) | i1) & i2);
 		if (jd != DTYPE_MISSING) nc |= cptr->out_cat;
 		if ((cptr->digits = TdiREF_CAT[jd].digits) == 0) cptr->digits = dat_ptr->length;
 	}
@@ -173,7 +173,7 @@ int use_native = (fun_ptr->f2 != Tdi2Keep && fun_ptr->f2 != Tdi2Long2 && fun_ptr
 	  cptr->in_dtype = nd;
 	  cptr->out_dtype = nd;
 	  cptr->in_cat = TdiREF_CAT[nd].cat;
-	  cptr->out_cat = (unsigned short)((nc | o1) & o2);
+	  cptr->out_cat = ((nc | o1) & o2);
 	  cptr->digits = TdiREF_CAT[nd].digits;
           if (fun_ptr->o1 == fun_ptr->o2)
           {

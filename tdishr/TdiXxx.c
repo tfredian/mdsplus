@@ -163,7 +163,7 @@ int	status = 1;
 	int	kind = -1;
 		status = TdiGetLong(dat[1].pointer, &kind);
 		if (kind < TdiCAT_MAX) cats[narg].out_cat = 
-                        (unsigned short)((TdiREF_CAT[cats[narg].out_dtype = (unsigned char)kind].cat
+                        ((TdiREF_CAT[cats[narg].out_dtype = (unsigned char)kind].cat
 			| TdiREF_CAT[o1].cat) & TdiREF_CAT[o2].cat);
 		cats[1].out_dtype = cats[1].in_dtype;
 		cats[1].out_cat = cats[1].in_cat;
@@ -209,7 +209,7 @@ int	status = 1;
 	int	kind = -1;
 		status = TdiGetLong(dat[1].pointer, &kind);
 		if (kind < TdiCAT_MAX) cats[narg].out_cat = 
-                        (unsigned short)((TdiREF_CAT[cats[narg].out_dtype = (unsigned char)kind].cat
+                        ((TdiREF_CAT[cats[narg].out_dtype = (unsigned char)kind].cat
 			| TdiREF_CAT[o1].cat) & TdiREF_CAT[o2].cat);
 		cats[1].out_dtype = cats[1].in_dtype;
 		cats[1].out_cat = cats[1].in_cat;
@@ -238,7 +238,7 @@ int	status = 1;
 	int	kind = -1;
 		status = TdiGetLong(dat[2].pointer, &kind);
 		if (kind < TdiCAT_MAX) {
-                        cats[narg].out_cat = (unsigned short)((TdiREF_CAT[cats[narg].out_dtype = (unsigned char)kind].cat 
+                        cats[narg].out_cat = ((TdiREF_CAT[cats[narg].out_dtype = (unsigned char)kind].cat 
 			| TdiREF_CAT[o1].cat) & TdiREF_CAT[o2].cat);
                 }
 		cats[2].out_dtype = cats[2].in_dtype;
@@ -269,7 +269,7 @@ int	status = 1;
 TdiRefStandard2(Tdi2Concat)
 
 	either(uni);
-	cats[2].digits = (unsigned short)(cats[0].digits + cats[1].digits);
+	cats[2].digits = cats[0].digits + cats[1].digits;
 	return 1;
 }
 /*---------------------------------------------------
@@ -289,7 +289,7 @@ TdiRefStandard2(Tdi2Cvt)
 TdiRefStandard2(Tdi2Dble)
 
 	cats[0].out_cat = cats[1].out_cat = cats[narg].out_cat = 
-          (unsigned short)(cats[narg].out_cat + (cats[narg].out_cat & TdiCAT_LENGTH) + 1);
+          (cats[narg].out_cat + (cats[narg].out_cat & TdiCAT_LENGTH) + 1);
 	return 1;
 }
 /*---------------------------------------------------
@@ -308,7 +308,7 @@ TdiRefStandard2(Tdi2Dprod)
 
 	multiply(&uni[0], &uni[1]);
 	cats[0].out_cat = cats[1].out_cat = cats[narg].out_cat = 
-          (unsigned short)(cats[narg].out_cat + (cats[narg].out_cat & TdiCAT_LENGTH) + 1);
+          (cats[narg].out_cat + (cats[narg].out_cat & TdiCAT_LENGTH) + 1);
 	return 1;
 }
 /*---------------------------------------------------
@@ -320,7 +320,7 @@ TdiRefStandard2(Tdi2Dprod)
 TdiRefStandard2(Tdi2Eq)
 
 	only_mismatch(uni);
-	cats[0].out_cat = cats[1].out_cat = (unsigned short)(cats[1].out_cat | cats[0].out_cat);
+	cats[0].out_cat = cats[1].out_cat = cats[1].out_cat | cats[0].out_cat;
 	return 1;
 }
 /*---------------------------------------------------
@@ -346,7 +346,7 @@ int	length, status;
 	uni[2] = EMPTY_XD;
 	status = TdiGetLong(dat[1].pointer, &length);
 	if (length < 0) length = 0;
-	cats[narg].digits = (unsigned short)length;
+	cats[narg].digits = length;
 	cats[0].out_cat = cats[1].out_cat = TdiREF_CAT[DTYPE_L].cat;
 	return status;
 }
@@ -363,7 +363,7 @@ int	cmplx, j;
 
 	cmplx = cats[0].out_cat & TdiCAT_COMPLEX;
 	cats[narg].out_cat &= ~TdiCAT_COMPLEX;
-	for (j = narg; --j >= 0; ) cats[j].out_cat = (unsigned short)(cats[narg].out_cat | (cats[j].out_cat & TdiCAT_COMPLEX));
+	for (j = narg; --j >= 0; ) cats[j].out_cat = (cats[narg].out_cat | (cats[j].out_cat & TdiCAT_COMPLEX));
 	if (cmplx) cats[narg].out_cat |= TdiCAT_COMPLEX;
 	return 1;
 }
@@ -374,8 +374,8 @@ TdiRefStandard2(Tdi2Iand)
 
 	either(uni);
 	cats[0].out_cat = cats[1].out_cat = cats[narg].out_cat;
-	if (cats[0].out_cat == (cats[0].in_cat | TdiCAT_B)) cats[0].out_cat = (unsigned short)(cats[0].in_cat | TdiCAT_BU);
-	if (cats[1].out_cat == (cats[1].in_cat | TdiCAT_B)) cats[1].out_cat = (unsigned short)(cats[1].in_cat | TdiCAT_BU);
+	if (cats[0].out_cat == (cats[0].in_cat | TdiCAT_B)) cats[0].out_cat = (cats[0].in_cat | TdiCAT_BU);
+	if (cats[1].out_cat == (cats[1].in_cat | TdiCAT_B)) cats[1].out_cat = (cats[1].in_cat | TdiCAT_BU);
 	return 1;
 }
 /*---------------------------------------------------
@@ -454,7 +454,7 @@ int	j;
 	if (uni[0].pointer) MdsFree1Dx(&uni[0],NULL);
 	for (j = narg ; --j > 0; ) {
 		cats[j].out_cat = 
-                  (unsigned short)((cats[j].out_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
+                  ((cats[j].out_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
 		if (cats[j].out_cat != cats[j].in_cat) cats[j].out_cat = TdiREF_CAT[DTYPE_BU].cat;
 	}
 	return 1;
@@ -469,7 +469,7 @@ TdiRefStandard2(Tdi2Mask3)
 	cats[narg] = cats[0];
 	if (narg > 2) {
 		cats[2].out_cat = 
-                   (unsigned short)((cats[2].in_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
+                   ((cats[2].in_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
 		if (cats[2].out_cat != cats[2].in_cat) {
 			cats[2].out_dtype = DTYPE_BU;
 			cats[2].out_cat = TdiREF_CAT[DTYPE_BU].cat;
@@ -487,7 +487,7 @@ TdiRefStandard2(Tdi2Mask3L)
         cats[narg].out_cat = TdiREF_CAT[DTYPE_L].cat;
         if (narg > 2) {
                 cats[2].out_cat =
-                   (unsigned short)((cats[2].in_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
+                   ((cats[2].in_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
                 if (cats[2].out_cat != cats[2].in_cat) {
                         cats[2].out_dtype = DTYPE_BU;
                         cats[2].out_cat = TdiREF_CAT[DTYPE_BU].cat;
@@ -504,11 +504,11 @@ TdiRefStandard2(Tdi2Merge)
 
 	either(uni);
 	cats[narg].out_cat = cats[1].out_cat = cats[0].out_cat =
-		(unsigned short)((cats[0].out_cat | cats[1].out_cat) & cats[narg].out_cat);
+		((cats[0].out_cat | cats[1].out_cat) & cats[narg].out_cat);
 	if (cats[0].digits < cats[1].digits)	cats[0].digits = cats[1].digits;
 	else					cats[1].digits = cats[0].digits;
 	cats[narg].digits = cats[0].digits;
-	if (narg > 2) cats[2].out_cat = (unsigned short)((cats[2].out_cat | TdiCAT_BU) & TdiCAT_SIGNED);
+	if (narg > 2) cats[2].out_cat = ((cats[2].out_cat | TdiCAT_BU) & TdiCAT_SIGNED);
 	return 1;
 }
 /*---------------------------------------------------
@@ -576,7 +576,7 @@ TdiRefStandard2(Tdi2Pack)
 		cats[0].out_cat |= cats[2].out_cat;
 	}
 	cats[narg].out_cat = cats[0].out_cat;
-	cats[1].out_cat = (unsigned short)((cats[1].in_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
+	cats[1].out_cat = ((cats[1].in_cat | TdiREF_CAT[DTYPE_BU].cat) & TdiREF_CAT[DTYPE_O].cat);
 	if (cats[1].out_cat != cats[1].in_cat) {
 		cats[1].out_dtype = DTYPE_BU;
 		cats[1].out_cat = TdiREF_CAT[DTYPE_BU].cat;
@@ -641,7 +641,7 @@ int	status = 1;
 	int	kind = -1;
 		status = TdiGetLong(dat[1].pointer, &kind);
 		if (kind < TdiCAT_MAX) cats[0].out_cat = 
-                        (unsigned short)((TdiREF_CAT[cats[0].out_dtype = (unsigned char)kind].cat
+                        ((TdiREF_CAT[cats[0].out_dtype = (unsigned char)kind].cat
 			| TdiREF_CAT[o1].cat) & TdiREF_CAT[o2].cat);
 		cats[1].out_dtype = cats[1].in_dtype;
 		cats[1].out_cat = cats[1].in_cat;
@@ -653,12 +653,11 @@ int	status = 1;
 	Fix categories for opcode: REPEAT text duplication.
 */
 TdiRefStandard2(Tdi2Repeat)
-unsigned int	ncopies, status;
+unsigned long	ncopies, status;
 
 	status = TdiGetLong(dat[1].pointer, &ncopies);
 	if (status & 1) {
-		if ((ncopies *= cats[0].digits) < 65535) cats[narg].digits = (unsigned short)ncopies;
-		else status = TdiTOO_BIG;
+	  cats[narg].digits = cats[0].digits * ncopies;
 	}
 	cats[1].out_cat = cats[1].in_cat;
 	return status;
@@ -707,7 +706,7 @@ unsigned int	length, status;
 	status = TdiGetLong(dat[1].pointer, &length);
 	if (status & 1) {
 		if (length > 65535) status = TdiTOO_BIG;
-		else if (length > 0) cats[0].digits = cats[narg].digits = (unsigned short)length;
+		else if (length > 0) cats[0].digits = cats[narg].digits = length;
 	}
 	return status;
 }
@@ -723,7 +722,7 @@ unsigned int	length, status;
 	status = TdiGetLong(dat[1].pointer, &length);
 	if (status & 1) {
 		if (length > 65535) status = TdiTOO_BIG;
-		else if (length > 0) cats[0].digits = cats[narg].digits = (unsigned short)length;
+		else if (length > 0) cats[0].digits = cats[narg].digits = length;
 	}
 	return status;
 }
@@ -734,7 +733,7 @@ unsigned int	length, status;
 TdiRefStandard2(Tdi2Ttb)
 
 	either(uni);
-	if (narg > 2) cats[2].out_cat = (unsigned short)((cats[2].out_cat | TdiCAT_BU) & TdiCAT_SIGNED);
+	if (narg > 2) cats[2].out_cat = ((cats[2].out_cat | TdiCAT_BU) & TdiCAT_SIGNED);
 	return 1;
 }
 /*---------------------------------------------------

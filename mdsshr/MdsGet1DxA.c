@@ -56,22 +56,22 @@
 
 STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 
-  int       MdsGet1DxA(struct descriptor_a * in_ptr, unsigned short *length_ptr, unsigned char *dtype_ptr,
+  int       MdsGet1DxA(struct descriptor_a * in_ptr, unsigned long *length_ptr, unsigned char *dtype_ptr,
 			            struct descriptor_xd *out_xd)
 {
   array_coeff *in_dsc = (array_coeff *) in_ptr;
-  unsigned int       new_arsize;
-  unsigned int       dsc_size;
-  unsigned int new_size;
+  unsigned long long       new_arsize;
+  unsigned long       dsc_size;
+  unsigned long new_size;
   int       status;
   int       i;
   unsigned int align_size;
   array_coeff *out_dsc;
   unsigned char dsc_dtype = DTYPE_DSC;
-  if ((in_dsc->dscW_length == 0) || (*length_ptr == 0))
+  if ((in_dsc->dscL_length == 0) || (*length_ptr == 0))
     new_arsize=0;
   else
-    new_arsize = (in_dsc->dscL_arsize / in_dsc->dscW_length) * (*length_ptr);
+    new_arsize = (in_dsc->dscLL_arsize / in_dsc->dscL_length) * (*length_ptr);
   dsc_size = sizeof(struct descriptor_a) + (in_dsc->aflags.dscV_coeff ? sizeof(char *) + 
                                                           sizeof(int) * in_dsc->dscB_dimct : 0) +
 						 (in_dsc->aflags.dscV_bounds ? sizeof(int) * (in_dsc->dscB_dimct * 2) 
@@ -84,25 +84,25 @@ STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
   {
     out_dsc = (array_coeff *) out_xd->dscA_pointer;
     *(struct descriptor_a *) out_dsc = *(struct descriptor_a *) in_dsc;
-    out_dsc->dscW_length = *length_ptr;
+    out_dsc->dscL_length = *length_ptr;
     out_dsc->dscB_dtype = *dtype_ptr;
     out_dsc->dscA_pointer = (char *) out_dsc + align(dsc_size,align_size);
-    out_dsc->dscL_arsize = new_arsize;
+    out_dsc->dscLL_arsize = new_arsize;
     if (out_dsc->aflags.dscV_coeff)
     {
       if (out_dsc->dscB_class == CLASS_CA)
       {
-        int offset = ((int) out_dsc->dscW_length) * ((in_dsc->dscA_a0 - (char *)0) / ((int) in_dsc->dscW_length));
+        int offset = ((int) out_dsc->dscL_length) * ((in_dsc->dscA_a0 - (char *)0) / ((int) in_dsc->dscL_length));
 	out_dsc->dscA_a0 = out_dsc->dscA_pointer + offset;
       }
       else
       {
-        int offset = ((int) out_dsc->dscW_length) *
-		       ((in_dsc->dscA_a0 - in_dsc->dscA_pointer) / ((int) in_dsc->dscW_length));
+        int offset = ((int) out_dsc->dscL_length) *
+		       ((in_dsc->dscA_a0 - in_dsc->dscA_pointer) / ((int) in_dsc->dscL_length));
 	out_dsc->dscA_a0 = out_dsc->dscA_pointer + offset;
       }
       for (i = 0; i < out_dsc->dscB_dimct; i++)
-	out_dsc->dscL_m[i] = in_dsc->dscL_m[i];
+	out_dsc->dscLL_m[i] = in_dsc->dscLL_m[i];
       if (in_dsc->aflags.dscV_bounds)
       {
 	struct bound
@@ -110,8 +110,8 @@ STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 	  int       l;
 	  int       u;
 	};
-	struct bound *new_bound_ptr = (struct bound *) & out_dsc->dscL_m[out_dsc->dscB_dimct];
-	struct bound *a_bound_ptr = (struct bound *) & in_dsc->dscL_m[in_dsc->dscB_dimct];
+	struct bound *new_bound_ptr = (struct bound *) & out_dsc->dscLL_m[out_dsc->dscB_dimct];
+	struct bound *a_bound_ptr = (struct bound *) & in_dsc->dscLL_m[in_dsc->dscB_dimct];
 	for (i = 0; i < out_dsc->dscB_dimct; i++)
 	  new_bound_ptr[i] = a_bound_ptr[i];
       }

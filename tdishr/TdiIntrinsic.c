@@ -387,7 +387,7 @@ struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
 		StrConcat((struct descriptor *)message, &dmsg, &newline, message MDS_END_ARG);
 	}
 	if (message->length) {
-		if (option & 2) printf("%.*s", message->length, message->pointer);
+	  if (option & 2) printf("%.*s", (int)message->length, message->pointer);
 		if (option & 4) (TdiThreadStatic())->TdiIntrinsic_mess_stat = StrFree1Dx(message);
 	}
 	status = MdsCopyDxXd((struct descriptor *)message, out_ptr);
