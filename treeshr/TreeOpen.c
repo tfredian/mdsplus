@@ -720,11 +720,11 @@ static char *GetFname(char *tree, int shot)
 {
   int status = 1;
   static char *ans = 0;
-  struct descriptor fname = {0, DTYPE_T, CLASS_D, 0};
+  struct descriptor fname = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_D, 0);
   void *arglist[4];
   char expression[128];
   static void *TdiExecute = 0;
-  struct descriptor expression_d = {0, DTYPE_T, CLASS_S, 0};
+  struct descriptor expression_d = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
   if (ans)
   {
     free(ans);
@@ -1391,7 +1391,7 @@ void TreeFreeDbid(void *dbid) {
 
 struct descriptor *TreeFileName(char *tree, int shot)
 {
-  static struct descriptor ans_dsc={0, DTYPE_T, CLASS_D, 0};
+  static struct descriptor ans_dsc=DESCRIPTOR_INIT(0, DTYPE_T, CLASS_D, 0);
   int fd;
   char *ans;
   TREE_INFO dummy_info;

@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   static char expr[MAXEXPR] = "WRITE(_OUTPUT_UNIT,`DECOMPILE(`";
 */
   static char expr[MAXEXPR] = "";
-  static struct descriptor expr_dsc = {0, DTYPE_T, CLASS_S, (char *)expr};
+  static struct descriptor expr_dsc = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, (char *)expr);
   static EMPTYXD(ans);
   static EMPTYXD(output_unit);
   static DESCRIPTOR(out_unit_stdout,"PUBLIC _OUTPUT_UNIT=*");
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     }
   if (argc > 2)
   {
-    struct descriptor out_d = {0,DTYPE_T,CLASS_S,0};
+    struct descriptor out_d = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
     out_d.length = (unsigned short)strlen(argv[2]);
     out_d.pointer = argv[2];
     TdiExecute(&out_unit_other,&out_d,&output_unit MDS_END_ARG);
@@ -87,7 +87,7 @@ static void tdiputs(char *line)
 {
   static EMPTYXD(ans);
   static DESCRIPTOR(write_it,"WRITE(_OUTPUT_UNIT,$)");
-  struct descriptor line_d = {0, DTYPE_T,CLASS_S,0};
+  struct descriptor line_d = DESCRIPTOR_INIT(0, DTYPE_T,CLASS_S,0);
   line_d.length = (unsigned short)strlen(line);
   line_d.pointer = line;
   if (line[line_d.length-1]=='\n') line_d.length--;

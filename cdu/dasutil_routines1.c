@@ -323,7 +323,7 @@ int   show_timer()
     emsec = (nowTime.tv_usec-startTime.tv_usec) / 10000;
     umsec = (rnow.ru_utime.tv_usec-base.ru_utime.tv_usec) / 10000;
     smsec = (rnow.ru_stime.tv_usec-base.ru_stime.tv_usec) / 10000;
-    fprintf(stderr,"elapsed=%d.%02d user=%d.%02d sys=%d.%02d sf=%d hf=%d\n",
+    fprintf(stderr,"elapsed=%ld.%02d user=%ld.%02d sys=%ld.%02d sf=%ld hf=%ld\n",
         nowTime.tv_sec-startTime.tv_sec,emsec,
         rnow.ru_utime.tv_sec-base.ru_utime.tv_sec,umsec,
         rnow.ru_stime.tv_sec-base.ru_stime.tv_sec,smsec,
@@ -823,7 +823,7 @@ int   longToken(
     int   tknLen;
     char  plusSign;
 
-    token = dsc_token->dscA_pointer;
+    token = dsc_token->pointer;
     p = *s;
     p = nonblank(p);
     if (!p)
@@ -889,10 +889,10 @@ int   doubleToken(
     int   tknLen;
     char  utilString[80];
     static struct descriptor  dsc_utilString = {
-            sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0 };
+            sizeof(utilString)-1,DTYPE_T,CLASS_S,0 };
 
-    dsc_utilString.dscA_pointer = utilString;
-    token = dsc_token->dscA_pointer;
+    dsc_utilString.pointer = utilString;
+    token = dsc_token->pointer;
     p = *s;
     p = nonblank(p);
     if (!p)
@@ -980,11 +980,11 @@ int   deltatimeToken(		/* Returns: status			*/
     char  hundString[8];
     char  utilString[80];
     static struct descriptor  dsc_utilString = {
-            sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0 };
+            sizeof(utilString)-1,DTYPE_T,CLASS_S,0 };
     static char  token[20];
     static DESCRIPTOR(dsc_token,token);
 
-    dsc_utilString.dscA_pointer = utilString;
+    dsc_utilString.pointer = utilString;
     sts = ascToken(pp,&dsc_utilString,0,"0123456789-:.");
     if (!sts)
         return(0);
@@ -995,14 +995,14 @@ int   deltatimeToken(		/* Returns: status			*/
 			/*------------------- day...--------------------*/
     if (isdigit(*p))
        {		/* string starts with decimal digit ...		*/
-        sts = longToken(&p,&dsc_token,0,&kk);
+	 sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
         if (!p || *p!='-')
             day = 0;
         else
            {
             day = kk;
             p++;
-            sts = longToken(&p,&dsc_token,0,&kk);
+            sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
            }
        }
     else
@@ -1012,24 +1012,24 @@ int   deltatimeToken(		/* Returns: status			*/
             p++;
         if (!(isdigit(*p) || *p==':'))
             return(0);			/*---------------> return: err	*/
-        sts = longToken(&p,&dsc_token,0,&kk);
+        sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
        }
 			/*-------------------- hr...--------------------*/
     hr = sts ? kk : 0;
     if (p && *p==':')  p++;
 
 			/*------------------- min...--------------------*/
-    sts = longToken(&p,&dsc_token,0,&kk);
+    sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
     min = sts ? kk : 0;
     if (p && *p==':')  p++;
 
 			/*------------------- sec...--------------------*/
-    sts = longToken(&p,&dsc_token,0,&kk);
+    sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
     sec = sts ? kk : 0;
     if (p && *p=='.')  p++;
 
 			/*------------------ hund...--------------------*/
-    sts = longToken(&p,&dsc_token,0,&kk);
+    sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
     hund = sts ? kk : 0;
     if (sts)
         sprintf(hundString,".%.3s",token);
@@ -1048,11 +1048,11 @@ int   deltatimeToken(		/* Returns: status			*/
 
     sprintf(token,"%d-%d:%d:%d%s",day,hr,min,sec,hundString);
     k = strlen(token);
-    if (k > dsc->dscW_length)
-        k = dsc->dscW_length;
-    strncpy(dsc->dscA_pointer,token,k);
-    if (k < dsc->dscW_length)
-        dsc->dscA_pointer[k] = '\0';
+    if (k > dsc->length)
+        k = dsc->length;
+    strncpy(dsc->pointer,token,k);
+    if (k < dsc->length)
+        dsc->pointer[k] = '\0';
     if (utknlen)
         *utknlen = k;
     if (uval)

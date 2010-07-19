@@ -51,7 +51,7 @@ int TclDoMethod()
     static void  *arglist[256] = {(void *)2,&nid_dsc,&method};
 
     cli_get_value("OBJECT",&object);
-    sts = TreeFindNode(object.dscA_pointer,&nid);
+    sts = TreeFindNode(object.pointer,&nid);
     if (sts & 1)
        {
         do_it = (TreeIsOn(nid) | cli_present("OVERRIDE")) & 1;
@@ -78,7 +78,7 @@ int TclDoMethod()
                     sts = TdiCompile(&arg,&xdarg[argc] MDS_END_ARG);
                     if (sts & 1)
                        {
-                        arglist[argc + 3] = xdarg[argc].dscA_pointer;
+                        arglist[argc + 3] = xdarg[argc].pointer;
                         argc++;
                        }
                     else
@@ -90,7 +90,7 @@ int TclDoMethod()
 #ifdef vms
                 arglist[0] = (void *)(argc + 2);
 #else
-                dometh_stat_d.dscA_pointer = (char *)&dometh_stat;
+                dometh_stat_d.pointer = (char *)&dometh_stat;
                 arglist[argc+3] = &dometh_stat_d;
                 arglist[argc+4] = MdsEND_ARG;
                 arglist[0] = (argc + 4)+(char *)0;

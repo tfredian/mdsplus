@@ -41,7 +41,10 @@
 #define   NciV_NON_VMS                3
 #define   NciM_EXTENDED_NCI        0x10
 #define   NciV_EXTENDED_NCI           4
-
+#define   NciM_MEDIUM_DSC          0x20
+#define   NciV_MEDIUM_DSC             5
+#define   NciM_LARGE_DSC           0x40
+#define   NciV_LARGE_DSC              6    
 typedef struct nci
 {
   unsigned int  flags;

@@ -68,20 +68,20 @@ typedef unsigned int		FROP;
 
 #define DATUM(type, x, data) \
 	STATIC_CONSTANT type			d##x = data;\
-	STATIC_CONSTANT struct descriptor	Tdi##x##Constant = {sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x};\
+	STATIC_CONSTANT struct descriptor	Tdi##x##Constant = DESCRIPTOR_INIT(sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x);	\
 	struct descriptor *Tdi3##x(){return &Tdi##x##Constant;}
 
 #define DERR(type, x, data, error) \
 	STATIC_CONSTANT type			d##x = data;\
         STATIC_CONSTANT type			e##x = error;\
-	STATIC_CONSTANT struct descriptor	dd##x = {sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x};\
-	STATIC_CONSTANT struct descriptor	de##x = {sizeof(type), DTYPE_##type, CLASS_S, (char *)&e##x};\
+	STATIC_CONSTANT struct descriptor	dd##x = DESCRIPTOR_INIT(sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x); \
+	STATIC_CONSTANT struct descriptor	de##x = DESCRIPTOR_INIT(sizeof(type), DTYPE_##type, CLASS_S, (char *)&e##x); \
         STATIC_CONSTANT DESCRIPTOR_WITH_ERROR(Tdi##x##Constant,&dd##x,&de##x);\
 	struct descriptor *Tdi3##x(){return (struct descriptor *)&Tdi##x##Constant;}
 
 #define UNITS(type, x, data, units) \
 	STATIC_CONSTANT type			d##x = data;\
-	STATIC_CONSTANT struct descriptor	dd##x = {sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x};\
+	STATIC_CONSTANT struct descriptor	dd##x = DESCRIPTOR_INIT(sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x); \
 	STATIC_CONSTANT DESCRIPTOR(		du##x, units);\
 	STATIC_CONSTANT DESCRIPTOR_WITH_UNITS(Tdi##x##Constant,&dd##x,&du##x);\
 	struct descriptor *Tdi3##x(){return (struct descriptor *)&Tdi##x##Constant;}
@@ -90,8 +90,8 @@ typedef unsigned int		FROP;
 	STATIC_CONSTANT type			d##x = data;\
 	STATIC_CONSTANT type			e##x = error;\
 	STATIC_CONSTANT DESCRIPTOR(du##x, units);\
-	STATIC_CONSTANT struct descriptor	dd##x = {sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x};\
-	STATIC_CONSTANT struct descriptor	de##x = {sizeof(type), DTYPE_##type, CLASS_S, (char *)&e##x};\
+	STATIC_CONSTANT struct descriptor	dd##x = DESCRIPTOR_INIT(sizeof(type), DTYPE_##type, CLASS_S, (char *)&d##x); \
+	STATIC_CONSTANT struct descriptor	de##x = DESCRIPTOR_INIT(sizeof(type), DTYPE_##type, CLASS_S, (char *)&e##x); \
         STATIC_CONSTANT DESCRIPTOR_WITH_ERROR(dwe##x,&dd##x,&de##x);\
 	STATIC_CONSTANT DESCRIPTOR_WITH_UNITS(Tdi##x##Constant,&dwe##x,&du##x);\
         struct descriptor *Tdi3##x(){return (struct descriptor *)&Tdi##x##Constant;}

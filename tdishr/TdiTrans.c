@@ -213,68 +213,71 @@ unsigned char			out_dtype;
 	if (psig) ndim = psig->ndesc-2;
 	else ndim = -1;
 	if (opcode == OpcFirstLoc || opcode == OpcLastLoc) {
-		status = MdsGet1DxA((struct descriptor_a *)pa, &digits, &out_dtype, out_ptr);
-		if (status & 1) status = TdiConvert(&zero, out_ptr->pointer MDS_END_ARG);
+	  unsigned short digits_s=(unsigned short)digits;
+	  status = MdsGet1DxA((struct descriptor_a *)pa, &digits_s, &out_dtype, out_ptr);
+	  if (status & 1) status = TdiConvert(&zero, out_ptr->pointer MDS_END_ARG);
 	}
 	/***************************
 	Shape multiplied for DIM-th.
 	***************************/
 	else if (opcode == OpcReplicate) {
-		if (dim < ndim) psig->dimensions[dim] = 0;
-		pmask = (struct descriptor *)&ncopies;
-		/** scalar to simple vector **/
-		if (rank == 0) _MOVC3(head, (char *)&arr0, (char *)&arr);
-		/** simple and coefficient vector **/
-		else {	_MOVC3(head, (char *)pa, (char *)&arr);
-			arr.m[dim] *= ncopies;
-		}
-		arr.arsize *= ncopies;
-		status = MdsGet1DxA((struct descriptor_a *)&arr, &digits, &out_dtype, out_ptr);
+	  unsigned short digits_s=(unsigned short)digits;
+	  if (dim < ndim) psig->dimensions[dim] = 0;
+	  pmask = (struct descriptor *)&ncopies;
+	  /** scalar to simple vector **/
+	  if (rank == 0) _MOVC3(head, (char *)&arr0, (char *)&arr);
+	  /** simple and coefficient vector **/
+	  else {	_MOVC3(head, (char *)pa, (char *)&arr);
+	    arr.m[dim] *= ncopies;
+	  }
+	  arr.arsize *= ncopies;
+	  status = MdsGet1DxA((struct descriptor_a *)&arr, &digits_s, &out_dtype, out_ptr);
 	}
 	/*************************************
 	Shape gets new dimension after DIM-th.
 	*************************************/
 	else if (opcode == OpcSpread) {
-		if (ndim > dim) {
-		  EMPTYXD(tmpxd);
-			*(struct descriptor_signal *)&tmpsig = *psig;
-			++tmpsig.ndesc;
-			for (j = ndim; --j >= dim;) tmpsig.dimensions[j+1] = psig->dimensions[j];
-			tmpsig.dimensions[dim] = 0;
-			for (j = dim; --j >= 0;) tmpsig.dimensions[j] = psig->dimensions[j];
-			tmpsig.raw = 0;
-			tmpsig.data = 0;
-			status = MdsCopyDxXd((struct descriptor *)&tmpsig, &tmpxd); 
-			status = MdsCopyDxXd((struct descriptor *)&tmpxd, &sig[0]);
-                        MdsFree1Dx(&tmpxd,NULL);
-			if (!(status  & 1)) goto err;
-		}
-		pmask = (struct descriptor *)&ncopies;
-		/** scalar to simple vector **/
-		if (rank == 0) _MOVC3(head, (char *)&arr0, (char *)&arr);
-		else if (rank >= MAXDIM) status = TdiNDIM_OVER;
-		/** coefficient vector **/
-		else if (pa->aflags.coeff) {
-			_MOVC3(head, (char *)pa, (char *)&arr);
-			_MOVC3((short)(sizeof(int)*(rank-dim)*2),	(char *)&arr.m[rank+2*dim],
-									(char *)&arr.m[rank+2*dim+3]);
-			_MOVC3((short)(sizeof(int)*(rank-dim)),	(char *)&arr.m[dim],
-									(char *)&arr.m[dim+1]);
-			arr.m[dim] = ncopies;
-			arr.m[rank+2*dim+1] = 0;
-			arr.m[rank+2*dim+2] = ncopies - 1;
-			arr.dimct++;
-		}
-		/** simple vector to 2-D **/
-		else {
-			_MOVC3(head, (char *)pa, (char *)&arr);
-			arr.dimct = 2;
-			arr.aflags.coeff = 1;
-			arr.m[1] = arr.m[0] = (int)pa->arsize / (int)pa->length;
-			arr.m[dim] = ncopies;
-		}
-		arr.arsize *= ncopies;
-		if (status & 1) status = MdsGet1DxA((struct descriptor_a *)&arr, &digits, &out_dtype, out_ptr);
+	  unsigned short digits_s=(unsigned short)digits;
+	  if (ndim > dim) {
+	    EMPTYXD(tmpxd);
+	    *(struct descriptor_signal *)&tmpsig = *psig;
+	    ++tmpsig.ndesc;
+	    for (j = ndim; --j >= dim;) tmpsig.dimensions[j+1] = psig->dimensions[j];
+	    tmpsig.dimensions[dim] = 0;
+	    for (j = dim; --j >= 0;) tmpsig.dimensions[j] = psig->dimensions[j];
+	    tmpsig.raw = 0;
+	    tmpsig.data = 0;
+	    status = MdsCopyDxXd((struct descriptor *)&tmpsig, &tmpxd); 
+	    status = MdsCopyDxXd((struct descriptor *)&tmpxd, &sig[0]);
+	    MdsFree1Dx(&tmpxd,NULL);
+	    if (!(status  & 1)) goto err;
+	  }
+	  pmask = (struct descriptor *)&ncopies;
+	  /** scalar to simple vector **/
+	  if (rank == 0) _MOVC3(head, (char *)&arr0, (char *)&arr);
+	  else if (rank >= MAXDIM) status = TdiNDIM_OVER;
+	  /** coefficient vector **/
+	  else if (pa->aflags.coeff) {
+	    _MOVC3(head, (char *)pa, (char *)&arr);
+	    _MOVC3((short)(sizeof(int)*(rank-dim)*2),	(char *)&arr.m[rank+2*dim],
+		   (char *)&arr.m[rank+2*dim+3]);
+	    _MOVC3((short)(sizeof(int)*(rank-dim)),	(char *)&arr.m[dim],
+		   (char *)&arr.m[dim+1]);
+	    arr.m[dim] = ncopies;
+	    arr.m[rank+2*dim+1] = 0;
+	    arr.m[rank+2*dim+2] = ncopies - 1;
+	    arr.dimct++;
+	  }
+	  /** simple vector to 2-D **/
+	  else {
+	    _MOVC3(head, (char *)pa, (char *)&arr);
+	    arr.dimct = 2;
+	    arr.aflags.coeff = 1;
+	    arr.m[1] = arr.m[0] = (int)pa->arsize / (int)pa->length;
+	    arr.m[dim] = ncopies;
+	  }
+	  arr.arsize *= ncopies;
+	  if (status & 1) status = MdsGet1DxA((struct descriptor_a *)&arr, &digits_s, &out_dtype, out_ptr);
 	}
 	/***************
 	Overwrite input.
@@ -287,33 +290,36 @@ unsigned char			out_dtype;
 	Same shape as input.
 	*******************/
 	else if (pfun->f2 == Tdi2Sign) {
-		if (psig && rank <= ndim) pmask = psig->dimensions[dim];
-		else pmask = 0;
-		status = MdsGet1DxA((struct descriptor_a *)pa, &digits, &out_dtype, out_ptr);
+	  unsigned short digits_s=(unsigned short)digits;
+	  if (psig && rank <= ndim) pmask = psig->dimensions[dim];
+	  else pmask = 0;
+	  status = MdsGet1DxA((struct descriptor_a *)pa, &digits_s, &out_dtype, out_ptr);
 	}
 	/****************
 	Subscript vector.
 	****************/
 	else if (pfun->f2 == Tdi2Mask2) {
-		psig = 0;
-		_MOVC3(head, (char *)&arr0, (char *)&arr);
-		arr.arsize = arr0.length * rank;
-		status = MdsGet1DxA((struct descriptor_a *)&arr, &digits, &out_dtype, out_ptr);
+	  unsigned short digits_s=(unsigned short)digits;
+	  psig = 0;
+	  _MOVC3(head, (char *)&arr0, (char *)&arr);
+	  arr.arsize = arr0.length * rank;
+	  status = MdsGet1DxA((struct descriptor_a *)&arr, &digits_s, &out_dtype, out_ptr);
 	}
 	/*******************
 	Rank reduced by one.
 	*******************/
 	else if (dim >= 0 && pa->aflags.coeff && rank > 1) {
-		if (dim < ndim) --psig->ndesc;
-		for (j = dim; ++j < ndim;) psig->dimensions[j-1] = psig->dimensions[j];
-		_MOVC3(head, (char *)pa, (char *)&arr);
-		arr.arsize /= arr.m[dim];
-		_MOVC3((short)(sizeof(int)*(rank-dim-1)),	(char *)&arr.m[dim+1],
-								(char *)&arr.m[dim]);
-		_MOVC3((short)(sizeof(int)*(rank-dim-1)*2),	(char *)&arr.m[rank+2*dim+2],
-								(char *)&arr.m[rank+2*dim-1]);
-		--arr.dimct;
-		status = MdsGet1DxA((struct descriptor_a *)&arr, &digits, &out_dtype, out_ptr);
+	  unsigned short digits_s=(unsigned short)digits;
+	  if (dim < ndim) --psig->ndesc;
+	  for (j = dim; ++j < ndim;) psig->dimensions[j-1] = psig->dimensions[j];
+	  _MOVC3(head, (char *)pa, (char *)&arr);
+	  arr.arsize /= arr.m[dim];
+	  _MOVC3((short)(sizeof(int)*(rank-dim-1)),	(char *)&arr.m[dim+1],
+		 (char *)&arr.m[dim]);
+	  _MOVC3((short)(sizeof(int)*(rank-dim-1)*2),	(char *)&arr.m[rank+2*dim+2],
+		 (char *)&arr.m[rank+2*dim-1]);
+	  --arr.dimct;
+	  status = MdsGet1DxA((struct descriptor_a *)&arr, &digits_s, &out_dtype, out_ptr);
 	}
 	/*************
 	Scalar result.

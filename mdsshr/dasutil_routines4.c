@@ -167,12 +167,12 @@ int   str_free1_dx(			/* Return: status		*/
         return(1);
        }
 
-    p = dsc->dscA_pointer;
+    p = dsc->pointer;
     if (p)
        {
         free(p);
-        dsc->dscA_pointer = 0;
-        dsc->dscW_length = 0;
+        dsc->pointer = 0;
+        dsc->length = 0;
        }
     return(1);
    }
@@ -199,8 +199,8 @@ int   str_trim(				/* Return: status		*/
     if (is_cdescr(src) || is_ddescr(src))
        {
         dsc = src;
-        p = dsc->dscA_pointer;
-        k = dsc->dscW_length;
+        p = dsc->pointer;
+        k = dsc->length;
        }
     else
        {
@@ -225,13 +225,13 @@ int   str_trim(				/* Return: status		*/
 		 *------------------------------------------------------*/
     if (is_ddescr(dsc_ret))
        {
-        if (dsc_ret->dscW_length != k)
+        if (dsc_ret->length != k)
            {
-            if (dsc_ret->dscA_pointer)
-                free(dsc_ret->dscA_pointer);
-            dsc_ret->dscA_pointer = malloc(k+1);
-            dsc_ret->dscW_length = k;
-            if (!dsc_ret->dscA_pointer)
+            if (dsc_ret->pointer)
+                free(dsc_ret->pointer);
+            dsc_ret->pointer = malloc(k+1);
+            dsc_ret->length = k;
+            if (!dsc_ret->pointer)
                {
                 printf("Out of space!");
 #ifdef vms
@@ -241,11 +241,11 @@ int   str_trim(				/* Return: status		*/
                }
            }
        }
-    if (k > dsc_ret->dscW_length)
-        k = dsc_ret->dscW_length;
-    strncpy(dsc_ret->dscA_pointer,p,k);
-    if (k < dsc_ret->dscW_length)
-        dsc_ret->dscA_pointer[k] = '\0';
+    if (k > dsc_ret->length)
+        k = dsc_ret->length;
+    strncpy(dsc_ret->pointer,p,k);
+    if (k < dsc_ret->length)
+        dsc_ret->pointer[k] = '\0';
 
     return(1);
    }
@@ -270,8 +270,8 @@ int   str_copy_dx(			/* Return: status		*/
     if (is_cdescr(source) || is_ddescr(source))
        {
         dsc = source;
-        p = dsc->dscA_pointer;
-	for (k=0, p=dsc->dscA_pointer; p && k < dsc->dscW_length && p[k]!='\0'; k++); 
+        p = dsc->pointer;
+	for (k=0, p=dsc->pointer; p && k < dsc->length && p[k]!='\0'; k++); 
        }
     else
        {
@@ -289,28 +289,28 @@ int   str_copy_dx(			/* Return: status		*/
             str_free1_dx(dsc_ret);
             return(1);			/*---------------------> return	*/
            }
-        if (k != dsc_ret->dscW_length)
+        if (k != dsc_ret->length)
            {
-            if (dsc_ret->dscA_pointer)
-                dsc_ret->dscA_pointer = realloc(dsc_ret->dscA_pointer,k+1);
+            if (dsc_ret->pointer)
+                dsc_ret->pointer = realloc(dsc_ret->pointer,k+1);
             else
-                dsc_ret->dscA_pointer = malloc(k+1);
-            if (!dsc_ret->dscA_pointer)
+                dsc_ret->pointer = malloc(k+1);
+            if (!dsc_ret->pointer)
                {
                 printf("Out of space!");
                 exit(0);
                }
-            dsc_ret->dscW_length = k;
+            dsc_ret->length = k;
            }
-        dsc_ret->dscA_pointer[k] = '\0';
+        dsc_ret->pointer[k] = '\0';
        }
 
-    if (k > dsc_ret->dscW_length)
-        k = dsc_ret->dscW_length;
+    if (k > dsc_ret->length)
+        k = dsc_ret->length;
     if (k)
-        strncpy(dsc_ret->dscA_pointer,p,k);
-    if (k < dsc_ret->dscW_length)		/* i.e., a Static dsc	*/
-        dsc_ret->dscA_pointer[k] = '\0';
+        strncpy(dsc_ret->pointer,p,k);
+    if (k < dsc_ret->length)		/* i.e., a Static dsc	*/
+        dsc_ret->pointer[k] = '\0';
 
     return(1);
    }
@@ -343,12 +343,12 @@ int   str_replace(			/* Return: status		*/
        }
 
     if (is_cdescr(source) || is_ddescr(source))
-        p = ((struct descriptor *)source)->dscA_pointer;
+        p = ((struct descriptor *)source)->pointer;
     else
         p = source;
 
     if (is_cdescr(replaceString) || is_ddescr(replaceString))
-        v = ((struct descriptor *)replaceString)->dscA_pointer;
+        v = ((struct descriptor *)replaceString)->pointer;
     else
         v = replaceString;
 
@@ -407,10 +407,10 @@ int   str_append(			/* Return: status		*/
     if (is_cdescr(source) || is_ddescr(source))
        {
         dsc = source;
-        p = dsc->dscA_pointer;
+        p = dsc->pointer;
         k = p ? strlen(p) : 0;
-        if (k > dsc->dscW_length)
-            k = dsc->dscW_length;
+        if (k > dsc->length)
+            k = dsc->length;
        }
     else
        {
@@ -421,32 +421,32 @@ int   str_append(			/* Return: status		*/
 		/*-------------------------------------------------------
 		 * Prepare dsc_ret ...
 		 *------------------------------------------------------*/
-    len = dsc_ret->dscA_pointer ? strlen(dsc_ret->dscA_pointer) : 0;
-    if (len > dsc_ret->dscW_length)
-        len = dsc_ret->dscW_length;
+    len = dsc_ret->pointer ? strlen(dsc_ret->pointer) : 0;
+    if (len > dsc_ret->length)
+        len = dsc_ret->length;
 
     nchar = len+k;		/* num chars in new string		*/
     if (is_ddescr(dsc_ret))
        {			/* if dsc_ret is a dynamic descriptor ...*/
-        if (dsc_ret->dscA_pointer)
-            dsc_ret->dscA_pointer = realloc(dsc_ret->dscA_pointer,nchar+1);
+        if (dsc_ret->pointer)
+            dsc_ret->pointer = realloc(dsc_ret->pointer,nchar+1);
         else
-            dsc_ret->dscA_pointer = malloc(nchar+1);
-        if (!dsc_ret->dscA_pointer)
+            dsc_ret->pointer = malloc(nchar+1);
+        if (!dsc_ret->pointer)
            {
             printf("Out of space!");
             exit(0);
            }
-        dsc_ret->dscW_length = nchar;
-        dsc_ret->dscA_pointer[nchar] = '\0';
+        dsc_ret->length = nchar;
+        dsc_ret->pointer[nchar] = '\0';
        }
 
-    if (nchar > dsc_ret->dscW_length)
-        k = dsc_ret->dscW_length - len;
+    if (nchar > dsc_ret->length)
+        k = dsc_ret->length - len;
     if (k > 0)
-        strncpy(dsc_ret->dscA_pointer+len,p,k);
-    if (nchar < dsc_ret->dscW_length)		/* i.e., a Static dsc	*/
-        dsc_ret->dscA_pointer[nchar] = '\0';
+        strncpy(dsc_ret->pointer+len,p,k);
+    if (nchar < dsc_ret->length)		/* i.e., a Static dsc	*/
+        dsc_ret->pointer[nchar] = '\0';
 
     return(1);
    }
@@ -496,8 +496,8 @@ char  *str_concat(		/* Returns: ptr to null-terminated string*/
         if (is_cdescr(argList[i]) || is_ddescr(argList[i]))
            {
             dsc = argList[i];
-            p = dsc->dscA_pointer;
-            kk = dsc->dscW_length;
+            p = dsc->pointer;
+            kk = dsc->length;
             for (k=0 ; k<kk && p[k] ; k++)
                 ;		/* null may occur before "kk" chars	*/
            }
@@ -521,8 +521,8 @@ char  *str_concat(		/* Returns: ptr to null-terminated string*/
         if (is_cdescr(argList[i]) || is_ddescr(argList[i]))
            {
             dsc = argList[i];
-            p = dsc->dscA_pointer;
-            kk = dsc->dscW_length;
+            p = dsc->pointer;
+            kk = dsc->length;
             for (k=0 ; k<kk && p[k] ; k++)
                 ;		/* actual strlen may be < "kk" chars	*/
            }
@@ -542,22 +542,22 @@ char  *str_concat(		/* Returns: ptr to null-terminated string*/
        {			/* if dsc_dest is a dynamic descriptor ...*/
         str_free1_dx(dsc_dest);
 
-        dsc_dest->dscA_pointer = tmp;	/* valid even for zero-length str */
-        dsc_dest->dscW_length = nchar;
+        dsc_dest->pointer = tmp;	/* valid even for zero-length str */
+        dsc_dest->length = nchar;
        }
     else
        {			/* else, dsc_ret is a Static descriptor	*/
-        if (nchar > dsc_dest->dscW_length)
-            nchar = dsc_dest->dscW_length;
+        if (nchar > dsc_dest->length)
+            nchar = dsc_dest->length;
 
-        strncpy(dsc_dest->dscA_pointer,tmp,nchar);
+        strncpy(dsc_dest->pointer,tmp,nchar);
         free(tmp);
 
-        if (nchar < dsc_dest->dscW_length)
-            dsc_dest->dscA_pointer[nchar] = '\0';
+        if (nchar < dsc_dest->length)
+            dsc_dest->pointer[nchar] = '\0';
        }
 
-    return(dsc_dest->dscA_pointer);
+    return(dsc_dest->pointer);
    }
 
 
@@ -577,8 +577,7 @@ int   str_element(			/* Returns: status		*/
     char  *p,*p2;
     char  *srcBase;
     struct descriptor  *dsc;
-    struct descriptor  dsc_substring = {
-                            0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0} ;
+    struct descriptor  dsc_substring = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0) ;
 
 		/*======================================================
 		 * Set up substring descriptor ...
@@ -586,10 +585,10 @@ int   str_element(			/* Returns: status		*/
     if (is_cdescr(source) || is_ddescr(source))
        {
         dsc = source;
-        srcBase = dsc->dscA_pointer;
+        srcBase = dsc->pointer;
         k = srcBase ? strlen(srcBase) : 0;
-        if (k > dsc->dscW_length)
-            k = dsc->dscW_length;
+        if (k > dsc->length)
+            k = dsc->length;
        }
     else
        {
@@ -620,8 +619,8 @@ int   str_element(			/* Returns: status		*/
     if ((p2 - srcBase) > k)
         p2 = srcBase + k;
 
-    dsc_substring.dscA_pointer = p;
-    dsc_substring.dscW_length = p2 - p;
+    dsc_substring.pointer = p;
+    dsc_substring.length = p2 - p;
     return(str_copy_dx(dsc_ret,&dsc_substring));
    }
 
@@ -631,7 +630,7 @@ int   str_element(			/* Returns: status		*/
 	 * str_dupl_char:
 	 * Duplicate character a number of times ...
 	 ****************************************************************/
-char  *str_dupl_char(			/* Returns: dsc_ret->dscA_pointer */
+char  *str_dupl_char(			/* Returns: dsc_ret->pointer */
     struct descriptor  *dsc_ret		/* <w> Destination string	*/
    ,int   icnt				/* <r> duplication count	*/
    ,char  c				/* <r> character to duplicate	*/
@@ -652,16 +651,16 @@ char  *str_dupl_char(			/* Returns: dsc_ret->dscA_pointer */
     p[icnt] = '\0';
     str_copy_dx(dsc_ret,p);
     free(p);
-    return(dsc_ret->dscA_pointer);
+    return(dsc_ret->pointer);
    }
 
 
 struct descriptor *cstring_to_dsc( char *src) 
 {
 /*********** NOTE THIS ROUTINE IS NOT THREADSAFE ****************/
-  static struct descriptor ans = {0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0} ;
-  ans.dscW_length = strlen(src);
-  ans.dscA_pointer = src;
+  static struct descriptor ans = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0) ;
+  ans.length = strlen(src);
+  ans.pointer = src;
   return &ans;
 }
 

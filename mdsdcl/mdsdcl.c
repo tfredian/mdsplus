@@ -62,10 +62,10 @@ int  main(
         if (IS_QUALIFIER_CHARACTER(*argv[i]))
            {
             str_copy_dx(&dsc_cmdline,argv[i]);
-            if (dsc_cmdline.dscW_length == 1)
+            if (dsc_cmdline.length == 1)
                 str_append(&dsc_cmdline,argv[++i]);
 
-            p = (char *)dsc_cmdline.dscA_pointer + 1;
+            p = (char *)dsc_cmdline.pointer + 1;
             k = cmd_lookup(&p,cmd0,0,0,0);
             if (!k || (++i >= argc))
                 exit(MdsMsg(0,"Bad command line"));
@@ -74,7 +74,7 @@ int  main(
 			 * The only legitimate command is "PREP" ...
 			 *-----------------------------------------------*/
             str_copy_dx(&dsc_cmdline,argv[i++]);
-            sts = mdsdcl_do_command(dsc_cmdline.dscA_pointer);
+            sts = mdsdcl_do_command(dsc_cmdline.pointer);
             if (~sts & 1)
                 exit(sts);
             str_free1_dx(&dsc_cmdline);

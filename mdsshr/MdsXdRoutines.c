@@ -52,7 +52,7 @@ int  MdsGet1Dx(unsigned long *length_ptr, unsigned char *dtype_ptr, struct descr
       status = 1;
     if (status & 1)
     {
-      dsc_ptr->length = 0;
+      dsc_ptr->len_fill = 0;
       dsc_ptr->l_length = *length_ptr;
       dsc_ptr->class = CLASS_XD;
       dsc_ptr->dtype = *dtype_ptr;

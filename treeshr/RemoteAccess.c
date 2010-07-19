@@ -89,7 +89,7 @@ static void UnlockMdsShrMutex(){}
 STATIC_ROUTINE int FindImageSymbol(char *name, void **sym)
 {
   STATIC_CONSTANT DESCRIPTOR(image,"MdsIpShr");
-  struct descriptor symname = {0, DTYPE_T, CLASS_S, 0};
+  struct descriptor symname = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
   STATIC_CONSTANT int mdslib_library_linked = 0;
   
 /*
@@ -1135,7 +1135,7 @@ int MDS_IO_OPEN(char *filename, int options, mode_t mode)
     fd = open(filename, options | O_BINARY | O_RANDOM, mode);
 #ifndef HAVE_WINDOWS_H
     if ((fd != -1) && ((options & O_CREAT) != 0)) {
-      struct descriptor cmd_d={0,DTYPE_T,CLASS_S,0};
+      struct descriptor cmd_d=DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
       char *cmd=(char *)malloc(64+strlen(filename));
       sprintf(cmd,"SetMdsplusFileProtection %s 2> /dev/null",filename);
       cmd_d.length=strlen(cmd);

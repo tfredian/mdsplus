@@ -124,22 +124,22 @@ int   mdsdcl_spawn(			/* Return: status		*/
         lib$signal(sts,0);
 #else				/*---------------- unix ----------------*/
     k = 0;
-    if (dsc_cmd.dscA_pointer)
+    if (dsc_cmd.pointer)
     {
-        k += sprintf(cmdstring+k,"%s",dsc_cmd.dscA_pointer);
+        k += sprintf(cmdstring+k,"%s",dsc_cmd.pointer);
         if (cmdstring[0] == '"' && cmdstring[strlen(cmdstring)-1] == '"')
 	{
-          k = sprintf(cmdstring,"%s",dsc_cmd.dscA_pointer+1);
+          k = sprintf(cmdstring,"%s",dsc_cmd.pointer+1);
           k--;
           cmdstring[k]='\0';
         }
     }
-    if (dsc_input.dscA_pointer)
-        k += sprintf(cmdstring+k," <%s",dsc_input.dscA_pointer);
-    if (dsc_output.dscA_pointer)
-        k += sprintf(cmdstring+k," >%s",dsc_output.dscA_pointer);
-    cmdstring_d.dscW_length = k;
-    cmdstring_d.dscA_pointer = cmdstring;
+    if (dsc_input.pointer)
+        k += sprintf(cmdstring+k," <%s",dsc_input.pointer);
+    if (dsc_output.pointer)
+        k += sprintf(cmdstring+k," >%s",dsc_output.pointer);
+    cmdstring_d.length = k;
+    cmdstring_d.pointer = cmdstring;
     sts = LibSpawn(&cmdstring_d,waitFlag,notifyFlag);
 #endif
     return(sts == 0);

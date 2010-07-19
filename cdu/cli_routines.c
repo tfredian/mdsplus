@@ -91,7 +91,7 @@ static int   init_value(	/* Return: initial "processing" status	*/
     if (val->valA_default)
        {
         str_copy_dx(&val->val_dsc,val->valA_default);
-        val->valA_substring = val->val_dsc.dscA_pointer;
+        val->valA_substring = val->val_dsc.pointer;
         sts = CLI_STS_DEFAULTED;
        }
     return(sts);
@@ -368,7 +368,7 @@ static int   set_value(		/* Return: CLI_STS_xxxx			*/
     if (~sts & 1)
         return(cli_error(CLI_STS_BADLINE,"Invalid data in line"));
 
-    val->valA_substring = val->val_dsc.dscA_pointer;
+    val->valA_substring = val->val_dsc.pointer;
 
 		/*=======================================================
 		 * Keywords ?
@@ -380,7 +380,7 @@ static int   set_value(		/* Return: CLI_STS_xxxx			*/
 		 *...yes: check each input for keyword ...
 		 *------------------------------------------------------*/
     cmd = make_lookup_keyword(val->valA_userType);
-    p = val->val_dsc.dscA_pointer;
+    p = val->val_dsc.pointer;
     str_free1_dx(&dsc_temp);
     keycnt = 0;
     for ( ; p ; keycnt++)
@@ -613,8 +613,8 @@ static void  make_entityString(
     if (is_cdescr(entity) || is_ddescr(entity))
        {
         dsc = entity;
-        p = dsc->dscA_pointer;
-        k = dsc->dscW_length;
+        p = dsc->pointer;
+        k = dsc->length;
        }
     else
        {
@@ -672,7 +672,7 @@ static struct cduEntity  *find_entity(	/* Return: addr of struct	*/
             continue;
         if (val = e->entA_value)
            {
-            if ((t=val->val_dsc.dscA_pointer) && !strcmp(entity,t))
+            if ((t=val->val_dsc.pointer) && !strcmp(entity,t))
                 break;
            }
 /*        if (val = e->entA_value)
@@ -775,14 +775,14 @@ int   cli_dcl_parse(		/* Returns: status			*/
         if (is_cdescr(uprompt))
            {
             dsc = uprompt;
-            p = dsc->dscA_pointer;
-            k = dsc->dscW_length;
+            p = dsc->pointer;
+            k = dsc->length;
            }
         else if (is_ddescr(uprompt))
            {
             dsc = uprompt;
-            p = dsc->dscA_pointer;
-            k = dsc->dscW_length;
+            p = dsc->pointer;
+            k = dsc->length;
             if (!p && !k)
                {			/* null descriptor		*/
                 p = "Command> ";
@@ -808,7 +808,7 @@ int   cli_dcl_parse(		/* Returns: status			*/
         if (is_cdescr(command_string) || is_ddescr(command_string))
            {
             dsc = command_string;
-            p = dsc->dscA_pointer;
+            p = dsc->pointer;
            }
        }
     if (!p)
@@ -816,7 +816,7 @@ int   cli_dcl_parse(		/* Returns: status			*/
         sts = prompt_routine(prompt,&dsc_cmdline);
         if (~sts & 1)
             return(sts);		/*--------------------> return	*/
-        p = nonblank(dsc_cmdline.dscA_pointer);
+        p = nonblank(dsc_cmdline.pointer);
         if (!p)
             return(CLI_STS_NOCOMD);	/*---------> return: blank line	*/
        }
@@ -854,7 +854,7 @@ int   cli_dcl_parse(		/* Returns: status			*/
             sts = param_routine(prompt,&dsc_parameter);
             if (~sts & 1)
                 return(sts);		/*--------------------> return	*/
-            p = nonblank(dsc_parameter.dscA_pointer);
+            p = nonblank(dsc_parameter.pointer);
            }
         str_append(&dsc_cmdline," ");
         str_append(&dsc_cmdline,&dsc_parameter);
@@ -931,7 +931,7 @@ int   cli_get_value(		/* Return: status			*/
     struct cduEntity  *e;
     struct cduValue  *val;
     static struct descriptor  dsc_util = {
-                                0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0};
+                                0,DTYPE_T,CLASS_S,0};
 
     if (!currentSyntax)
         return(CLI_STS_IVREQTYP);
@@ -943,7 +943,7 @@ int   cli_get_value(		/* Return: status			*/
 		 *----------------------------------------------------*/
     p = 0;
     if (!strcmp(entityString,"$LINE"))
-        p = dsc_cmdline.dscA_pointer;
+        p = dsc_cmdline.pointer;
     else if (!strcmp(entityString,"$VERB"))
         p = currentSyntax->vrbA_name;
 
@@ -981,8 +981,8 @@ int   cli_get_value(		/* Return: status			*/
         p = val->valA_substring;
         p2 = strpbrk(p,"\01\02");	/* find delimter char	*/
         k = p2 ? (p2-p) : strlen(p);
-        dsc_util.dscW_length = k;
-        dsc_util.dscA_pointer = p;
+        dsc_util.length = k;
+        dsc_util.pointer = p;
         sts = str_copy_dx(dsc_ret,&dsc_util);
         val->valA_substring = p2;
        }
@@ -999,13 +999,13 @@ int   cli_get_value(		/* Return: status			*/
 #ifdef vms
     if (val->valL_flags & VAL_M_DELTATIME)
        {				/* VMS deltatime only ...	*/
-        p = strchr(dsc_ret->dscA_pointer,'-');
+        p = strchr(dsc_ret->pointer,'-');
         if (p)  *p = ' ';		/*..replace '-' with blank	*/
 
-        p = dsc_ret->dscA_pointer;
+        p = dsc_ret->pointer;
         k = strlen(p);
-        if (k < dsc_ret->dscW_length)
-            memset(p+k,' ',dsc_ret->dscW_length - k);
+        if (k < dsc_ret->length)
+            memset(p+k,' ',dsc_ret->length - k);
        }
 #endif
 

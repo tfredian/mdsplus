@@ -961,7 +961,7 @@ ZoneList *MdsZones=NULL;
 
 int TranslateLogicalXd(struct descriptor *in, struct descriptor_xd *out)
 {
-  struct descriptor out_dsc = {0,DTYPE_T,CLASS_S,0};
+  struct descriptor out_dsc = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
   int status = 0;
   char *in_c = MdsDescrToCstring(in);
   char *out_c = TranslateLogical(in_c);
@@ -1242,7 +1242,7 @@ int StrPosition(struct descriptor *source, struct descriptor *substring, int *st
 
 int StrCopyR(struct descriptor *dest, unsigned long *len, char *source)
 {
-  struct descriptor s = {0,DTYPE_T,CLASS_S,0};
+  struct descriptor s = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
   s.length = *len;
   s.pointer = source;
   return StrCopyDx(dest,&s);
@@ -1252,7 +1252,7 @@ int StrLenExtr(struct descriptor *dest, struct descriptor *source, unsigned long
 {
   unsigned long len = *len_in;
   unsigned long start = (*start_in > 1) ? *start_in : 1;
-  struct descriptor s = {0,DTYPE_T,CLASS_D,0};
+  struct descriptor s = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
   int status = StrGet1Dx(&len, &s);
   int i,j;
   memset(s.pointer,32,len);
@@ -1296,8 +1296,8 @@ int LibSFree1Dd(struct descriptor *out)
   
 int StrTrim(struct descriptor *out, struct descriptor *in, unsigned short *lenout)
 {
-  struct descriptor tmp = {0,DTYPE_T,CLASS_D,0};
-  struct descriptor s = {0,DTYPE_T,CLASS_S,0};
+  struct descriptor tmp = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+  struct descriptor s = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
   unsigned short i;
   for (i=in->length;i>0;i--) if (in->pointer[i-1] != 32 && in->pointer[i-1] != 9) break;
   StrCopyDx(&tmp,in);
@@ -1351,8 +1351,8 @@ int StrUpcase(struct descriptor *out, struct descriptor *in)
 
 int StrRight(struct descriptor *out, struct descriptor *in, unsigned short *start) 
 {
-  struct descriptor tmp = {0,DTYPE_T,CLASS_D,0};
-  struct descriptor s = {0,DTYPE_T,CLASS_S,0};
+  struct descriptor tmp = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+  struct descriptor s = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
   StrCopyDx(&tmp,in);
   s.length = (unsigned short)((int)in->length - *start + 1);
   s.pointer = tmp.pointer+(*start-1);
@@ -1739,7 +1739,7 @@ int StrAppend(struct descriptor *out, struct descriptor *tail)
 {
   if (tail->length != 0 && tail->pointer != NULL)
   {
-    struct descriptor new = {0,DTYPE_T,CLASS_D,0};
+    struct descriptor new = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
     unsigned long len = out->length + tail->length;
     /*    if (((unsigned int)out->length + (unsigned int)tail->length) > 0xffff)
       return StrSTRTOOLON;
@@ -2136,8 +2136,8 @@ int StrTranslate(struct descriptor *dest, struct descriptor *src, struct descrip
   else if ((src->class == CLASS_A) && (dest->class == CLASS_A) && (src->length > 0) && (dest->length > 0) &&
      (((struct descriptor_a *)src)->arsize/src->length == ((struct descriptor_a *)dest)->arsize/dest->length))
   {
-    struct descriptor outdsc = {0, DTYPE_T, CLASS_S, 0};
-    struct descriptor indsc = {0, DTYPE_T, CLASS_S, 0};
+    struct descriptor outdsc = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
+    struct descriptor indsc = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
     int num = ((struct descriptor_a *)src)->arsize / src->length;
     int i;
     outdsc.length = dest->length;
@@ -2207,7 +2207,7 @@ STATIC_ROUTINE int FindFile(struct descriptor *filespec, struct descriptor *resu
   }
   ans = _FindNextFile((FindFileCtx *)*ctx, recursively, caseBlind);
   if (ans != 0) {
-    struct descriptor ansd = {0, DTYPE_T, CLASS_S,0};
+    struct descriptor ansd = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S,0);
     ansd.length = strlen(ans);
     ansd.pointer = ans;
     StrCopyDx(result,&ansd);
@@ -2346,7 +2346,7 @@ STATIC_ROUTINE char *_FindNextFile(FindFileCtx *ctx, int recursively, int caseBl
     }
     dp = readdir(ctx->dir_ptr);
     if (dp != NULL) {
-      struct descriptor upname = {0,DTYPE_T,CLASS_D,0};
+      struct descriptor upname = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
       DESCRIPTOR_FROM_CSTRING(filename, dp->d_name)
       if (caseBlind)
 	{
@@ -2477,7 +2477,7 @@ int libffs(int *position, int *size, char *base, int *find_position)
   return status;
 }
 STATIC_THREADSAFE char RELEASE[512] = {0};
-STATIC_THREADSAFE struct descriptor RELEASE_D = {0,DTYPE_T,CLASS_S,RELEASE};
+STATIC_THREADSAFE struct descriptor RELEASE_D = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,RELEASE);
 
 
 char *MdsRelease()
@@ -2515,8 +2515,8 @@ STATIC_ROUTINE char *GetTdiLogical(char *name)
   char *ans = 0;
   STATIC_THREADSAFE int (*TdiExecute)()=0;
   STATIC_CONSTANT DESCRIPTOR(exp,"data(ENV($))");
-  struct descriptor name_d = {0,DTYPE_T,CLASS_S,0};
-  struct descriptor ans_d = {0,DTYPE_T,CLASS_D,0};
+  struct descriptor name_d = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+  struct descriptor ans_d = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
   STATIC_CONSTANT DESCRIPTOR(image,"TdiShr");
   STATIC_CONSTANT DESCRIPTOR(routine,"TdiExecute");
   if (TdiExecute == 0)

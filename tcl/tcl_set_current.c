@@ -32,7 +32,7 @@ int TclSetCurrent()
     static DYNAMIC_DESCRIPTOR(dsc_asciiShot);
 
     cli_get_value("EXPERIMENT",&dsc_experiment);
-    experiment = dsc_experiment.dscA_pointer;
+    experiment = dsc_experiment.pointer;
     if (cli_present("INCREMENT") & 1)
        {
         shot = TreeGetCurrentShotId(experiment);
@@ -43,9 +43,9 @@ int TclSetCurrent()
        {
         cli_get_value("SHOT",&dsc_asciiShot);
 #ifdef vms
-        dsc_asciiShot.dscB_class = CLASS_S;	/* vms: malloc vs str$	*/
+        dsc_asciiShot.class = CLASS_S;	/* vms: malloc vs str$	*/
         sts = TdiExecute(&dsc_asciiShot,&dsc_shot MDS_END_ARG);
-        dsc_asciiShot.dscB_class = CLASS_D;
+        dsc_asciiShot.class = CLASS_D;
 #else
         sts = TdiExecute(&dsc_asciiShot,&dsc_shot MDS_END_ARG);
 #endif

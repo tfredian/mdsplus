@@ -166,10 +166,10 @@ int   mdsdcl_define()			/* Return: status		*/
     if (~sts & 1)
         return(sts);
 
-    k = dsc_name.dscW_length;
+    k = dsc_name.length;
     if (k >= sizeof(name))
         k = sizeof(name) - 1;
-    l2un(name,dsc_name.dscA_pointer,k);
+    l2un(name,dsc_name.pointer,k);
     name[k] = '\0';
 
 		/*=======================================================
@@ -188,8 +188,8 @@ int   mdsdcl_define()			/* Return: status		*/
 		 *=====================================================*/
     for ( ; (sts = mdsdcl_get_input_nosymbols("DEFMAC> ",&dsc_cmd)) & 1 ; )
        {
-         if ((dsc_cmd.dscW_length > 0) && dsc_cmd.dscA_pointer)
-           p = nonblank(dsc_cmd.dscA_pointer);
+         if ((dsc_cmd.length > 0) && dsc_cmd.pointer)
+           p = nonblank(dsc_cmd.pointer);
          else
            p = 0;
         if (!p || end_macro(p))
@@ -198,7 +198,7 @@ int   mdsdcl_define()			/* Return: status		*/
         }
         if (m->numLines >= m->maxLines)
             extend_macro(m);
-        m->lines[m->numLines++] = STRING_ALLOC(dsc_cmd.dscA_pointer);
+        m->lines[m->numLines++] = STRING_ALLOC(dsc_cmd.pointer);
        }
     return(1);
    }
@@ -238,12 +238,12 @@ int   mdsdcl_show_macro()		/* Return: status		*/
     sts = cli_get_value("MACRO",&dsc_name);
     if (sts & 1)
        {
-        l2u(dsc_name.dscA_pointer,0);
-        m = find_macro(dsc_name.dscA_pointer);
+        l2u(dsc_name.pointer,0);
+        m = find_macro(dsc_name.pointer);
         if (!m)
            {
             fprintf(stderr,"  --> macro '%s' not defined\n\r",
-                dsc_name.dscA_pointer);
+                dsc_name.pointer);
             return(1);
            }
         display_macro(m);
@@ -298,16 +298,16 @@ int   mdsdcl_do_macro()		/* Return: status			*/
 
     if (cli_present("INDIRECT") & 1)
        {
-        sts = mdsdcl_openIndirectLevel(dsc_util.dscA_pointer);
+        sts = mdsdcl_openIndirectLevel(dsc_util.pointer);
         if (!sts & 1)
-            return(MdsMsg(sts,"failed to open file %s",dsc_util.dscA_pointer));
+            return(MdsMsg(sts,"failed to open file %s",dsc_util.pointer));
         for ( ; sts & 1 ; )
             sts = mdsdcl_do_command(0);
         return((sts==MDSDCL_STS_INDIRECT_EOF) ? 1 : sts);
        }
 
-    l2u(dsc_util.dscA_pointer,0);		/* convert to uc	*/
-    macro = find_macro(dsc_util.dscA_pointer);
+    l2u(dsc_util.pointer,0);		/* convert to uc	*/
+    macro = find_macro(dsc_util.pointer);
     if (!macro)
        {
         MdsMsg(0,"No such command");
@@ -315,7 +315,7 @@ int   mdsdcl_do_macro()		/* Return: status			*/
        }
 
     if (macro->isOpen)
-        return(MdsMsg(MDSDCL_STS_ERROR,fmt2,dsc_util.dscA_pointer));
+        return(MdsMsg(MDSDCL_STS_ERROR,fmt2,dsc_util.pointer));
 
 		/*=======================================================
 		 * Get repeat count ...
@@ -323,7 +323,7 @@ int   mdsdcl_do_macro()		/* Return: status			*/
     sts = cli_get_value("REPEAT",&dsc_util);
     if (sts & 1)
        {
-        if (sscanf(dsc_util.dscA_pointer,"%d",&irepeat) != 1)
+        if (sscanf(dsc_util.pointer,"%d",&irepeat) != 1)
             irepeat = 1;
        }
     else

@@ -175,7 +175,7 @@ int   asc2time(
         tm.tm_mday = tmDefault->tm_mday;
     else
        {
-        if (!longToken(&p,&dsc_token,0,&k))  return(0);
+	 if (!longToken(&p,(struct descriptor *)&dsc_token,0,&k))  return(0);
         if (*p && p!=p2)  return(0);
         tm.tm_mday = k;
        }
@@ -198,7 +198,7 @@ int   asc2time(
         tm.tm_year = tmDefault->tm_year;
     else
        {
-        if (!(longToken(&p,&dsc_token,0,&k)))  return(0);
+	 if (!(longToken(&p,(struct descriptor *)&dsc_token,0,&k)))  return(0);
         tm.tm_year = (k<1900) ? k : k-1900;
        }
 
@@ -210,7 +210,7 @@ int   asc2time(
         p = nonblank(p+1);
         if (p && isdigit(*p))
             {
-             longToken(&p,&dsc_token,0,&k);
+	      longToken(&p,(struct descriptor *)&dsc_token,0,&k);
              tm.tm_hour = k;
             }
         else
@@ -221,7 +221,7 @@ int   asc2time(
             p = nonblank(p+1);
             if (p && isdigit(*p))
                 {
-                 longToken(&p,&dsc_token,0,&k);
+		  longToken(&p,(struct descriptor *)&dsc_token,0,&k);
                  tm.tm_min = k;
                 }
             else
@@ -232,7 +232,7 @@ int   asc2time(
                 p = nonblank(p+1);
                 if (p && isdigit(*p))
                     {
-                     longToken(&p,&dsc_token,0,&k);
+		      longToken(&p,(struct descriptor *)&dsc_token,0,&k);
                      tm.tm_sec = k;
                     }
                 else
@@ -354,16 +354,16 @@ static void  __initialize()
         return;				/*---------------------> return	*/
 
 #ifdef vms
-    if (!dsc_cmdLine.dscA_pointer[0])
+    if (!dsc_cmdLine.pointer[0])
        {
         short len;
 
         lib$get_foreign(&dsc_cmdLine,0,&len);
-        dsc_cmdLine.dscA_pointer[len] = '\0';
+        dsc_cmdLine.pointer[len] = '\0';
        }
 #endif
 
-    inputStruct[0].linePtr = dsc_cmdLine.dscA_pointer;
+    inputStruct[0].linePtr = dsc_cmdLine.pointer;
 
     inputStruct[0].fp = stdin;
     inputStruct[0].isatty = isatty(fileno(stdin));
@@ -388,7 +388,7 @@ void  termio_init(
 
     offset = 0;
     set_pgmname(argv[0]);
-    cmdLine = dsc_cmdLine.dscA_pointer;
+    cmdLine = dsc_cmdLine.pointer;
     maxlen = sizeof(inputStruct[0].line);
 
     for (i=1 ; i<argc ; i++)
@@ -450,8 +450,8 @@ void  putNext(
     if (is_cdescr(dsc_text))
        {
         dsc = dsc_text;
-        p = dsc->dscA_pointer;
-        k = dsc->dscW_length;
+        p = dsc->pointer;
+        k = dsc->length;
        }
     else
        {
@@ -556,22 +556,22 @@ static successReturn(
            {
             if (*linePtr == '\\')
                 linePtr++;
-            ascToken(&linePtr,&dsc_token,0,0);
+            ascToken(&linePtr,(struct descriptor *)&dsc_token,0,0);
            }
        }
     if (dsc_flag)
        {
         k = strlen(token);
         l2u(token,0);
-        if (k < dsc_flag->dscW_length)
+        if (k < dsc_flag->length)
            {
-            strcpy(dsc_flag->dscA_pointer,token);
-            memset(dsc_flag->dscA_pointer+k,'\0',dsc_flag->dscW_length-k);
+            strcpy(dsc_flag->pointer,token);
+            memset(dsc_flag->pointer+k,'\0',dsc_flag->length-k);
            }
         else
            {
-            strncpy(dsc_flag->dscA_pointer,token,dsc_flag->dscW_length);
-            if (k > dsc_flag->dscW_length)
+            strncpy(dsc_flag->pointer,token,dsc_flag->length);
+            if (k > dsc_flag->length)
                 dasmsg(0,"successReturn: *WARN* token is truncated");
            }
        }
@@ -595,7 +595,7 @@ static void  openIndirectFile(
         exit(dasmsg(0,"openIndirectFile: bad param"));
 
     linePtr++;
-    if (inIdx<MAX_INDIRECT && ascFilename(&linePtr,&dsc_token,0) &&
+    if (inIdx<MAX_INDIRECT && ascFilename(&linePtr,(struct descriptor *)&dsc_token,0) &&
 #ifdef vms
         (fp=fopen(token,"r","dna=.inp")))
 #else
@@ -661,8 +661,8 @@ static char  *startNextToken(
             if (is_cdescr(dsc_prompt))
                {
                 dsc = dsc_prompt;
-                p = dsc->dscA_pointer;
-                k = dsc->dscW_length;
+                p = dsc->pointer;
+                k = dsc->length;
                }
             else
                {
@@ -852,11 +852,11 @@ int   getString(
        }
     otherAlph = (numArgs > 2) ? alphExtensions : 0;
 
-    k = dsc_val->dscW_length;
+    k = dsc_val->length;
     if (k > sizeof(defStr)-3)
         k = sizeof(defStr) - 3;
     defStr[0] = '\'';
-    strntrim(defStr+1,dsc_val->dscA_pointer,k);
+    strntrim(defStr+1,dsc_val->pointer,k);
     strcat(defStr,"\'");
     dsc_flag = 0;
 
@@ -868,7 +868,7 @@ int   getString(
         if (*linePtr == ',')
             return(successReturn(linePtr,1));
 
-        sts = ascToken(&linePtr,&dsc_token,0,otherAlph);
+        sts = ascToken(&linePtr,(struct descriptor *)&dsc_token,0,otherAlph);
         if (~sts & 1)
            {
             badInput("  --> Bad input??  With getString???");
@@ -941,7 +941,7 @@ int   getDouble(
 		/*--------------------------------------------------------
 		 * Try to read characters as a number ...
 		 *-------------------------------------------------------*/
-        sts = doubleToken(&linePtr,&dsc_token,0,&dval);
+        sts = doubleToken(&linePtr,(struct descriptor *)&dsc_token,0,&dval);
         if (~sts & 1)
            {
 			/*===============================================
@@ -1218,7 +1218,7 @@ int   getYesno(
             return(ynDefault);
            }
 
-        sts = ascToken(&linePtr,&dsc_token,0,0);
+        sts = ascToken(&linePtr,(struct descriptor *)&dsc_token,0,0);
         if (~sts & 1)
            {
             badInput("  --> Bad input??  With getYesno???");
@@ -1255,14 +1255,14 @@ int   getCmd(
     static DESCRIPTOR(dsc_string,string);
 
     strcpy(string,defaultCmd?defaultCmd:" ");
-    if (!getString(prompt,&dsc_string,0))
+    if (!getString(prompt,(struct descriptor *)&dsc_string,0))
         exit(0);
     strcpy(cmdString,string);
     if (string[0] == '/')
        {
         if (isalpha(*inputStruct[inIdx].linePtr))
            {
-            getString(0,&dsc_string,0);
+	     getString(0,(struct descriptor *)&dsc_string,0);
             strcpy(cmdString+1,string);
            }
        }

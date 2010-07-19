@@ -92,8 +92,8 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
   if (in_ptr && (in_ptr[0] || in_ptr[1] || in_ptr[2] || in_ptr[3]))
     switch (class())
     {
-     case CLASS_S:
-     case CLASS_D:
+    case CLASS_S_SHORT:
+    case CLASS_D_SHORT:
      {
 	struct descriptor in;
 	struct descriptor *po = (struct descriptor *) out_dsc_ptr;
@@ -123,12 +123,12 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
      }
      break;
 
-     case CLASS_XS:
-     case CLASS_XD:
+     case CLASS_XS_SHORT:
+     case CLASS_XD_SHORT:
      {
 	struct descriptor_xs in;
 	struct descriptor_xs *po = (struct descriptor_xs *) out_dsc_ptr;
-        in.length = 0;
+        in.len_fill = 0;
         in.dtype = dtype();
         in.class = CLASS_XS;
         set_l_length(in.l_length);
@@ -143,7 +143,7 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
       }
       break;
 
-     case CLASS_R:
+     case CLASS_R_SHORT:
      {
         struct descriptor_r pi_tmp;
 	struct descriptor_r *pi = &pi_tmp;
@@ -194,7 +194,7 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
 	}
      }
      break;
-     case CLASS_A:
+     case CLASS_A_SHORT:
      {
         int dsc_size;
         int align_size;
@@ -204,7 +204,7 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
         set_length(a_tmp.length);
         a_tmp.dtype = dtype();
         FixLength(a_tmp);
-        a_tmp.class = class();
+        a_tmp.class = CLASS_A;
         a_tmp.scale = scale();
         a_tmp.digits = digits();
 	a_tmp.aflags.binscale = binscale();
@@ -279,7 +279,7 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
     /**************************************
     For CA and APD, a0 is the offset.
     **************************************/
-     case CLASS_APD:
+     case CLASS_APD_SHORT:
      {
         array_coeff a_tmp;
 	array_coeff *pi = &a_tmp;
@@ -290,7 +290,7 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
         set_length(a_tmp.length);
         a_tmp.dtype = dtype();
         FixLength(a_tmp);
-        a_tmp.class = class();
+        a_tmp.class = CLASS_APD;
         a_tmp.scale = scale();
         a_tmp.digits = digits();
 	a_tmp.aflags.binscale = binscale();
@@ -355,7 +355,7 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
       }
       break;
 
-     case CLASS_CA:
+     case CLASS_CA_SHORT:
      {
         array_coeff a_tmp;
 	array_coeff *pi = &a_tmp;
@@ -366,7 +366,7 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
         set_length(a_tmp.length);
         a_tmp.dtype = dtype();
         FixLength(a_tmp);
-        a_tmp.class = class();
+        a_tmp.class = CLASS_CA;
         a_tmp.scale = scale();
         a_tmp.digits = digits();
 	a_tmp.aflags.binscale = binscale();
@@ -781,8 +781,8 @@ STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc
   status = copy_dx_rec((struct descriptor *)inp, 0, &size_out, &size_in);
   if (status & 1 && size_out)
   {
-    unsigned long nlen = 1;
-    array out_template = {1,DTYPE_B,CLASS_A,0,0,0,{0,1,1,0,0},1,0};
+    unsigned short nlen = 1;
+    array out_template = {0,DTYPE_B,CLASS_A,0,1,0,0,{0,1,1,0,0},1,0};
     out_template.arsize = *reclen = size_out;
     status = MdsGet1DxA((struct descriptor_a *)&out_template, &nlen, (unsigned char *) &dsc_dtype, out_dsc_ptr);
     if (status & 1)

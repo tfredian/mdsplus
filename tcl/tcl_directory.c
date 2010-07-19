@@ -23,7 +23,7 @@ extern int  sys$asctim();
 extern int LibSysAscTim();
 #endif
 
-static int doFull(nid,nodeUsage,version);
+static int doFull(int nid,int nodeUsage,int version);
 	/****************************************************************
 	 * MdsOwner:
 	 ****************************************************************/
@@ -124,7 +124,7 @@ int   TclDirectory()
             str_concat(&dsc_usageStr,"USAGE.",&dsc_usageStr,0);
             if (cli_get_value(&dsc_usageStr,&dsc_usageStr) & 1)
                {
-                sscanf(dsc_usageStr.dscA_pointer,"%d",&usage);
+                sscanf(dsc_usageStr.pointer,"%d",&usage);
                 usageMask = usageMask | (1 << usage);
                }
             else
@@ -134,10 +134,10 @@ int   TclDirectory()
     str_free1_dx(&dsc_outline);
     while (cli_get_value("NODE",&dsc_nodeList) & 1)
        {
-        l2u(dsc_nodeList.dscA_pointer,0);
+        l2u(dsc_nodeList.pointer,0);
         for (elmnt=0; str_element(&dsc_nodnam,elmnt,',',&dsc_nodeList) & 1; elmnt++)
            {
-            while ((status = TreeFindNodeWild(dsc_nodnam.dscA_pointer,&nid,&ctx,usageMask)) & 1)
+            while ((status = TreeFindNodeWild(dsc_nodnam.pointer,&nid,&ctx,usageMask)) & 1)
                {
                 grand_found++;
                 status = TreeGetNci(nid,general_info_list);
@@ -146,9 +146,9 @@ int   TclDirectory()
                    {
                     if (found)
                        {
-                        if (!full && dsc_outline.dscW_length)
+                        if (!full && dsc_outline.length)
 			{
-                            TclTextOut(dsc_outline.dscA_pointer);
+                            TclTextOut(dsc_outline.pointer);
                             str_free1_dx(&dsc_outline);
                         }
                         TclTextOut("  ");
@@ -186,7 +186,7 @@ int   TclDirectory()
                         TreeFree(tagnam);
                         first_tag = 0;
                        }
-                    TclTextOut(dsc_outline.dscA_pointer);
+                    TclTextOut(dsc_outline.pointer);
                     str_free1_dx(&dsc_outline);
                     version=0;
                     while(doFull(nid,nodeUsage,version++)&1);
@@ -199,7 +199,7 @@ int   TclDirectory()
                    {
                     if (previous_relationship != relationship)
                        {
-                        TclTextOut(dsc_outline.dscA_pointer);
+                        TclTextOut(dsc_outline.pointer);
                         str_free1_dx(&dsc_outline);
                         TclTextOut("  ");
                         previous_relationship = relationship;
@@ -210,9 +210,9 @@ int   TclDirectory()
                     else
                         str_concat(&dsc_outline,
                             &dsc_outline," :",nodnamC,0);
-                    if (dsc_outline.dscW_length > 60)
+                    if (dsc_outline.length > 60)
                        {
-                        TclTextOut(dsc_outline.dscA_pointer);
+                        TclTextOut(dsc_outline.pointer);
                         str_free1_dx(&dsc_outline);
                        }
                    }
@@ -224,9 +224,9 @@ int   TclDirectory()
        {
         if (!full)
            {
-            if (dsc_outline.dscW_length)
+            if (dsc_outline.length)
 	    {
-              TclTextOut(dsc_outline.dscA_pointer);
+              TclTextOut(dsc_outline.pointer);
               str_free1_dx(&dsc_outline);
             }
            }
@@ -253,7 +253,7 @@ int   TclDirectory()
    }
 
 
-static int doFull(nid,nodeUsage,version) 
+static int doFull(int nid,int nodeUsage,int version) 
 {
   static char  fmtConglom2[] = "      Original element name: %s%s";
   char  *pathnam;
@@ -354,10 +354,10 @@ static int doFull(nid,nodeUsage,version)
 	}
 	if (nciFlags & NciM_DO_NOT_COMPRESS)
 	  str_append(&dsc_outline,"do not compress");
-	if (dsc_outline.dscW_length)
+	if (dsc_outline.length)
 	{
 	  str_prefix(&dsc_outline,"      ");
-	  TclTextOut(dsc_outline.dscA_pointer);
+	  TclTextOut(dsc_outline.pointer);
 	  str_free1_dx(&dsc_outline);
 	}
       
@@ -375,7 +375,7 @@ static int doFull(nid,nodeUsage,version)
 	{
 	  str_concat(&dsc_outline,
 		     "      contains node references",reference,0);
-	  TclTextOut(dsc_outline.dscA_pointer);
+	  TclTextOut(dsc_outline.pointer);
 	}
       }
       else

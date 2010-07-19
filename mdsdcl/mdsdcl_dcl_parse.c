@@ -62,7 +62,7 @@ int   mdsdcl_dcl_parse(		/* Returns CLI_STS_xxx status	*/
     if (command && (is_cdescr(command) || is_ddescr(command)))
        {
         dsc = command;
-        p = nonblank(dsc->dscA_pointer);
+        p = nonblank(dsc->pointer);
        }
     else
         p = nonblank(command);
@@ -86,7 +86,7 @@ int   mdsdcl_dcl_parse(		/* Returns CLI_STS_xxx status	*/
             if (!ascFilename(&p,&dsc_filename,0))
                 return(MdsMsg(MDSDCL_STS_INDIRECT_ERROR,
                         "Illegal filename: %s",p?p:""));
-            nbytes += strlen(dsc_filename.dscA_pointer) + 3;
+            nbytes += strlen(dsc_filename.pointer) + 3;
 						/* 2 quotes + blank	*/
            }
         nbytes += p ? strlen(p) + 1 : 0;
@@ -106,7 +106,7 @@ int   mdsdcl_dcl_parse(		/* Returns CLI_STS_xxx status	*/
 
         if (indirect_flag)
             sprintf(cmd,"%s \"%s\" %s",
-                    doIndirect,dsc_filename.dscA_pointer,p?p:"");
+                    doIndirect,dsc_filename.pointer,p?p:"");
         else
             strcpy(cmd,p?p:"");
 

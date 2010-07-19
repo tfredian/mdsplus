@@ -27,13 +27,13 @@ extern int TdiMasterData();
 extern int Tdi2Vector();
 
 TdiRefStandard(Tdi1Vector)
-array miss = {sizeof(char),DTYPE_MISSING,CLASS_A,(char *)0,0,0,{0,1,1,0,0},1,0};
-array_coeff arr = {sizeof(char),DTYPE_BU,CLASS_A,(char *)0,0,0,{0,1,1,1,0},MAXDIM,0};
+array miss = {0,DTYPE_MISSING,CLASS_A,(char *)0,sizeof(char),0,0,{0,1,1,0,0},1,0};
+array_coeff arr = {0,DTYPE_BU,CLASS_A,(char *)0,sizeof(char),0,0,{0,1,1,1,0},MAXDIM,0};
 struct descriptor_xd	(*psig)[], (*puni)[]=0, (*pdat)[]=0;
 struct TdiCatStruct		(*pcats)[]=0;
 int	cmode = -1, j, n, (*pnelem)[]=0, jd, mind = MAXDIM, maxd = 0, nmiss = 0;
 int	virt = (sizeof(struct descriptor_xd)*3 + sizeof(int *))*narg + sizeof(struct TdiCatStruct)*(narg+1);
-unsigned long len;
+unsigned short len;
 
         if (narg == 0) return MdsCopyDxXd((struct descriptor *)&miss, out_ptr);
 	/************************************

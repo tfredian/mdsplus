@@ -82,23 +82,23 @@ int   mdsdcl_openIndirectLevel(		/* Return: status		*/
         return(MdsMsg(MDSDCL_STS_INDIRECT_ERROR,
             "Illegal filename: %s",p?p:""));
 
-    fp = fopen(dsc_filename.dscA_pointer,"r");
+    fp = fopen(dsc_filename.pointer,"r");
     if (!fp)
        {
-        if (nonblank(ctrl->def_file.dscA_pointer))
+        if (nonblank(ctrl->def_file.pointer))
            {
-            p2 = strchr(ctrl->def_file.dscA_pointer,'*');
+            p2 = strchr(ctrl->def_file.pointer,'*');
             if (p2)
                {
-                k = p2 - (char *)ctrl->def_file.dscA_pointer;
+                k = p2 - (char *)ctrl->def_file.pointer;
                 str_replace(&dsc_filename,&ctrl->def_file,k,k+1,
                     &dsc_filename);
-                fp = fopen(dsc_filename.dscA_pointer,"r");
+                fp = fopen(dsc_filename.pointer,"r");
                }
            }
         if (!fp)
            {
-            p2 = dsc_filename.dscA_pointer;
+            p2 = dsc_filename.pointer;
             return(MdsMsg(MDSDCL_STS_INDIRECT_ERROR,
                 "No such filename: %s",p2?p2:""));
            }
@@ -206,8 +206,8 @@ static int   get_cmdstring(	/* Return: status			*/
         if (is_cdescr(uprompt))
            {
             dsc = uprompt;
-            p = dsc->dscA_pointer;
-            k = dsc->dscW_length;
+            p = dsc->pointer;
+            k = dsc->length;
            }
         else
            {
@@ -227,7 +227,7 @@ static int   get_cmdstring(	/* Return: status			*/
         return(sts);			/*--------------------> return	*/
        }
 
-    p = nonblank(dsc_cmd->dscA_pointer);
+    p = nonblank(dsc_cmd->pointer);
     if (!p)
         return(1);				/*---> return blank line */
 
@@ -275,16 +275,16 @@ static int   get_cmdstring(	/* Return: status			*/
 		 * -- back up within cmdstring[] to preceding non-blank.
 		 * -- read continuation of cmdstring[]
 		 *-------------------------------------------------------*/
-            for ( ; p!=dsc_cmd->dscA_pointer && isspace(*(p-1)) ; p--)
+            for ( ; p!=dsc_cmd->pointer && isspace(*(p-1)) ; p--)
                 ;
             *p = ' ';		/* tack on a single blank	*/
             *(p+1) = '\0';
             sts = readInputLine(prompt.continuation,&dsc_continueLine);
             if (~sts & 1)
                 break;			/* EOF:  out of loop		*/
-            i = p - (char *)dsc_cmd->dscA_pointer;
+            i = p - (char *)dsc_cmd->pointer;
             str_append(dsc_cmd,&dsc_continueLine);
-            p = (char *)dsc_cmd->dscA_pointer + i;
+            p = (char *)dsc_cmd->pointer + i;
             str_free1_dx(&dsc_continueLine);
            }
        }
@@ -327,7 +327,7 @@ static int   really_get_input(		/* Return: status		*/
         io = ctrl->ioLevel + ctrl->depth;
         mdsdcl_insert_symbols(dsc_cmd,io->ioParameter);
 
-        p = nonblank(dsc_cmd->dscA_pointer);
+        p = nonblank(dsc_cmd->pointer);
        }
 
     return(1);

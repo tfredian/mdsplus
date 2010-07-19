@@ -93,11 +93,11 @@ typedef struct {
 	int			count;
 } user_type;
 
-STATIC_CONSTANT struct descriptor EMPTY_D = {0,DTYPE_T,CLASS_D,0};
-STATIC_CONSTANT struct descriptor EMPTDY_S = {0,DTYPE_T,CLASS_S,0};
+STATIC_CONSTANT struct descriptor EMPTY_D = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+STATIC_CONSTANT struct descriptor EMPTDY_S = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
 STATIC_CONSTANT struct descriptor_xd	NULL_XD = {0,0,0,0,0};
 STATIC_CONSTANT unsigned char true = 1;
-STATIC_CONSTANT struct descriptor true_dsc = {sizeof(true),DTYPE_BU,CLASS_S,(char *)&true};
+STATIC_CONSTANT struct descriptor true_dsc = DESCRIPTOR_INIT(sizeof(true),DTYPE_BU,CLASS_S,(char *)&true);
 STATIC_THREADSAFE pthread_mutex_t lock;
 STATIC_THREADSAFE int lock_initialized=0;
 STATIC_THREADSAFE block_type _public	= {0,0,0,1};
@@ -285,7 +285,7 @@ struct descriptor_xd	*data_ptr)
 struct descriptor		key_dsc = EMPTDY_S;
 node_type			*node_ptr;
 block_type			*block_ptr;
- struct descriptor               upstr = {0,DTYPE_T,CLASS_D,0};
+ struct descriptor               upstr = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
 int				size = 0, status;
 STATIC_CONSTANT int zero = 0;
  if (ident_ptr->dtype == DTYPE_DSC)

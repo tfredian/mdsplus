@@ -27,14 +27,14 @@ int   TclAddTag()		/* Return: status			*/
 
     cli_get_value("NODE",&dsc_nodnam);
     cli_get_value("TAGNAME",&dsc_tagnam);
-    l2u(dsc_nodnam.dscA_pointer,0);
-    l2u(dsc_tagnam.dscA_pointer,0);
-    sts = TreeFindNode(dsc_nodnam.dscA_pointer,&nid);
+    l2u(dsc_nodnam.pointer,0);
+    l2u(dsc_tagnam.pointer,0);
+    sts = TreeFindNode(dsc_nodnam.pointer,&nid);
     if (sts & 1)
-        sts = TreeAddTag(nid,dsc_tagnam.dscA_pointer);
+        sts = TreeAddTag(nid,dsc_tagnam.pointer);
     if (!(sts & 1))
        {
-        MdsMsg(sts,"Error adding tag %s",dsc_tagnam.dscA_pointer);
+        MdsMsg(sts,"Error adding tag %s",dsc_tagnam.pointer);
 #ifdef vms
         lib$signal(sts,0);
 #endif

@@ -46,9 +46,9 @@ universal: $(src_dir)/configure $(src_dir)/configure.in $(src_dir)/Makefile.in M
 		./configure --prefix=/usr/local/mdsplus --exec_prefix=/usr/local/mdsplus \
 			--enable-universal
 #		F77=fort77 \
-#		CFLAGS="-O2 -g -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc" \
+#		CFLAGS="-O0 -g -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc" \
 #		LDFLAGS="-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk,-arch,i386,-arch,ppc" \
-#		FFLAGS="-O2 -g -Wc,-isysroot,/Developer/SDKs/MacOSX10.4u.sdk,-arch,i386,-arch,ppc" \
+#		FFLAGS="-O0 -g -Wc,-isysroot,/Developer/SDKs/MacOSX10.4u.sdk,-arch,i386,-arch,ppc" \
 #		FLIBS=" " \
 #		FLIBS="-Wc,-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk,-arch,i386,-arch,ppc" \
 	$(ECHO) "#include <machine/endian.h>" 			>> ../include/config.h

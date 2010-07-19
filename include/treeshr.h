@@ -581,7 +581,7 @@ extern EXPORT int _TreeWriteTree(void **dbid, char *tree, int shot);
 extern EXPORT int TreeGetCurrentShotId(char *experiment);
 extern EXPORT int TreeSetCurrentShotId(char *experiment, int shot);
 
-//Segments
+/* Segments */
 extern EXPORT int TreeBeginSegment(int nid, struct descriptor *start, struct descriptor *end, 
 							struct descriptor *dim, struct descriptor_a *initialData, int idx);
 extern EXPORT int _TreeBeginSegment(void *dbid, int nid, struct descriptor *start, struct descriptor *end, 

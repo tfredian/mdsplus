@@ -87,7 +87,7 @@ int mdsdcl_do_command(
 
     if (!doMacro[0])
        {			/* first time ...			*/
-        sprintf(doMacro,"DO %cMACRO ","/");
+        sprintf(doMacro,"DO %cMACRO ",'/');
        }
 
     io = ctrl->ioLevel + ctrl->depth;
@@ -121,7 +121,7 @@ int mdsdcl_do_command(
            }
 
         io = ctrl->ioLevel + ctrl->depth;
-        if (!dsc_cmd.dscA_pointer)
+        if (!dsc_cmd.pointer)
             str_copy_dx(&dsc_cmd,&io->last_command);
 
         if (stsParse & 1)
@@ -130,12 +130,12 @@ int mdsdcl_do_command(
             if (sts != CLI_STS_INVROUT)
                {
                 if (ctrl->verify)
-                    displayCmdline(dsc_cmd.dscA_pointer);
+                    displayCmdline(dsc_cmd.pointer);
                 if (~sts & 1)
                    {
-                    if (dsc_cmd.dscA_pointer)
+                    if (dsc_cmd.pointer)
                         MdsMsg(0,"--> failed on line '%s'",
-                                dsc_cmd.dscA_pointer);
+                                dsc_cmd.pointer);
                     mdsdcl_close_indirect_all();
                    }
                 return(sts);		/*--------------------> return	*/
@@ -146,7 +146,7 @@ int mdsdcl_do_command(
 		 * Command not found in any table:  try it as a macro ...
 		 *------------------------------------------------------*/
     if (ctrl->verify)
-        displayCmdline(dsc_cmd.dscA_pointer);
+        displayCmdline(dsc_cmd.pointer);
     tblidx = 1;			/* i.e., the table for DO/MACRO		*/
     str_prefix(&dsc_cmd,doMacro);
     sts = mdsdcl_dcl_parse(&dsc_cmd,ctrl,tblidx);

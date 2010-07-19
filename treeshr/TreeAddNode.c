@@ -482,7 +482,7 @@ int _TreeAddConglom(void *dbid, char *path, char *congtype, int *nid)
 {
   PINO_DATABASE *dblist = (PINO_DATABASE *)dbid;
   int       status = 1;
-  struct descriptor expdsc = {0, DTYPE_T, CLASS_S, 0};
+  struct descriptor expdsc = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
   char exp[256];
   void *arglist[4] = {(void *)3};
   STATIC_CONSTANT DESCRIPTOR(tdishr,"TdiShr");

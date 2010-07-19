@@ -35,9 +35,9 @@ int   TclCleanDatafile()
     cli_get_value("FILE",&dsc_filnam);
     cli_get_value("SHOTID",&dsc_asciiShot);
 #ifdef vms
-    dsc_asciiShot.dscB_class = CLASS_S;		/* vms: malloc vs str$	*/
+    dsc_asciiShot.class = CLASS_S;		/* vms: malloc vs str$	*/
     sts = TdiExecute(&dsc_asciiShot,&dsc_shot MDS_END_ARG);
-    dsc_asciiShot.dscB_class = CLASS_D;
+    dsc_asciiShot.class = CLASS_D;
 #else
     sts = TdiExecute(&dsc_asciiShot,&dsc_shot MDS_END_ARG);
 #endif
@@ -46,10 +46,10 @@ int   TclCleanDatafile()
         TclTextOut(noclean);
         return 1;
        }
-    sts = TreeCleanDatafile(dsc_filnam.dscA_pointer,shot);
+    sts = TreeCleanDatafile(dsc_filnam.pointer,shot);
     if (~sts & 1)
        {
-        MdsMsg(sts,"Problem cleaning %s",dsc_filnam.dscA_pointer);
+        MdsMsg(sts,"Problem cleaning %s",dsc_filnam.pointer);
 #ifdef vms
         lib$signal(sts,0);
 #endif

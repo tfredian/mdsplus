@@ -702,7 +702,7 @@ unsigned int	length, status;
 
 	cats[1].out_dtype = cats[1].in_dtype;
 	cats[1].out_cat = cats[1].in_cat;
-	cats[1].digits = dat[1].length;
+        cats[1].digits = dat[1].l_length;
 	status = TdiGetLong(dat[1].pointer, &length);
 	if (status & 1) {
 		if (length > 65535) status = TdiTOO_BIG;
@@ -718,7 +718,7 @@ unsigned int	length, status;
 
 	cats[1].out_dtype = cats[1].in_dtype;
 	cats[1].out_cat = cats[1].in_cat;
-	cats[1].digits = dat[1].length;
+	cats[1].digits = dat[1].l_length;
 	status = TdiGetLong(dat[1].pointer, &length);
 	if (status & 1) {
 		if (length > 65535) status = TdiTOO_BIG;

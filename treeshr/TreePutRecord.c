@@ -196,12 +196,16 @@ int       _TreePutRecord(void *dbid, int nid, struct descriptor *descriptor_ptr,
           unsigned char tree = (unsigned char)nid_ptr->tree;
           int compressible;
           int data_in_altbuf;
+          unsigned long long len;
+          unsigned long long reclen;
           nid_reference = 0;
           path_reference = 0;
 	  status = MdsSerializeDscOutZ(descriptor_ptr, info_ptr->data_file->data,TreeFixupNid,&tree,FixupPath,0,
             (compress_utility || (nci->flags & NciM_COMPRESS_ON_PUT)) && !(nci->flags & NciM_DO_NOT_COMPRESS),
-            &compressible,&nci->length,&nci->DATA_INFO.DATA_LOCATION.record_length,&nci->dtype,&nci->class,
+            &compressible,&len,&reclen,&nci->dtype,&nci->class,
             (nci->flags & NciM_VERSIONS || extended) ? 0 : sizeof(nci->DATA_INFO.DATA_IN_RECORD.data),nci->DATA_INFO.DATA_IN_RECORD.data,&data_in_altbuf);
+          nci->DATA_INFO.DATA_LOCATION.record_length=(unsigned int)reclen;
+          nci->length = (unsigned int)len;
           bitassign(path_reference,nci->flags,NciM_PATH_REFERENCE);
           bitassign(nid_reference,nci->flags,NciM_NID_REFERENCE);
           bitassign(compressible,nci->flags,NciM_COMPRESSIBLE);
@@ -340,7 +344,7 @@ int TreeFixupNid(NID *nid, unsigned char *tree, struct descriptor *path)
     char *path_c = TreeGetPath(*(int *)nid);
     if (path_c)
       {
-        struct descriptor path_d = {0, DTYPE_T, CLASS_S, 0};
+        struct descriptor path_d = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
         path_d.length = strlen(path_c);
         path_d.pointer = path_c;
         StrCopyDx(path,&path_d);

@@ -47,7 +47,7 @@ static char  fmt_qualifiers1[] =
 static char  fmt_qualifiers2[] = "       %c\"%s\",0x%04X,%s,%s,%s,0\n";
 
 static char  fmt_value1[] = "static struct cduValue  %svalue = {\n";
-static char  fmt_value2[] = "        0x%04X,%s,%s, {0,DSC_K_DTYPE_T,DSC_K_CLASS_D,0} ,0\n";
+static char  fmt_value2[] = "        0x%04X,%s,%s, {0,DTYPE_T,CLASS_D,0} ,0\n";
 
 static char  fmt_protoUserType1[] =
             "static struct cduKeyword  %s[%d];\t/* Prototype only\t*/\n";

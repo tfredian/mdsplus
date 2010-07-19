@@ -9,7 +9,6 @@
 #endif
 #endif
 
-#define _DESCRIPTOR_PREFIXES   1
 #include        <mdsdescrip.h>
 #include        <stdio.h>
 #include        <stdlib.h>

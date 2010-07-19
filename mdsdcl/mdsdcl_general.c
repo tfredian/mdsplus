@@ -97,7 +97,7 @@ int   mdsdcl_type()
     static DYNAMIC_DESCRIPTOR(dsc_text);
 
     sts = cli_get_value("P1",&dsc_text);
-    printf("%s\r\n",(sts&1) ? dsc_text.dscA_pointer : " ");
+    printf("%s\r\n",(sts&1) ? dsc_text.pointer : " ");
     fflush(stdout);
     str_free1_dx(&dsc_text);
     return(1);
@@ -152,11 +152,11 @@ int   mdsdcl_define_symbol()
     if (~sts & 1)
         sts = MDSDCL_STS_ERROR;
 #else
-    k = strlen(dsc_name.dscA_pointer) + strlen(dsc_value.dscA_pointer);
+    k = strlen(dsc_name.pointer) + strlen(dsc_value.pointer);
     p = malloc(k+2);
     if (!p)
         exit(cli_error(0,"*ERR* Out of space"));
-    sprintf(p,"%s=%s",dsc_name.dscA_pointer,dsc_value.dscA_pointer);
+    sprintf(p,"%s=%s",dsc_name.pointer,dsc_value.pointer);
     sts = putenv(p);
     if (sts)
        {

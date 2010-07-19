@@ -44,7 +44,7 @@ extern int TdiItoX();
 extern int Tdi3Subtract();
 
 STATIC_CONSTANT int one = 1;
-STATIC_CONSTANT struct descriptor done = {sizeof(one),DTYPE_L,CLASS_S,(char *)&one};
+STATIC_CONSTANT struct descriptor done = DESCRIPTOR_INIT(sizeof(one),DTYPE_L,CLASS_S,(char *)&one);
 STATIC_CONSTANT DESCRIPTOR_A(adsc0,sizeof(int),DTYPE_L,0,0);
 STATIC_CONSTANT unsigned char dtype_l = DTYPE_L;
 STATIC_CONSTANT unsigned long size_l = sizeof(int);
@@ -82,11 +82,12 @@ int			dim, rank=0;
 			*(int *)out_ptr->pointer->pointer = pa->dtype != DTYPE_MISSING;
 	}
 	else {
-	array adsc = *(array *)&adsc0;
-		dim = -1;
-		adsc.arsize = sizeof(int) * rank;
-		if (status & 1) status = MdsGet1DxA((struct descriptor_a *)&adsc, &size_l,
-                       &dtype_l, out_ptr);
+	  array adsc = *(array *)&adsc0;
+	  unsigned short size_l_s = (unsigned short)size_l;
+	  dim = -1;
+	  adsc.arsize = sizeof(int) * rank;
+	  if (status & 1) status = MdsGet1DxA((struct descriptor_a *)&adsc, &size_l_s,
+					    &dtype_l, out_ptr);
 	}
 	if (status & 1 && rank > 0) (*TdiRefFunction[opcode].f3)(pa, dim, out_ptr->pointer->pointer);
 	MdsFree1Dx(&dat[0], NULL);

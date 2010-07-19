@@ -59,8 +59,8 @@ static int CvtIdentT(struct descriptor *in_dsc_ptr,int depth)
     char *ident=MdsDescrToCstring(in_dsc_ptr);
     str_dupl_char(&out_str,depth,' ');
     str_concat(&out_str,&out_str,
-        TclDtypeString(in_dsc_ptr->dscB_dtype),ident,0);
-    TclTextOut(out_str.dscA_pointer);
+        TclDtypeString(in_dsc_ptr->dtype),ident,0);
+    TclTextOut(out_str.pointer);
     free(ident);
     str_free1_dx(&out_str);
     return 1;
@@ -82,13 +82,13 @@ static int CvtNidT(struct descriptor *in_dsc_ptr,int depth)
     char  *dstr;
 
     str_dupl_char(&spaces,depth,' ');
-    dstr = TclDtypeString(in_dsc_ptr->dscB_dtype);
+    dstr = TclDtypeString(in_dsc_ptr->dtype);
 
-    nid = *(int *)in_dsc_ptr->dscA_pointer;
+    nid = *(int *)in_dsc_ptr->pointer;
     if (nid == 0)
        {
         str_concat(&out_str,&spaces,dstr,"$VALUE",0);
-        TclTextOut(out_str.dscA_pointer);
+        TclTextOut(out_str.pointer);
        }
     else
        {
@@ -96,7 +96,7 @@ static int CvtNidT(struct descriptor *in_dsc_ptr,int depth)
            {
             str_concat(&out_str,&spaces,dstr,pathname,0);
             TreeFree(pathname);
-            TclTextOut(out_str.dscA_pointer);
+            TclTextOut(out_str.pointer);
             sts = TreeGetRecord(nid,&lxd);
             if (sts & 1)
                {
@@ -110,7 +110,7 @@ static int CvtNidT(struct descriptor *in_dsc_ptr,int depth)
            {
             str_concat(&out_str,&spaces,dstr,
                         "***** Bad Nid Reference ********",0);
-            TclTextOut(out_str.dscA_pointer);
+            TclTextOut(out_str.pointer);
            }
        }
     str_free1_dx(&out_str);
@@ -132,18 +132,18 @@ static int CvtNumericT(struct descriptor *in_dsc_ptr,int depth)
     static DESCRIPTOR(static_str,static_chars);
     static DYNAMIC_DESCRIPTOR(out_str);
     static DYNAMIC_DESCRIPTOR(spaces);
-    static_str.dscW_length = STATIC_STRING_LEN;
+    static_str.length = STATIC_STRING_LEN;
 
-    dstr = TclDtypeString(in_dsc_ptr->dscB_dtype);
+    dstr = TclDtypeString(in_dsc_ptr->dtype);
     str_dupl_char(&spaces,depth,' ');
     sts = TdiDecompile(in_dsc_ptr,&static_str MDS_END_ARG);
-    // sts = lib_cvt_dx_dx(in_dsc_ptr,&static_str,&static_str.dscW_length);
+    // sts = lib_cvt_dx_dx(in_dsc_ptr,&static_str,&static_str.length);
     if (sts & 1)
         str_concat(&out_str,&spaces,dstr,&static_str,0);
     else
         str_concat(&out_str,&spaces,dstr,
                 "There is no primative display for this datatype",0);
-    TclTextOut(out_str.dscA_pointer);
+    TclTextOut(out_str.pointer);
     str_free1_dx(&out_str);
     str_free1_dx(&spaces);
     return 1;
@@ -165,9 +165,9 @@ static int CvtPathT(struct descriptor *in_dsc_ptr,int depth)
     struct descriptor_xd lxd = {0, 0, CLASS_XD, 0, 0};
     char *ident=MdsDescrToCstring(in_dsc_ptr);
     str_dupl_char(&spaces,depth,' ');
-    dstr = TclDtypeString(in_dsc_ptr->dscB_dtype);
+    dstr = TclDtypeString(in_dsc_ptr->dtype);
     str_concat(&out_str,&spaces,dstr,ident,0);
-    TclTextOut(out_str.dscA_pointer);
+    TclTextOut(out_str.pointer);
     ldepth = depth + 4;
     str_free1_dx(&spaces);
     str_dupl_char(&spaces,ldepth,' ');
@@ -184,13 +184,13 @@ static int CvtPathT(struct descriptor *in_dsc_ptr,int depth)
         else
            {
             str_concat(&out_str,&spaces,"Error reading data record",0);
-            TclTextOut(out_str.dscA_pointer);
+            TclTextOut(out_str.pointer);
            }
        }
     else
        {
         str_concat(&out_str,&spaces,"Record not found",0);
-        TclTextOut(out_str.dscA_pointer);
+        TclTextOut(out_str.pointer);
        }
     str_free1_dx(&out_str);
     str_free1_dx(&spaces);
@@ -209,17 +209,17 @@ static int CvtDdscT(struct descriptor *in_dsc_ptr,int depth)
     static DYNAMIC_DESCRIPTOR(spaces);
     static DYNAMIC_DESCRIPTOR(out_str);
 
-    if (in_dsc_ptr->dscB_dtype == DTYPE_DSC)
-        sts = CvtDxT((struct descriptor *)in_dsc_ptr->dscA_pointer,depth);
+    if (in_dsc_ptr->dtype == DTYPE_DSC)
+        sts = CvtDxT((struct descriptor *)in_dsc_ptr->pointer,depth);
     else
        {
-        switch (in_dsc_ptr->dscB_dtype)
+        switch (in_dsc_ptr->dtype)
            {
             case DTYPE_T:
-                dstr = TclDtypeString(in_dsc_ptr->dscB_dtype);
+                dstr = TclDtypeString(in_dsc_ptr->dtype);
                 str_dupl_char(&spaces,depth,' ');
                 str_concat(&out_str,&spaces,dstr,in_dsc_ptr,0);
-                TclTextOut(out_str.dscA_pointer);
+                TclTextOut(out_str.pointer);
                 sts = 1;
                 break;
 
@@ -260,17 +260,17 @@ static int CvtGenericRT(struct descriptor_r *in_dsc_ptr,int depth)
     int ldepth;
 
     ldepth = depth + 4;
-    for (i = 0; sts && i < in_dsc_ptr->dscB_ndesc; i++)
+    for (i = 0; sts && i < in_dsc_ptr->ndesc; i++)
        {
-        if (in_dsc_ptr->dscA_dscptrs[i])
+        if (in_dsc_ptr->dscptrs[i])
            {
-            sts = CvtDxT(in_dsc_ptr->dscA_dscptrs[i],depth + 4);
+            sts = CvtDxT(in_dsc_ptr->dscptrs[i],depth + 4);
            }
         else
            {
             str_dupl_char(&spaces,ldepth,' ');
             str_concat(&out_str,&spaces,"*** EMPTY ****",0);
-            TclTextOut(out_str.dscA_pointer);
+            TclTextOut(out_str.pointer);
             sts = 1;
            }
        }
@@ -293,14 +293,14 @@ static int CvtFunctionT(struct descriptor *in_dsc_ptr,int depth)
     static DYNAMIC_DESCRIPTOR(out_str);
     struct descriptor_s opcode_dsc = {2,DTYPE_WU,CLASS_S,(char *) 0};
 
-    opcode_dsc.dscA_pointer = (char *) in_dsc_ptr->dscA_pointer;
+    opcode_dsc.pointer = (char *) in_dsc_ptr->pointer;
     str_dupl_char(&spaces,depth,' ');
-    dstr = TclDtypeString(in_dsc_ptr->dscB_dtype);
+    dstr = TclDtypeString(in_dsc_ptr->dtype);
     sts = TdiOpcodeString(&opcode_dsc,&ostr MDS_END_ARG);
     if (sts & 1)
        {
-        str_concat(&out_str,&spaces,dstr,ostr.dscA_pointer,0);
-        TclTextOut(out_str.dscA_pointer);
+        str_concat(&out_str,&spaces,dstr,ostr.pointer,0);
+        TclTextOut(out_str.pointer);
         sts = CvtGenericRT((struct descriptor_r *) in_dsc_ptr,depth);
        }
     MdsFree1Dx(&ostr,NULL);
@@ -321,14 +321,14 @@ static int CvtRdscT(struct descriptor *in_dsc_ptr,int depth)
     static DYNAMIC_DESCRIPTOR(spaces);
     static DYNAMIC_DESCRIPTOR(out_str);
 
-    if (in_dsc_ptr->dscB_dtype == DTYPE_FUNCTION)
+    if (in_dsc_ptr->dtype == DTYPE_FUNCTION)
         sts = CvtFunctionT(in_dsc_ptr,depth);
     else
        {
         str_dupl_char(&spaces,depth,' ');
-        dstr = TclDtypeString(in_dsc_ptr->dscB_dtype);
+        dstr = TclDtypeString(in_dsc_ptr->dtype);
         str_concat(&out_str,&spaces,dstr,0);
-        TclTextOut(out_str.dscA_pointer);
+        TclTextOut(out_str.pointer);
         sts = CvtGenericRT((struct descriptor_r *) in_dsc_ptr,depth);
         str_free1_dx(&out_str);
         str_free1_dx(&spaces);
@@ -354,39 +354,39 @@ static int CvtAdscT(struct descriptor_a *in_dsc_ptr,int depth)
     static DYNAMIC_DESCRIPTOR(out_str);
 
     str_dupl_char(&spaces,depth,' ');
-    dstr = TclDtypeString(in_dsc_ptr->dscB_dtype);
+    dstr = TclDtypeString(in_dsc_ptr->dtype);
     str_concat(&out_str,&spaces,dstr,"Array [ ",0);
-    if (in_dsc_ptr->aflags.dscV_bounds)
+    if (in_dsc_ptr->aflags.bounds)
        {
         bptr = (int *) ((char *)in_dsc_ptr + sizeof(struct descriptor_a) +
-                sizeof(void *) + (in_dsc_ptr->dscB_dimct) * sizeof(int));
-        for (dim = 0; dim < in_dsc_ptr->dscB_dimct; dim++)
+                sizeof(void *) + (in_dsc_ptr->dimct) * sizeof(int));
+        for (dim = 0; dim < in_dsc_ptr->dimct; dim++)
            {
             lbptr = bptr++;
             ubptr = bptr++;
             sprintf(bchars,"%d:%d%s",*lbptr,*ubptr,
-                        (dim < in_dsc_ptr->dscB_dimct - 1) ? "," : "");
+                        (dim < in_dsc_ptr->dimct - 1) ? "," : "");
             str_append(&out_str,bchars);
            }
        }
-    else if (in_dsc_ptr->aflags.dscV_coeff)
+    else if (in_dsc_ptr->aflags.coeff)
        {
         bptr = (int *) ((char *)in_dsc_ptr + sizeof(struct descriptor_a) +
                         sizeof(void *));
-        for (dim = 0; dim < in_dsc_ptr->dscB_dimct; dim++)
+        for (dim = 0; dim < in_dsc_ptr->dimct; dim++)
            {
             sprintf(bchars,"%d%s",*bptr++,
-                        (dim < in_dsc_ptr->dscB_dimct - 1) ? "," : "");
+                        (dim < in_dsc_ptr->dimct - 1) ? "," : "");
             str_append(&out_str,bchars);
            }
        }
     else
        {
-        sprintf(bchars,"%d",in_dsc_ptr->dscL_arsize / in_dsc_ptr->dscW_length);
+        sprintf(bchars,"%lld",in_dsc_ptr->arsize / in_dsc_ptr->length);
         str_append(&out_str,bchars);
        }
     str_append(&out_str," ]");
-    TclTextOut(out_str.dscA_pointer);
+    TclTextOut(out_str.pointer);
     str_free1_dx(&out_str);
     str_free1_dx(&spaces);
     return 1;
@@ -404,18 +404,18 @@ static int CvtDxT(struct descriptor *in_dsc_ptr,int depth)
     static DYNAMIC_DESCRIPTOR(out_str);
 
     str_dupl_char(&spaces,depth,' ');
-    switch (in_dsc_ptr->dscB_class)
+    switch (in_dsc_ptr->class)
        {
         case CLASS_XD:
         case CLASS_XS:
              {
-              if (in_dsc_ptr->dscB_dtype == DTYPE_DSC)
-                  sts = CvtDxT((struct descriptor *) in_dsc_ptr->dscA_pointer,depth);
+              if (in_dsc_ptr->dtype == DTYPE_DSC)
+                  sts = CvtDxT((struct descriptor *) in_dsc_ptr->pointer,depth);
               else
                  {
                   str_concat(&out_str,&spaces,
                           "Invalid Dtype for XD or XS must be DSC",0);
-                  TclTextOut(out_str.dscA_pointer);
+                  TclTextOut(out_str.pointer);
                  }
              }
           break;
@@ -459,8 +459,8 @@ int TclShowData()
     usageMask = -1;
     while (cli_get_value("NODE",&dsc_nodnam) & 1)
        {
-        l2u(dsc_nodnam.dscA_pointer,0);
-        while (TreeFindNodeWild(dsc_nodnam.dscA_pointer,&nid,&ctx,usageMask) & 1)
+        l2u(dsc_nodnam.pointer,0);
+        while (TreeFindNodeWild(dsc_nodnam.pointer,&nid,&ctx,usageMask) & 1)
            {
             pathnam = TreeGetPath(nid);
             TclTextOut(pathnam);

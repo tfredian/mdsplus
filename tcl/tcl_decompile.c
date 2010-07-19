@@ -35,7 +35,7 @@ int TclDecompile()
 
     str_free1_dx(&path_string);
     cli_get_value("PATH",&path_string);
-    sts = TreeFindNode(path_string.dscA_pointer,&nid);
+    sts = TreeFindNode(path_string.pointer,&nid);
     str_free1_dx(&path_string);
     if (sts & 1)
        {
@@ -45,9 +45,9 @@ int TclDecompile()
             sts = TdiDecompile(&xd,&dsc_string MDS_END_ARG);
             if (sts & 1)
                {
-                k = dsc_string.dscW_length;
+                k = dsc_string.length;
                 p = malloc(k+1);
-                strncpy(p,dsc_string.dscA_pointer,k);
+                strncpy(p,dsc_string.pointer,k);
                 p[k] = '\0';
                 TclTextOut(p);
                 free(p);

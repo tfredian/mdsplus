@@ -159,7 +159,7 @@ Tree *getActiveTree();
 		char *msg;
 	public:
 		MdsException(){}
-		MdsException(char *msg)
+		MdsException(const char *msg)
 		{
 			this->msg = new char[strlen(msg) + 1];
 			strcpy(this->msg, msg);

@@ -29,8 +29,8 @@ int TclWrite()
     if (cli_get_value("FILE",&dsc_exp) & 1)
        {
         cli_get_value("SHOTID",&dsc_shotid);
-        sscanf(dsc_shotid.dscA_pointer,"%d",&shotid);
-        sts = TreeWriteTree(dsc_exp.dscA_pointer,shotid);
+        sscanf(dsc_shotid.pointer,"%d",&shotid);
+        sts = TreeWriteTree(dsc_exp.pointer,shotid);
        }
     else
        {

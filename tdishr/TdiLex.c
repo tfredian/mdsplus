@@ -202,7 +202,7 @@ STATIC_ROUTINE int ConvertFloating(struct descriptor_s *str, struct descriptor_r
   if (out_d->length == sizeof(double))
   {
     double tmp;
-    struct descriptor tmp_d = {sizeof(double),DTYPE_NATIVE_DOUBLE,CLASS_S,0};
+    struct descriptor tmp_d = DESCRIPTOR_INIT(sizeof(double),DTYPE_NATIVE_DOUBLE,CLASS_S,0);
     tmp_d.pointer = (char *)&tmp;
     tmp = atof(str_c);
     return TdiConvert(&tmp_d,out_d);
@@ -210,7 +210,7 @@ STATIC_ROUTINE int ConvertFloating(struct descriptor_s *str, struct descriptor_r
   else
   {
     float tmp;
-    struct descriptor tmp_d = {sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0};
+    struct descriptor tmp_d = DESCRIPTOR_INIT(sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0);
     tmp_d.pointer = (char *)&tmp;
     sscanf(str_c,"%g",&tmp);
     return TdiConvert(&tmp_d,out_d);
@@ -222,10 +222,10 @@ int		str_len,
 unsigned char		*str,
 struct marker		*mark_ptr)
 {
-struct descriptor_s str_dsc = {0,DTYPE_T,CLASS_S,0};
+  struct descriptor_s str_dsc = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
 int			bad, idx, status, tst, type;
 STATIC_CONSTANT struct {
-	unsigned short	length;
+	unsigned long	length;
 	unsigned char	dtype;
 } table[] = {
 		{4,	DTYPE_NATIVE_FLOAT},
@@ -290,7 +290,7 @@ int 			len,
 unsigned char		*str,
 struct marker		*mark_ptr)
 {
-struct descriptor_s		sd = {0,DTYPE_T,CLASS_S,0};
+  struct descriptor_s		sd = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
 int				j, token;
 	unsigned char *str_l;
 
@@ -301,7 +301,7 @@ int				j, token;
 */
 	mark_ptr->builtin = -1;
 	MAKE_S(DTYPE_T, len, mark_ptr->rptr);
-	_MOVC3(mark_ptr->rptr->length, str, (char *)mark_ptr->rptr->pointer);
+	_MOVC3(((struct descriptor *)mark_ptr->rptr)->length, str, (char *)mark_ptr->rptr->pointer);
 
 	/*****************************
 	$ marks next compile argument.
@@ -386,7 +386,7 @@ unsigned char	*str,
 struct marker		*mark_ptr)
 {
 STATIC_ROUTINE struct {
-	unsigned short	length;
+	unsigned long	length;
 	unsigned char	udtype, sdtype;
 } table[] = {
 	{1,	DTYPE_BU,DTYPE_B},
@@ -495,7 +495,7 @@ int			length, is_signed, status = 1, tst, type;
 	while (now < end && (*now == ' ' || *now == '\t')) ++now;
 
 	length = table[type].length;
-	MAKE_S((unsigned char)(is_signed ? table[type].sdtype : table[type].udtype), (unsigned short)length, mark_ptr->rptr);
+	MAKE_S((unsigned char)(is_signed ? table[type].sdtype : table[type].udtype), length, mark_ptr->rptr);
 	mark_ptr->builtin = -1;
 	_MOVC3(length, (char *)qq, (char *)mark_ptr->rptr->pointer);
 
@@ -541,21 +541,21 @@ struct marker		*mark_ptr)
 	mark_ptr->builtin = -1;
 	if (TdiRefZone.l_rel_path)
 	{
-		MAKE_S(DTYPE_PATH, (unsigned short)len, mark_ptr->rptr);
+		MAKE_S(DTYPE_PATH, len, mark_ptr->rptr);
 		_MOVC3(len, str, (char *)mark_ptr->rptr->pointer);
 	}
 	else if (TreeFindNode((char *)str_l, &nid) & 1)
 	{
-		MAKE_S(DTYPE_NID, (unsigned short)sizeof(nid), mark_ptr->rptr);
+		MAKE_S(DTYPE_NID, sizeof(nid), mark_ptr->rptr);
 		*(int *)mark_ptr->rptr->pointer = nid;
 	}
 	else
 	{
-		struct descriptor	abs_dsc = {0,DTYPE_T,CLASS_D,0};
+	  struct descriptor	abs_dsc = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
 		char *apath = TreeAbsPath((char *)str_l);
 		if (apath != NULL)
 		{
-			unsigned short alen = (unsigned short)strlen(apath);
+			unsigned long alen = strlen(apath);
 			StrCopyR(&abs_dsc,&alen,apath);
 			TreeFree(apath);
 			MAKE_S(DTYPE_PATH, abs_dsc.length, mark_ptr->rptr);
@@ -579,11 +579,11 @@ int			len,
 unsigned char		*str,
 struct marker		*mark_ptr)
 {
-int		lenx = len - 2;
+unsigned long		lenx = len - 2;
 	while (str[lenx+1] == '.' || str[lenx+1] == ':') --lenx;
 	mark_ptr->builtin = -1;
 	MAKE_S(DTYPE_T, lenx, mark_ptr->rptr);
-	_MOVC3((unsigned short)lenx, &str[2], (char *)mark_ptr->rptr->pointer);
+	_MOVC3(lenx, &str[2], (char *)mark_ptr->rptr->pointer);
 	return LEX_POINT;
 }
 /*--------------------------------------------------------

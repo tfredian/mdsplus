@@ -181,9 +181,9 @@ int TdiGtQ();
   char *pm0, *pm1, *pm2 = (char *)mask->pointer;\
   char testval;\
   int  status;\
-  struct descriptor s_d={in->length,DTYPE_T,CLASS_S,0};\
-  struct descriptor o_d={1,DTYPE_B,CLASS_S,0};\
-  struct descriptor result={in->length,DTYPE_T,CLASS_S,0};\
+  struct descriptor s_d=DESCRIPTOR_INIT(in->length,DTYPE_T,CLASS_S,0);	\
+  struct descriptor o_d=DESCRIPTOR_INIT(1,DTYPE_B,CLASS_S,0);		\
+  struct descriptor result=DESCRIPTOR_INIT(in->length,DTYPE_T,CLASS_S,0); \
   o_d.pointer=(char *)&testval;\
   result.pointer=pi0;\
   step0=in->length;\
@@ -320,9 +320,9 @@ int Tdi3MinLoc(struct descriptor *in, struct descriptor *mask,
   char *pm0, *pm1, *pm2 = (char *)mask->pointer;\
   char testval;\
   int  status;\
-  struct descriptor s_d={in->length,DTYPE_T,CLASS_S,0};\
-  struct descriptor o_d={1,DTYPE_B,CLASS_S,0};\
-  struct descriptor result={in->length,DTYPE_T,CLASS_S,0};\
+  struct descriptor s_d=DESCRIPTOR_INIT(in->length,DTYPE_T,CLASS_S,0);	\
+  struct descriptor o_d=DESCRIPTOR_INIT(1,DTYPE_B,CLASS_S,0);		\
+  struct descriptor result=DESCRIPTOR_INIT(in->length,DTYPE_T,CLASS_S,0); \
   o_d.pointer=(char *)&testval;\
   result.pointer=pi0;\
   step0=in->length;\

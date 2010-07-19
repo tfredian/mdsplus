@@ -72,7 +72,7 @@ int   mdsdcl_wait()		/* Return:  status			*/
         lib$free_ef(&efn);
        }
 #else
-    k = sscanf(dsc_deltatime.dscA_pointer,"%d %d:%d:%f",
+    k = sscanf(dsc_deltatime.pointer,"%d %d:%d:%f",
                 &day,&hr,&min,&fsec);
     if (k != 4)
        {

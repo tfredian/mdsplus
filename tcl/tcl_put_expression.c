@@ -29,7 +29,7 @@ int TclPutExpression()
     int ctx = 0;
 
     cli_get_value("NODE",&dsc_nodnam);
-    sts = TreeFindNode(dsc_nodnam.dscA_pointer,&nid);
+    sts = TreeFindNode(dsc_nodnam.pointer,&nid);
     if (sts & 1)
        {
         if (cli_present("EXTENDED") & 1)
@@ -44,12 +44,12 @@ int TclPutExpression()
             cli_get_value("EOF",&dsc_eof);
             while ((mdsdcl_get_input_nosymbols("PUT> ",&val_part) & 1))
                {
-                if (dsc_eof.dscA_pointer && val_part.dscA_pointer)
+                if (dsc_eof.pointer && val_part.pointer)
                    {
-                    if (!strcmp(dsc_eof.dscA_pointer,val_part.dscA_pointer))
+                    if (!strcmp(dsc_eof.pointer,val_part.pointer))
                         break;
                    }
-                else if (!val_part.dscW_length)
+                else if (!val_part.length)
                     break;
                 if (use_lf)
                     str_concat(&dsc_ascValue,&dsc_ascValue,&val_part,"\n",0);
@@ -63,7 +63,7 @@ int TclPutExpression()
         sts = TdiCompile(&dsc_ascValue,&value_xd MDS_END_ARG);
         if (sts & 1)
            {
-            if (!value_xd.dscL_l_length) value_xd.dscB_dtype = DTYPE_DSC;
+            if (!value_xd.l_length) value_xd.dtype = DTYPE_DSC;
             sts = TreePutRecord(nid,(struct descriptor *)&value_xd,0);
            }
        }

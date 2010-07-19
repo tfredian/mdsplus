@@ -25,17 +25,17 @@ int TclEdit()
 
     cli_get_value("FILE",&dsc_filnam);
     cli_get_value("SHOTID",&dsc_asciiShot);
-    sscanf(dsc_asciiShot.dscA_pointer,"%d",&shot);
+    sscanf(dsc_asciiShot.pointer,"%d",&shot);
     if (cli_present("NEW") & 1)
-        sts = TreeOpenNew(dsc_filnam.dscA_pointer,shot);
+        sts = TreeOpenNew(dsc_filnam.pointer,shot);
     else
-        sts = TreeOpenEdit(dsc_filnam.dscA_pointer,shot);
+        sts = TreeOpenEdit(dsc_filnam.pointer,shot);
     if (sts & 1)
         TclNodeTouched(0,tree);
     else
        {
         sts = MdsMsg(sts,"Error opening tree-file %s for EDIT",
-                dsc_filnam.dscA_pointer);
+                dsc_filnam.pointer);
 #ifdef vms
         lib$signal(sts,0);
 #endif

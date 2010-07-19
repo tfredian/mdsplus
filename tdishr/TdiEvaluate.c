@@ -24,7 +24,7 @@ RULES OF THE GAME:
 
 STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 
-STATIC_CONSTANT struct descriptor missing = {0,DTYPE_MISSING,CLASS_S,0};
+STATIC_CONSTANT struct descriptor missing = DESCRIPTOR_INIT(0,DTYPE_MISSING,CLASS_S,0);
 
 extern int TdiGetIdent();
 extern int TdiEvaluate();

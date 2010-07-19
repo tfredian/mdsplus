@@ -33,7 +33,7 @@ EXPORT extern int MdsCopyDxXdZ(struct descriptor *in, struct descriptor_xd *out,
 EXPORT extern char *MdsDescrToCstring(struct descriptor *);
 EXPORT extern void MdsFree(void *);
 EXPORT extern int MdsGet1Dx(unsigned long *len, unsigned char *dtype, struct descriptor_xd *dsc, void **zone);
-EXPORT extern int MdsGet1DxA(struct descriptor_a * in, unsigned long *len, unsigned char *dtype, struct descriptor_xd *out);
+EXPORT extern int MdsGet1DxA(struct descriptor_a * in, unsigned short *len, unsigned char *dtype, struct descriptor_xd *out);
 EXPORT extern int MdsGet1DxS(unsigned long *len, unsigned char *dtype, struct descriptor_xd *out);
 EXPORT extern int MdsGetCurrentShotId(char *experiment);
 EXPORT extern char *MdsGetMsg(int sts);

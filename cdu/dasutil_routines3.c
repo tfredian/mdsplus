@@ -139,7 +139,7 @@ static char  *start_of_line(	/* Returns:  addr of line[]		*/
     if (num)
        {
         for (i=0,k=0 ; i<num ; i++)
-            k += sprintf(displayLine+k,cursor_left);
+	  k += sprintf(displayLine+k,"%s",cursor_left);
         write(1,displayLine,k);
        }
     return(line);
@@ -226,7 +226,7 @@ char  *fgets_with_edit(		/* Returns:  addr of usrline, or NULL	*/
     short wlen;
     struct descriptor  *dscPtr;
     static DYNAMIC_DESCRIPTOR(dsc_cmdline);
-    static struct descriptor dsc_prompt = {0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0};
+    static struct descriptor dsc_prompt = {0,DTYPE_T,CLASS_S,0};
 #else
     int   idx;
     int   ierr;
@@ -264,7 +264,7 @@ char  *fgets_with_edit(		/* Returns:  addr of usrline, or NULL	*/
         sts = setupterm(0,1,&ierr);
         if (sts || ierr!=1)
            {
-            printf("after setupterm: sts=%d  ierr=%d\n");
+	     printf("after setupterm: sts=%d  ierr=%d\n",sts,ierr);
             usrline[0] = '\0';
             return(0);
            }
@@ -302,8 +302,8 @@ char  *fgets_with_edit(		/* Returns:  addr of usrline, or NULL	*/
     dscPtr = prompt ? &dsc_prompt : 0;
     if (dscPtr)
        {
-        dsc_prompt.dscA_pointer = prompt ? prompt : "Command> ";
-        dsc_prompt.dscW_length = strlen(dsc_prompt.dscA_pointer);
+        dsc_prompt.pointer = prompt ? prompt : "Command> ";
+        dsc_prompt.length = strlen(dsc_prompt.pointer);
        }
     sts = smg$read_composed_line(&keyboard_id,0,
                 &dsc_cmdline,dscPtr,&wlen);
@@ -312,7 +312,7 @@ char  *fgets_with_edit(		/* Returns:  addr of usrline, or NULL	*/
         dasmsg(sts,"Error from smg$read_composed_string");
         return(0);
        }
-    p = dsc_cmdline.dscA_pointer ? dsc_cmdline.dscA_pointer : "";
+    p = dsc_cmdline.pointer ? dsc_cmdline.pointer : "";
     k = (wlen<maxlen) ? wlen : maxlen;
     strncpy(usrline,p,k);
     if (wlen < maxlen)
@@ -437,7 +437,7 @@ char  *fgets_with_edit(		/* Returns:  addr of usrline, or NULL	*/
                    {
                     k = 0;
                     for (i=0 ; i<num ; i++)
-                        k += sprintf(displayLine+k,cursorRight);
+		      k += sprintf(displayLine+k,"%s",cursorRight);
                     write(1,displayLine,k);
                     p += num;
                    }
@@ -452,7 +452,7 @@ char  *fgets_with_edit(		/* Returns:  addr of usrline, or NULL	*/
                 if (num)
                    {
                     for (i=0,k=0 ; i<num ; i++)
-                        k += sprintf(displayLine+k,cursor_left);
+		      k += sprintf(displayLine+k,"%s",cursor_left);
                     k += sprintf(displayLine+k,"%s%s",p,clrEol);
                     write(1,displayLine,k);
                     for (i=0 ; line[i]=p[i] ; i++)

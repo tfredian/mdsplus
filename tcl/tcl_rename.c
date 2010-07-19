@@ -24,9 +24,9 @@ int   TclRename()
 
     cli_get_value("SOURCE",&srcnam);
     cli_get_value("DEST",&destnam);
-    sts = TreeFindNode(srcnam.dscA_pointer,&nid);
+    sts = TreeFindNode(srcnam.pointer,&nid);
     if (sts & 1)
-        sts = TreeRenameNode(nid,destnam.dscA_pointer);
+        sts = TreeRenameNode(nid,destnam.pointer);
 
     if (sts & 1)
         TclNodeTouched(nid,rename_node);

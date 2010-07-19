@@ -19,5 +19,5 @@ int TclSetEvent()
     static DYNAMIC_DESCRIPTOR(event);
 
     cli_get_value("EVENT",&event);
-    return MDSEvent(event.dscA_pointer,0,0);
+    return MDSEvent(event.pointer,0,0);
    }

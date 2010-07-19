@@ -39,12 +39,12 @@ int TclSetTree()
 		 *-------------------------------------------------------*/
     cli_get_value("FILE",&dsc_filnam);
     cli_get_value("SHOTID",&dsc_asciiShot);
-    dsc_asciiShot.dscB_class = CLASS_S;		/* vms: malloc vs str$	*/
+    dsc_asciiShot.class = CLASS_S;		/* vms: malloc vs str$	*/
     sts = TdiExecute(&dsc_asciiShot,&dsc_shot MDS_END_ARG);
-    dsc_asciiShot.dscB_class = CLASS_D;
+    dsc_asciiShot.class = CLASS_D;
     if (sts & 1)
        {
-        filnam = dsc_filnam.dscA_pointer;
+        filnam = dsc_filnam.pointer;
         if (cli_present("READONLY") & 1)
             sts = TreeOpen(filnam,shot,READONLY);
         else

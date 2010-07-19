@@ -242,10 +242,11 @@ fort:			tmp[ntmp] = EMPTY_XD;
 		break;
 	case DTYPE_POINTER:
 	  dx.length=sizeof(void *);
-	  //	  if (sizeof(void *) == 8)
-	  //  dx.dtype = DTYPE_QU;
-	  //else
-	  //  dx.dtype = DTYPE_LU;
+	  /*	  if (sizeof(void *) == 8)
+	    dx.dtype = DTYPE_QU;
+	  else
+	    dx.dtype = DTYPE_LU;
+          */
 	  break;
 
 	default :

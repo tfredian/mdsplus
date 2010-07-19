@@ -92,14 +92,14 @@ STATIC_CONSTANT DESCRIPTOR(hilite, "##");
 STATIC_CONSTANT DESCRIPTOR(newline, "\n");
 STATIC_THREADSAFE pthread_mutex_t lock;
 STATIC_THREADSAFE int lock_initialized = 0;
-STATIC_CONSTANT struct descriptor miss_dsc = {0,DTYPE_MISSING, CLASS_S, 0};
+STATIC_CONSTANT struct descriptor miss_dsc = DESCRIPTOR_INIT(0,DTYPE_MISSING, CLASS_S, 0);
 
 /****************************
 Explain in 300 words or less.
 ****************************/
 #define MAXMESS 1800
 STATIC_ROUTINE void add(char *text) {
-  struct descriptor_d new = {0,DTYPE_T,CLASS_D,0};
+  struct descriptor_d new = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
   struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
   new.length = (unsigned short)strlen(text);
   new.pointer = text;
@@ -125,9 +125,9 @@ TdiRefStandard(TdiTrace)
   struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
 	if (message->length > MAXMESS) return 0;
 	add("%TDI Decompile text_length");
-	numb(out_ptr->length);
+	numb(out_ptr->l_length);
 	add(" partial text: ");
-	if (out_ptr->length < MAXLINE - 70) StrAppend(message, out_ptr);
+	if (out_ptr->l_length < MAXLINE - 70) StrAppend(message, out_ptr);
 	else {
 		*((char *)out_ptr->pointer + MAXLINE - 70) = '\0';
 		add((char *)out_ptr->pointer);
@@ -137,7 +137,7 @@ TdiRefStandard(TdiTrace)
 
 TdiRefStandard(TRACE)
 int	j;
-struct descriptor_d	text = {0,DTYPE_T,CLASS_D,0};
+struct descriptor_d	text = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
 struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
 unsigned short		now = message->length;
 
@@ -288,12 +288,12 @@ TdiRefStandard(TdiIntrinsic)
 			else switch (dsc_ptr->class) {
 			case CLASS_S :
 			case CLASS_D :
-				if (out_ptr->length != dsc_ptr->length) {
+			  if (((struct descriptor *)out_ptr)->length != dsc_ptr->length) {
 					stat1 = StrGet1Dx(&dsc_ptr->length, out_ptr);
 				}
 				if (stat1 & 1) {
 					out_ptr->dtype = dsc_ptr->dtype;
-					_MOVC3(out_ptr->length, dsc_ptr->pointer, (char *)out_ptr->pointer);
+					_MOVC3(((struct descriptor *)out_ptr)->length, dsc_ptr->pointer, (char *)out_ptr->pointer);
 				}
 				break;
 			default :
@@ -348,9 +348,9 @@ TdiRefStandard(TdiIntrinsic)
 			if (nbody + npost > MAXLINE) nbody = MAXLINE - npost;
 		}
 		{
-		struct descriptor pre = {0,DTYPE_T,CLASS_S,0};
-		struct descriptor body = {0,DTYPE_T,CLASS_S,0};
-		struct descriptor post = {0,DTYPE_T,CLASS_S,0};
+		  struct descriptor pre = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+		  struct descriptor body = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+		  struct descriptor post = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
                 pre.length = (unsigned short)npre;
                 pre.pointer = cur-nbody-npre;
                 body.length = (unsigned short)nbody;
@@ -381,7 +381,7 @@ int mess_stat = (TdiThreadStatic())->TdiIntrinsic_mess_stat;
 struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
 	if (narg > 0 && list[0]) status = TdiGetLong(list[0], &option);
 	if (option & 1 && mess_stat != 1) {
-	struct descriptor dmsg = {0,DTYPE_T,CLASS_S,0};
+	  struct descriptor dmsg = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
         dmsg.pointer = MdsGetMsg(mess_stat);
         dmsg.length = strlen(dmsg.pointer);
 		StrConcat((struct descriptor *)message, &dmsg, &newline, message MDS_END_ARG);
@@ -398,7 +398,7 @@ STATIC_ROUTINE struct descriptor *FixedArray(struct descriptor *in)
 {
 
   array_coeff *a = (array_coeff *)in;
-  int dsize = sizeof(struct descriptor_a)+sizeof(int)+3*sizeof(int)*a->dimct;
+  int dsize = sizeof(struct descriptor_a)+sizeof(char *)+3*sizeof(int)*a->dimct;
   int i;
   BOUNDS *bounds = (BOUNDS *)&a->m[a->dimct];
   array_coeff *answer = (array_coeff *)memcpy(malloc(dsize),a,dsize);

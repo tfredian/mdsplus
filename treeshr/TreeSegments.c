@@ -822,7 +822,7 @@ int _TreeGetSegmentLimits(void *dbid, int nid, int idx, struct descriptor_xd *re
 	status = GetSegmentIndex(info_ptr, index.previous_offset, &index);
       if ((status&1) != 0 && idx >= index.first_idx && idx < index.first_idx + SEGMENTS_PER_INDEX) {
 	SEGMENT_INFO *sinfo=&index.segment[idx % SEGMENTS_PER_INDEX];
-	struct descriptor q_d = {8,DTYPE_Q,CLASS_S,0};
+	struct descriptor q_d = DESCRIPTOR_INIT(8,DTYPE_Q,CLASS_S,0);
 	if (sinfo->dimension_offset != -1 && sinfo->dimension_length==0) {
           if (sinfo->rows < 0) {
 	    q_d.pointer=(char *)&sinfo->start;
@@ -960,7 +960,7 @@ int _TreeSetXNci(void *dbid, int nid, char *xnciname, struct descriptor *value) 
 	  struct descriptor *dptr;
 	  unsigned char dsc_dtype = DTYPE_DSC;
 	  int dlen = local_nci.length - 8;
-	  unsigned int ddlen = dlen + sizeof(struct descriptor);
+	  unsigned long ddlen = dlen + sizeof(struct descriptor);
 	  status = MdsGet1Dx(&ddlen, &dsc_dtype, &dsc,0);
 	  dptr = dsc.pointer;
 	  dptr->length = dlen;
@@ -1236,8 +1236,8 @@ int TreeSetRetrievalQuota(int quota) {
 int TreePutDsc(TREE_INFO *info, int nid_in, struct descriptor *dsc, _int64 *offset, int *length) {
   EMPTYXD(xd);
   int compressible;
-  int dlen;
-  int reclen;
+  unsigned long long dlen;
+  unsigned long long reclen;
   char dtype,class;
   int data_in_altbuf;
   NID *nid = (NID *)&nid_in;
@@ -1787,7 +1787,7 @@ old array is same size.
 	   else if (!data_a->pointer)
 	     printf("data_a's pointer is null\n");
 	   else if (data_a->arsize < initialValue->arsize)
-	     printf("data_a->arsize (%d) < initialValue->arsize (%d)\n",data_a->arsize,initialValue->arsize);
+	     printf("data_a->arsize (%lld) < initialValue->arsize (%lld)\n",data_a->arsize,initialValue->arsize);
 	   else if (!dim_a)
 	     printf("dim_a null\n");
 	   else if (dim_a->class != CLASS_A)
@@ -1795,7 +1795,7 @@ old array is same size.
 	   else if (!dim_a->pointer)
 	     printf("dim_a's pointer is null\n");
 	   else if (dim_a->arsize < (rows * sizeof(_int64)))
-	     printf("dim_a->arsize (%d) < (rows (%d) * sizeof(_int64))",dim_a->arsize,rows);
+	     printf("dim_a->arsize (%lld) < (rows (%d) * sizeof(_int64))",dim_a->arsize,rows);
 	   else if (dim_a->dimct != 1)
 	     printf("dim_a->dimct (%d) != 1\n",dim_a->dimct);
 	   else if (dim_a->length != sizeof(_int64))

@@ -41,7 +41,7 @@ struct marker			*mark_ptr)
 {
 struct descriptor		*ptr;
 struct descriptor_xd	junk = EMPTY_XD;
-int				len = mark_ptr->rptr->length, status;
+ int				len = ((struct descriptor *)mark_ptr->rptr)->length, status;
 unsigned char			*c_ptr;
 
 	if (len == 1) ++TdiRefZone.l_iarg;

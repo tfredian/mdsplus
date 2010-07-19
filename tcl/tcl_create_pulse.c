@@ -149,7 +149,7 @@ static void  PutOnRemainingList(Server *s)
  another server";
     char  msg[128];
 
-    sprintf(msg,fmt,NidToTree(s->current_nid),s->server.dscA_pointer);
+    sprintf(msg,fmt,NidToTree(s->current_nid),s->server.pointer);
     TclTextOut(msg);
     ServerList->nid[ServerList->num++] = s->current_nid;
     for (i = 0; i < s->num; i++)
@@ -317,7 +317,7 @@ int   TclCreatePulse_server()
         static DYNAMIC_DESCRIPTOR(dsc_tag);
         int   nid;
         str_concat(&dsc_tag,"\\",&dsc_tree,"::TOP",0);
-        if (TreeFindNode(dsc_tag.dscA_pointer,&nid) & 1)
+        if (TreeFindNode(dsc_tag.pointer,&nid) & 1)
           s->nid[s->num++] = nid;
        }
     return 1;
@@ -418,9 +418,9 @@ int   TclCreatePulse()
 
     cli_get_value("SHOT",&dsc_asciiShot);
 #ifdef vms
-    dsc_asciiShot.dscB_class = CLASS_S;		/* vms: malloc vs str$	*/
+    dsc_asciiShot.class = CLASS_S;		/* vms: malloc vs str$	*/
     sts = TdiExecute(&dsc_asciiShot,&dsc_shot MDS_END_ARG);
-    dsc_asciiShot.dscB_class = CLASS_D;
+    dsc_asciiShot.class = CLASS_D;
 #else
     sts = TdiExecute(&dsc_asciiShot,&dsc_shot MDS_END_ARG);
 #endif
@@ -439,7 +439,7 @@ int   TclCreatePulse()
                    {
                     void  *ctx = 0;
                     str_prefix(&dsc_nodename,"***.");
-                    while (TreeFindNodeWild(dsc_nodename.dscA_pointer,&nid,&ctx,(1 << TreeUSAGE_SUBTREE)) & 1)
+                    while (TreeFindNodeWild(dsc_nodename.pointer,&nid,&ctx,(1 << TreeUSAGE_SUBTREE)) & 1)
                        {
                         if (conditional)
                            {
@@ -471,7 +471,7 @@ int   TclCreatePulse()
                    {
                     void  *ctx = 0;
                     str_prefix(&dsc_nodename,"***.");
-                    while (TreeFindNodeWild(dsc_nodename.dscA_pointer,&nid,&ctx,(1 << TreeUSAGE_SUBTREE)) & 1)
+                    while (TreeFindNodeWild(dsc_nodename.pointer,&nid,&ctx,(1 << TreeUSAGE_SUBTREE)) & 1)
                        {
                         for (i = 0; i < num; i++)
                            {

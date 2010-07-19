@@ -51,12 +51,12 @@ int   cli_error(		/* Display only				*/
         fprintf(stderr,"\n*ERR* %s\n",msg);
 
     dsc = cli_addr_cmdline_dsc();
-    if (p = dsc->dscA_pointer)
+    if (p = dsc->pointer)
        {
         strtrim(p,0);
         fprintf(stderr,"cmdline = '%s'\n",p);
         k = cliNonblank_save - p;
-        if (k>=0 && k<dsc->dscW_length)
+        if (k>=0 && k<dsc->length)
            {
             sprintf(fmt,"%%%ds^^^^\n",k+11);
             fprintf(stderr,fmt,"");
@@ -86,14 +86,14 @@ int   cliToken(
     char  util[1024];
     static char  legalMdsChars[] = "0123456789._-:;*?%\\";
     static struct descriptor  dscUtil = {
-                        sizeof(util)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0};
+                        sizeof(util)-1,DTYPE_T,CLASS_S,0};
 
     typeflag = flags & 0x0FFF;
     p = *pp = nonblank(*pp);
     if (!p)
         return(0);
 
-    dscUtil.dscA_pointer = util;	/* set addr in dscUtil descrip	*/
+    dscUtil.pointer = util;	/* set addr in dscUtil descrip	*/
 
     if (!typeflag ||
       typeflag==VAL_M_QUOTED_STRING || typeflag==VAL_M_USER_DEFINED_TYPE)
@@ -125,12 +125,12 @@ int   cliToken(
                 sts = 0;		/*..invalid number		*/
             else
                {
-                if (k > dscUtil.dscW_length)
-                    k = dscUtil.dscW_length;
-                strncpy(dscUtil.dscA_pointer,p,k);
-                if (k < dscUtil.dscW_length)
-                    dscUtil.dscA_pointer[k] = '\0';
-                l2un(dscUtil.dscA_pointer,0,k);
+                if (k > dscUtil.length)
+                    k = dscUtil.length;
+                strncpy(dscUtil.pointer,p,k);
+                if (k < dscUtil.length)
+                    dscUtil.pointer[k] = '\0';
+                l2un(dscUtil.pointer,0,k);
                 p = nonblank(p2);
                 sts = CLI_STS_NORMAL;
                }
@@ -143,11 +143,11 @@ int   cliToken(
     else if (typeflag == VAL_M_REST_OF_LINE)
        {
         k = strlen(p);
-        if (k > dscUtil.dscW_length)
-            k = dscUtil.dscW_length;
-        strncpy(dscUtil.dscA_pointer,p,k);
-        if (k < dscUtil.dscW_length)
-            dscUtil.dscA_pointer[k] = '\0';
+        if (k > dscUtil.length)
+            k = dscUtil.length;
+        strncpy(dscUtil.pointer,p,k);
+        if (k < dscUtil.length)
+            dscUtil.pointer[k] = '\0';
         p = 0;
         sts = CLI_STS_NORMAL;
        }

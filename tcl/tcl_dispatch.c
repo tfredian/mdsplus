@@ -64,7 +64,7 @@ int TclDispatch_close()
     else
        {
         while (cli_get_value("SERVER",&ident) & 1)
-            ServerCloseTrees(ident.dscA_pointer);
+            ServerCloseTrees(ident.pointer);
        }
     return 1;
    }
@@ -82,7 +82,7 @@ int TclDispatch_build()
     void  *free_dispatch_table = dispatch_table;
 
     sts = (cli_get_value("MONITOR",&dsc_monitor) & 1);
-    monitor = (sts&1) ? dsc_monitor.dscA_pointer : 0;
+    monitor = (sts&1) ? dsc_monitor.pointer : 0;
     dispatch_table = 0;
     if (free_dispatch_table)
         ServerFreeDispatchTable(free_dispatch_table);
@@ -125,14 +125,14 @@ int TclDispatch()
     int nid;
     int waiting = cli_present("WAIT") != CLI_STS_NEGATED;
     cli_get_value("NODE",&treenode);
-    l2u(treenode.dscA_pointer,0);
+    l2u(treenode.pointer,0);
     if (!SyncEfnInit) InitSyncEfn();
-    sts = TreeFindNode(treenode.dscA_pointer,&nid);
+    sts = TreeFindNode(treenode.pointer,&nid);
     if (sts & 1)
        {
         static struct descriptor  niddsc =
                 {4, DTYPE_NID, CLASS_S, (char *)0};
-        niddsc.dscA_pointer = (char *) &nid;
+        niddsc.pointer = (char *) &nid;
         sts = TdiIdentOf(&niddsc,&ident MDS_END_ARG);
         if (sts & 1)
           sts = TdiData(&ident, &ident MDS_END_ARG);
@@ -147,7 +147,7 @@ int TclDispatch()
                             {0,0,0,0}};
             TreeGetDbi(itmlst);
             StrAppend(&ident,&nullstr);
-            sts = ServerDispatchAction(SyncEfn,ident.dscA_pointer
+            sts = ServerDispatchAction(SyncEfn,ident.pointer
                         ,treename,shot,nid,0,0
                         ,waiting ? &iostatus:0,0,0);
             if (sts & 1)
@@ -161,7 +161,7 @@ int TclDispatch()
            }
        }
     if (!(sts & 1))
-        MdsMsg(sts,"Error dispatching %s",treenode.dscA_pointer);
+        MdsMsg(sts,"Error dispatching %s",treenode.pointer);
     return sts;
    }
 
@@ -178,7 +178,7 @@ int TclDispatch_abort_server()
     static DYNAMIC_DESCRIPTOR(ident);
 
     while ((sts & 1) && (cli_get_value("SERVER_NAME",&ident) & 1))
-        sts = ServerAbortServer(ident.dscA_pointer,0);
+        sts = ServerAbortServer(ident.pointer,0);
     if (~sts & 1)
         MdsMsg(sts,"Error from ServerAbortServer");
     return sts;
@@ -190,7 +190,7 @@ int TclDispatch_stop_server()
     int sts = 1;
     static DYNAMIC_DESCRIPTOR(ident);
     while (sts & 1 && cli_get_value("SERVNAM",&ident) & 1)
-        sts = ServerStopServer(ident.dscA_pointer);
+        sts = ServerStopServer(ident.pointer);
     if (~sts & 1)
         MdsMsg(sts,"Error from ServerStopServer");
     return sts;
@@ -202,7 +202,7 @@ int TclDispatch_start_server()
     int sts = 1;
     static DYNAMIC_DESCRIPTOR(ident);
     while (sts & 1 && cli_get_value("SERVER",&ident) & 1)
-        sts = ServerStartServer(ident.dscA_pointer);
+        sts = ServerStartServer(ident.pointer);
     if (~sts & 1)
         MdsMsg(sts,"Error from ServerStartServer");
     return sts;
@@ -228,8 +228,8 @@ int TclDispatch_set_server()
         static DYNAMIC_DESCRIPTOR(log_type);
         cli_get_value("LOG",&log_type);
         cli_get_value(&log_type,&log_type);
-        if (log_type.dscA_pointer)
-            sscanf(log_type.dscA_pointer,"%d",&logging);
+        if (log_type.pointer)
+            sscanf(log_type.pointer,"%d",&logging);
         else
            {
             MdsMsg(0,"TclDispatch_set_server: error getting log_type");
@@ -238,11 +238,11 @@ int TclDispatch_set_server()
 
     while (sts & 1 && cli_get_value("SERVER",&ident) & 1)
        {
-        sts = ServerSetLogging(ident.dscA_pointer,(char)logging);
+        sts = ServerSetLogging(ident.pointer,(char)logging);
        }
     if (~sts & 1)
         MdsMsg(sts,"Error from ServerSetLogging for server %s",
-            ident.dscA_pointer);
+            ident.pointer);
     return sts;
    }
 
@@ -260,11 +260,11 @@ int TclDispatch_show_server()
 
     while (sts & 1 && cli_get_value("SERVER_NAME",&ident) & 1)
        {
-        if (IS_WILD(ident.dscA_pointer))	/* contains wildcard?	*/
+        if (IS_WILD(ident.pointer))	/* contains wildcard?	*/
            {
             void  *ctx = 0;
             char *server;
-            while (server = ServerFindServers(&ctx,ident.dscA_pointer))
+            while (server = ServerFindServers(&ctx,ident.pointer))
                {
                 if (output)
 		{
@@ -283,7 +283,7 @@ int TclDispatch_show_server()
             if (output)
 	    {
                 char *info;
-                TclTextOut(info=ServerGetInfo(full,ident.dscA_pointer));
+                TclTextOut(info=ServerGetInfo(full,ident.pointer));
                 free(info);
             }
            }
@@ -311,15 +311,15 @@ int TclDispatch_phase()
     void (*output_rtn) () = cli_present("LOG") & 1 ? TclTextOut : 0;
 
     monitor = (cli_get_value("MONITOR",&monitor_str) & 1) ?
-                                     monitor_str.dscA_pointer : 0;
+                                     monitor_str.pointer : 0;
     if (!SyncEfnInit) InitSyncEfn();
     cli_get_value("PHASE",&dsc_phase);
     cli_get_value("SYNCH",&synch_str);
-    sscanf(synch_str.dscA_pointer,"%d",&synch);
+    sscanf(synch_str.pointer,"%d",&synch);
     synch = synch >= 1 ? synch : 1;
     if (dispatch_table)
         sts = ServerDispatchPhase(SyncEfn,dispatch_table,
-                dsc_phase.dscA_pointer,(char)noaction,synch,output_rtn,monitor);
+                dsc_phase.pointer,(char)noaction,synch,output_rtn,monitor);
     if (~sts & 1)
         MdsMsg(sts,"Error from ServerDispatchPhase");
     return sts;
@@ -341,7 +341,7 @@ static void CommandDone(DispatchedCommand *command)
     if (!(command->sts & 1))
        {
         MdsMsg(command->sts,"Command failed: '%s'",
-            command->command.dscA_pointer);
+            command->command.pointer);
        }
     str_free1_dx(&command->command);
     free(command);
@@ -359,17 +359,17 @@ int TclDispatch_command()
     if (!SyncEfnInit) InitSyncEfn();
     cli_get_value("SERVER",&ident);
     cli_get_value("TABLE",&cli);
-    command->command.dscW_length = 0;
-    command->command.dscB_dtype = DTYPE_T;
-    command->command.dscB_class = CLASS_D;
-    command->command.dscA_pointer = 0;
+    command->command.length = 0;
+    command->command.dtype = DTYPE_T;
+    command->command.class = CLASS_D;
+    command->command.pointer = 0;
     cli_get_value("P1",&command->command);
     if (cli_present("WAIT") & 1)
        {
         if (sts & 1)
            {
-            sts = ServerDispatchCommand(SyncEfn,ident.dscA_pointer,
-                    cli.dscA_pointer,command->command.dscA_pointer,
+            sts = ServerDispatchCommand(SyncEfn,ident.pointer,
+                    cli.pointer,command->command.pointer,
                     0,0,&command->sts,0);
             if (sts & 1)
                {
@@ -384,8 +384,8 @@ int TclDispatch_command()
        }
     else
        {
-        sts = ServerDispatchCommand(0,ident.dscA_pointer,cli.dscA_pointer,
-                  command->command.dscA_pointer,CommandDone,command,
+        sts = ServerDispatchCommand(0,ident.pointer,cli.pointer,
+                  command->command.pointer,CommandDone,command,
                   &command->sts,0);
         if (~sts & 1)
            {

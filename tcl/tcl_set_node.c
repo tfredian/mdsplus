@@ -30,16 +30,16 @@ int TclSetNode()
     static DYNAMIC_DESCRIPTOR(dsc_status);
     cli_get_value("NODENAME",&dsc_nodename);
     cli_get_value("STATUS",&dsc_status);
-    nodename = dsc_nodename.dscA_pointer;
+    nodename = dsc_nodename.pointer;
     l2u(nodename,0);
     log = cli_present("LOG") & 1;
 
     usageMask = -1;
     while ((status = TreeFindNodeWild(nodename,&nid,&ctx,usageMask)) & 1)
        {
-	 if (dsc_status.dscA_pointer)
+	 if (dsc_status.pointer)
 	 {
-           int statval = atoi(dsc_status.dscA_pointer);
+           int statval = atoi(dsc_status.pointer);
            NCI_ITM setnci[] = {{sizeof(int), NciSTATUS, 0, 0},{0,NciEND_OF_LIST,0,0}};
            setnci[0].pointer = (unsigned char *)&statval;
            TreeSetNci(nid,setnci);
@@ -160,7 +160,7 @@ int TclSetNode()
                    {
                     TreeGetNci(nid,get_itmlst);
                     str_concat(&dsc_path,"Node: ",&dsc_path," modified",0);
-                    TclTextOut(dsc_path.dscA_pointer);
+                    TclTextOut(dsc_path.pointer);
                     str_free1_dx(&dsc_path);
                    }
                }

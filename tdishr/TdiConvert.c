@@ -905,7 +905,7 @@ STATIC_ROUTINE void DOUBLEC_TO_TEXT(int itype, char *pa, char *pb, int numb, int
 	defcase(a,FTC)
 
 int TdiConvert(struct descriptor_a *pdin, struct descriptor_a *pdout) {
-   int	lena = pdin->length;
+  int	lena = (pdin->class == CLASS_A || pdin->class == CLASS_CA || pdin->class == CLASS_R) ? pdin->length : ((struct descriptor *)pdin)->length;
    int	dtypea = pdin->dtype;
    char	*pa = pdin->pointer;
    int	classa = pdin->class == CLASS_A;

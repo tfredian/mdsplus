@@ -42,7 +42,7 @@ struct descriptor_xd	*out_ptr)
 		case CLASS_D :
 			break;
 		case CLASS_A :
-			nelem = ((int)aptr->length >0) ? (int)aptr->arsize / (int)aptr->length : 0;
+			nelem = ((int)aptr->length >0) ? aptr->arsize / aptr->length : 0;
 			if (nelem < count) {
 				count = nelem;
 				cmode = j;
@@ -58,12 +58,13 @@ struct descriptor_xd	*out_ptr)
 	Get array or scalar as needed.
 	*****************************/
 	if (status & 1) {
-		if ((len = length) == 0 && dtype < TdiCAT_MAX) len = TdiREF_CAT[dtype].length;
-                ulen = len;
-		if (cmode < 0) 
-	          status = MdsGet1DxS(&ulen, &dtype, out_ptr);
-		else status = MdsGet1DxA((struct descriptor_a *)dat[cmode].pointer, &ulen, &dtype, 
-                                             out_ptr);
+	  unsigned short ulen_s = (unsigned short)ulen;
+	  if ((len = length) == 0 && dtype < TdiCAT_MAX) len = TdiREF_CAT[dtype].length;
+	  ulen = len;
+	  if (cmode < 0) 
+	    status = MdsGet1DxS(&ulen, &dtype, out_ptr);
+	  else status = MdsGet1DxA((struct descriptor_a *)dat[cmode].pointer, &ulen_s, &dtype, 
+				   out_ptr);
 	}
 	*cmode_ptr = cmode;
 	return status;

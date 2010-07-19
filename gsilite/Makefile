@@ -1,6 +1,6 @@
 top_srcdir=..
 CVSROOT=":pserver:anonymous@cvs.globus.org:/home/globdev/CVS/globus-packages"
-CFLAGS=-g -O2 -fpic -I. -I$(OPENSSL_DIR)/ssl -DOPENSSL_NO_KRB5  -DHAVE_CONFIG_H -D_REENTRANT -Wall -DGLOBUS_BUILTIN -Dflavor=\"gcc32pthr\" -DBUILD_DEBUG
+CFLAGS=-g -O0 -fpic -I. -I$(OPENSSL_DIR)/ssl -DOPENSSL_NO_KRB5  -DHAVE_CONFIG_H -D_REENTRANT -Wall -DGLOBUS_BUILTIN -Dflavor=\"gcc32pthr\" -DBUILD_DEBUG
 LIBS=-Bstatic -L$(OPENSSL_DIR) -lssl -lcrypto -Bdynamic -lpthread -lc -lltdl -ldl -lm
 
 SOURCES=accept.c \

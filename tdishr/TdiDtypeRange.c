@@ -28,7 +28,7 @@ STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 
 STATIC_CONSTANT DESCRIPTOR_A(arr0, 1, DTYPE_B, 0, 0);
 STATIC_CONSTANT int minus_one_value = -1;
-STATIC_CONSTANT struct descriptor minus_one = {sizeof(int), DTYPE_L, CLASS_S, (char *)&minus_one_value};
+STATIC_CONSTANT struct descriptor minus_one = DESCRIPTOR_INIT(sizeof(int), DTYPE_L, CLASS_S, (char *)&minus_one_value);
 
 extern struct descriptor *TdiItoXSpecial;
 
@@ -50,7 +50,7 @@ extern int TdiNint();
 extern struct descriptor *TdiItoXSpecial;
 
 TdiRefStandard(Tdi1DtypeRange)
-unsigned long len;
+unsigned short len;
 unsigned char dtype;
 int				cmode = -1, j, nseg=0, nnew = narg;
 int				*pl, tot=0;
@@ -149,8 +149,8 @@ struct TdiCatStruct		cats[4];
 	if (status & 1) status = MdsGet1DxA((struct descriptor_a *)&arr, &len, &dtype, out_ptr);
 	if (status & 1) {
 	DESCRIPTOR_A(x_dsc, 0, 0, 0, 0);
-	struct descriptor begin = {0, 0, CLASS_S, 0};
-	struct descriptor delta = {0, 0, CLASS_S, 0};
+	struct descriptor begin = DESCRIPTOR_INIT(0, 0, CLASS_S, 0);
+	struct descriptor delta = DESCRIPTOR_INIT(0, 0, CLASS_S, 0);
 	int incb = dat[0].pointer->class == CLASS_A;
 	int incs = new[2] && dat[2].pointer->class == CLASS_A;
 

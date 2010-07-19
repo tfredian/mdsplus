@@ -59,8 +59,8 @@ STATIC_CONSTANT int zero = 0;
 
 STATIC_ROUTINE void ReconnectToServer(int idx,int recv) {
   int status;
-  STATIC_CONSTANT struct descriptor library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-    routine_d = {DTYPE_T, CLASS_S, 12, "ConnectToMds"};
+  STATIC_CONSTANT struct descriptor library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+    routine_d = {12,DTYPE_T, CLASS_S, "ConnectToMds");
   STATIC_THREADSAFE int (*rtn)() = 0;
   char **servers;
   int *sockets;
@@ -170,8 +170,8 @@ int old_MDSEventAst(char *eventnam_in, void (*astadr)(void *,int,char *), void *
 STATIC_ROUTINE int canEventRemote(int eventid)
 {
     struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 11, "MdsEventCan"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(11,DTYPE_T, CLASS_S, "MdsEventCan");
     int status=1, i;
     STATIC_THREADSAFE int (*rtn)() = 0;
     if (rtn == 0)
@@ -348,8 +348,8 @@ STATIC_ROUTINE void getServerDefinition(char *env_var, char **servers, int *num_
 STATIC_ROUTINE unsigned __stdcall handleRemoteAst(void *p)
 {
     struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 12, "GetMdsMsgOOB"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(DTYPE_T, CLASS_S, "GetMdsMsgOOB");
     int status=1, i;
     STATIC_THREADSAFE int (*rtn)() = 0;
     Message *m;
@@ -424,8 +424,8 @@ STATIC_ROUTINE void initializeLocalRemote(int receive_events, int *use_local)
     char *servers[256];
     int num_servers;
     struct descriptor 
-	  library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	  routine_d = {DTYPE_T, CLASS_S, 12, "ConnectToMds"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S,"MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(12,DTYPE_T, CLASS_S,  "ConnectToMds");
     int status=1, i;
     STATIC_THREADSAFE int (*rtn)() = 0;
     LockMdsShrMutex(&initMutex,&initMutex_initialized);
@@ -512,8 +512,8 @@ STATIC_ROUTINE void initializeLocalRemote(int receive_events, int *use_local)
 STATIC_ROUTINE int eventAstRemote(char *eventnam, void (*astadr)(), void *astprm, int *eventid)
 {
     struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 11, "MdsEventAst"};
+      library_d = DESCRIPTOR_INIT(8, DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(11,DTYPE_T, CLASS_S, 11, "MdsEventAst");
     int status=1, i;
     int curr_eventid;
     STATIC_THREADSAFE int (*rtn)() = 0;
@@ -639,8 +639,8 @@ STATIC_ROUTINE int sendRemoteEvent(char *evname, int data_len, char *data)
     STATIC_THREADSAFE int (*rtn)();
     int (*curr_rtn)();
     struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 8, "MdsValue"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S,  "MdsValue");
     int status=1, i, tmp_status;
     char expression[256];
     struct descrip ansarg;
@@ -837,8 +837,8 @@ STATIC_THREADSAFE int num_send_servers = 0;	/* numer of external event destinati
 
 STATIC_ROUTINE void ReconnectToServer(int idx,int recv) {
   int status;
-  STATIC_CONSTANT struct descriptor library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-    routine_d = {DTYPE_T, CLASS_S, 12, "ConnectToMds"};
+  STATIC_CONSTANT struct descriptor library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+    routine_d = DESCRIPTOR_INIT(12,DTYPE_T, CLASS_S, "ConnectToMds");
   STATIC_THREADSAFE int (*rtn)() = 0;
   char **servers;
   int *sockets;
@@ -1151,7 +1151,7 @@ STATIC_ROUTINE int sendMessage(char *evname, int key, int data_len, char *data)
       printf("Removed dead message pipe %d, error %d\n", key, errno);
       return 0;
     }
-    write(msgid,&message,sizeof(message));
+    status = write(msgid,&message,sizeof(message)) == sizeof(message);
     close(msgid);
     return 0;
 #else
@@ -1289,7 +1289,7 @@ STATIC_ROUTINE int createThread(pthread_t *thread, void (*rtn)(), void *par)
 
 STATIC_ROUTINE void startRemoteAstHandler()
 {
-    pipe(fds);
+    int status = pipe(fds);
     external_thread_created = createThread(&external_thread, handleRemoteAst,0);
 }
 	
@@ -1607,8 +1607,8 @@ STATIC_ROUTINE void handleRemoteEvent(SOCKET sock)
 {
   char buf[16];
   STATIC_CONSTANT struct descriptor 
-  library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-  routine_d = {DTYPE_T, CLASS_S, 12, "GetMdsMsg"};
+    library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S,"MdsIpShr"),
+    routine_d = DESCRIPTOR_INIT(DTYPE_T, CLASS_S, 12, "GetMdsMsg");
   int status=1, i;
   STATIC_THREADSAFE int (*rtn)() = 0;
   Message *m;
@@ -1635,10 +1635,10 @@ STATIC_CONSTANT void KillHandler()
   int status;
   void *dummy;
   external_shutdown = 1;
-  write(fds[1], "x", 1);
+  status = write(fds[1], "x", 1) == 1;
   status = pthread_join(external_thread, &dummy);
-  close(fds[0]);
-  close(fds[1]);
+  status = close(fds[0]);
+  status = close(fds[1]);
   external_shutdown = 0;
   external_thread_created = 0;
 }
@@ -1647,8 +1647,8 @@ STATIC_ROUTINE void handleRemoteAst()
 {
     char buf[16];
     STATIC_CONSTANT struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 12, "GetMdsMsg"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(12,DTYPE_T, CLASS_S, "GetMdsMsg");
     int status=1, i;
     STATIC_THREADSAFE int (*rtn)() = 0;
     Message *m;
@@ -1674,7 +1674,7 @@ STATIC_ROUTINE void handleRemoteAst()
       	perror("select error"); return; }
 	if(external_shutdown)
 	{
-	    read(fds[0], buf, 1);
+	    status = read(fds[0], buf, 1) == 1;
 	    pthread_exit(0);
 	}
 	for(i = 0; i < num_receive_servers; i++)
@@ -1732,8 +1732,8 @@ STATIC_ROUTINE void initializeLocalRemote(int receive_events, int *use_local)
     char *servers[256];
     int num_servers;
     STATIC_CONSTANT struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 12, "ConnectToMds"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(12,DTYPE_T, CLASS_S, "ConnectToMds");
     int status=1, i;
     STATIC_THREADSAFE int (*rtn)() = 0;
     void *dummy;
@@ -1811,7 +1811,7 @@ STATIC_ROUTINE void initializeLocalRemote(int receive_events, int *use_local)
 	    }
 	    startRemoteAstHandler();
 	}
-	else printf(MdsGetMsg(status));
+	else printf("%s\n",MdsGetMsg(status));
     }
     UnlockMdsShrMutex(&initMutex);
 }
@@ -1822,8 +1822,8 @@ STATIC_ROUTINE void initializeLocalRemote(int receive_events, int *use_local)
 STATIC_ROUTINE int eventAstRemote(char *eventnam, void (*astadr)(), void *astprm, int *eventid)
 {
     STATIC_CONSTANT struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 11, "MdsEventAst"};
+      library_d = DESCRIPTOR_INIT(8, DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(11,DTYPE_T, CLASS_S, "MdsEventAst");
     int status=1, i;
     int curr_eventid;
     void *dummy;
@@ -1856,7 +1856,7 @@ STATIC_ROUTINE int eventAstRemote(char *eventnam, void (*astadr)(), void *astprm
 	    external_count++;
 	}
     }
-    if(!(status & 1)) printf(MdsGetMsg(status));
+    if(!(status & 1)) printf("%s\n",MdsGetMsg(status));
     return status;
 }
 
@@ -2054,8 +2054,8 @@ int old_MDSEventAst(char *eventnam_in, void (*astadr)(), void *astprm, int *even
 STATIC_ROUTINE int canEventRemote(int eventid)
 {
     STATIC_CONSTANT struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 11, "MdsEventCan"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(11,DTYPE_T, CLASS_S, "MdsEventCan");
     int status=1, i;
     void *dummy;
     STATIC_THREADSAFE int (*rtn)() = 0;
@@ -2149,8 +2149,8 @@ STATIC_ROUTINE int sendRemoteEvent(char *evname, int data_len, char *data)
     STATIC_THREADSAFE int (*rtn)() = 0;
     int (*curr_rtn)();
     STATIC_CONSTANT struct descriptor 
-	library_d = {DTYPE_T, CLASS_S, 8, "MdsIpShr"},
-	routine_d = {DTYPE_T, CLASS_S, 8, "MdsValue"};
+      library_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsIpShr"),
+      routine_d = DESCRIPTOR_INIT(8,DTYPE_T, CLASS_S, "MdsValue");
     int status=1, i, tmp_status;
     char expression[256];
     struct descrip ansarg;

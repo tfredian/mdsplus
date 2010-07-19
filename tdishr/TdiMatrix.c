@@ -24,7 +24,7 @@ extern int TdiData();
 extern int TdiConvert();
 extern int TdiMasterData();
 
-STATIC_CONSTANT struct descriptor missing = {0,DTYPE_MISSING,CLASS_S,0};
+STATIC_CONSTANT struct descriptor missing = DESCRIPTOR_INIT(0,DTYPE_MISSING,CLASS_S,0);
 typedef struct {int q[2];} quadw;
 STATIC_ROUTINE int copy(
 int	len,

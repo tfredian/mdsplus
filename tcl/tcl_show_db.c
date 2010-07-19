@@ -38,10 +38,10 @@ int   TclShowDB()
     static DBI_ITM  itm2[] = {
             {sizeof(idx),DbiINDEX,&idx,0}
            ,{sizeof(nameStr)-1,DbiNAME,nameStr,&nameLen}
-           ,{sizeof(shotid),DbiSHOTID,&shotid,0}
+	    ,{sizeof(shotid),DbiSHOTID,(char *)&shotid,0}
            ,{sizeof(modified),DbiMODIFIED,&modified,0}
            ,{sizeof(edit),DbiOPEN_FOR_EDIT,&edit,0}
-           ,{sizeof(pathStr)-1,DbiDEFAULT,pathStr,&pathLen}
+	    ,{sizeof(pathStr)-1,DbiDEFAULT,(char *)pathStr,&pathLen}
            ,{ 0 }
            };
 

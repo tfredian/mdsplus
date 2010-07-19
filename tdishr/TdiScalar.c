@@ -163,13 +163,13 @@ struct descriptor	*out_ptr)
 {
        int			status = 1;
        double digits_d;
-       struct descriptor digits = {sizeof(digits_d),DTYPE_NATIVE_DOUBLE,CLASS_S,0};
+       struct descriptor digits = DESCRIPTOR_INIT(sizeof(digits_d),DTYPE_NATIVE_DOUBLE,CLASS_S,0);
        digits.pointer = (char *)&digits_d;
        status = TdiDigits(x_ptr,&digits MDS_END_ARG);
        if (status & 1)
        {
 	 STATIC_CONSTANT double two_d = 2.;
-	 STATIC_CONSTANT struct descriptor two = {sizeof(two_d),DTYPE_NATIVE_DOUBLE,CLASS_S,(char *)&two_d};
+	 STATIC_CONSTANT struct descriptor two = DESCRIPTOR_INIT(sizeof(two_d),DTYPE_NATIVE_DOUBLE,CLASS_S,(char *)&two_d);
 	 digits_d = 1. - digits_d;
 	 status = TdiPower(&two,&digits,out_ptr MDS_END_ARG);
        }

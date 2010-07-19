@@ -5,16 +5,46 @@
 #include <ncidef.h>
 #include "treeshrp.h"
 
+unsigned char OldClass(unsigned char newClass) {
+  switch (newClass) {
+  case CLASS_S: return CLASS_S_SHORT;
+  case CLASS_D: return CLASS_D_SHORT;
+  case CLASS_XD: return CLASS_XD_SHORT;
+  case CLASS_XS: return CLASS_XS_SHORT;
+  case CLASS_R: return CLASS_R_SHORT;
+  case CLASS_CA: return CLASS_CA_SHORT;
+  case CLASS_APD: return CLASS_APD_SHORT;
+  case CLASS_A: return CLASS_A_SHORT;
+  default: return newClass;
+  }
+}
+
+unsigned char NewClass(unsigned char oldClass) {
+  switch (oldClass) {
+  case CLASS_S_SHORT: return CLASS_S;
+  case CLASS_D_SHORT: return CLASS_D;
+  case CLASS_XD_SHORT: return CLASS_XD;
+  case CLASS_XS_SHORT: return CLASS_XS;
+  case CLASS_R_SHORT: return CLASS_R;
+  case CLASS_CA_SHORT: return CLASS_CA;
+  case CLASS_APD_SHORT: return CLASS_APD;
+  case CLASS_A_SHORT: return CLASS_A;
+  default: return oldClass;
+  }
+}
+
 void TreeSerializeNciOut(NCI *in, char *out)
 {
   char *ptr = out;
+  char class;
   memset(out,0,42);
   LoadInt(in->flags,ptr);                           ptr += 4;
   *ptr = in->flags2;                                ptr += 1;
                                                     ptr += 1;
   LoadQuad(in->time_inserted,ptr);                  ptr += 8;
   LoadInt(in->owner_identifier,ptr);                ptr += 4;
-  *ptr = in->class;                                 ptr += 1;
+  
+  *ptr = OldClass(in->class);                       ptr += 1;
   *ptr = in->dtype;                                 ptr += 1;
   LoadInt(in->length,ptr);                          ptr += 4;
                                                     ptr += 1;
@@ -41,13 +71,13 @@ void TreeSerializeNciOut(NCI *in, char *out)
 
 void TreeSerializeNciIn(char *in, NCI *out)
 {
-  char *ptr = in;
+  unsigned char *ptr = in;
   out->flags = swapint(ptr);                                              ptr += 4;
   out->flags2 = *ptr;                                                     ptr += 1;
                                                                           ptr += 1;
   out->time_inserted = swapquad(ptr);                                     ptr += 8;
   out->owner_identifier = swapint(ptr);                                   ptr += 4;
-  out->class = *ptr;                                                      ptr += 1;
+  out->class = NewClass(*ptr);                                            ptr += 1;
   out->dtype = *ptr;                                                      ptr += 1;
   out->length = swapint(ptr);                                             ptr += 4;
                                                                           ptr += 1;

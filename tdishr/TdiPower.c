@@ -16,7 +16,7 @@
 STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 
 STATIC_CONSTANT int one = 1;
-STATIC_CONSTANT struct descriptor one_dsc = {sizeof(one),DTYPE_L,CLASS_S,(char *)&one};
+STATIC_CONSTANT struct descriptor one_dsc = DESCRIPTOR_INIT(sizeof(one),DTYPE_L,CLASS_S,(char *)&one);
 
 extern int Tdi3Log();
 extern int TdiConvert();
@@ -75,7 +75,7 @@ struct descriptor	duno;
 	************************/
 	else {
 	char	xx[32];
-	struct descriptor dx = {0,0,CLASS_S,0};
+	struct descriptor dx = DESCRIPTOR_INIT(0,0,CLASS_S,0);
 	char	*px = x->pointer;
 	int	incx = x->class == CLASS_A ? x->length : 0;
 	int	*py = (int *)y->pointer;

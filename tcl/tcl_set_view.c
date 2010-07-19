@@ -29,10 +29,10 @@ int TclSetView()
     static DYNAMIC_DESCRIPTOR(dsc_viewdate_string);
     cli_get_value("DATE",&dsc_viewdate_string);
 	StrUpcase(&dsc_viewdate_string,&dsc_viewdate_string);
-    if (strcmp(dsc_viewdate_string.dscA_pointer,"NOW")==0) {
+    if (strcmp(dsc_viewdate_string.pointer,"NOW")==0) {
       status = TreeSetViewDate(&viewDate);
     }
-    else if ((status = LibConvertDateString(dsc_viewdate_string.dscA_pointer,&viewDate)) & 1) {
+    else if ((status = LibConvertDateString(dsc_viewdate_string.pointer,&viewDate)) & 1) {
       status = TreeSetViewDate(&viewDate);
     }
     if (!(status & 1)) TclTextOut("Bad time, use dd-mon-yyyy hh:mm:ss format. All fields required!");

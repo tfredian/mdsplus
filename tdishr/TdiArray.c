@@ -42,8 +42,8 @@ extern int Tdi3Add();
 extern int CvtConvertFloat();
 
 TdiRefStandard(Tdi1Array)
-array_coeff arr = {1,DTYPE_B,CLASS_A,(char *)0,0,0,{0,1,1,1,0},MAXDIM,0};
-array_int cvt = {sizeof(int),DTYPE_L,CLASS_A,(int *)0,0,0,{0,1,1,0,0},1,0};
+array_coeff arr = {0,DTYPE_B,CLASS_A,(char *)0,1,0,0,{0,1,1,1,0},MAXDIM,0};
+array_int cvt = {0,DTYPE_L,CLASS_A,(int *)0,sizeof(int),0,0,{0,1,1,0,0},1,0};
 struct TdiFunctionStruct	*fun_ptr = (struct TdiFunctionStruct *)&TdiRefFunction[opcode];
 struct descriptor_xd	tmp = EMPTY_XD;
 unsigned long length;
@@ -100,8 +100,9 @@ int				j, ndim=0;
 	*****************************/
 	if (status & 1) {
 		if (arr.class == CLASS_A) {
- 			for (arr.arsize = 1, j = ndim; --j >= 0;) arr.arsize *= arr.m[j];
-			status = MdsGet1DxA((struct descriptor_a *)&arr, &length, &dtype, out_ptr);
+		  unsigned short slen = (unsigned short)length;
+		  for (arr.arsize = 1, j = ndim; --j >= 0;) arr.arsize *= arr.m[j];
+		  status = MdsGet1DxA((struct descriptor_a *)&arr, &slen, &dtype, out_ptr);
 		}
 		else	status = MdsGet1DxS(&length, &dtype, out_ptr);
 	}
@@ -127,11 +128,11 @@ int		*out_ptr)
 int			Tdi3Ramp(
 struct descriptor	*out_ptr)
 {
-STATIC_CONSTANT int	i0 = 0, i1 = 1;
-STATIC_CONSTANT struct descriptor con0 = {sizeof(int),DTYPE_L,CLASS_S,(char *)&i0};
-STATIC_CONSTANT struct descriptor con1 = {sizeof(int),DTYPE_L,CLASS_S,(char *)&i1};
-int	status = 1, n;
-int i;
+  STATIC_CONSTANT int	i0 = 0, i1 = 1;
+  STATIC_CONSTANT struct descriptor con0 = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,(char *)&i0);
+  STATIC_CONSTANT struct descriptor con1 = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,(char *)&i1);
+  int	status = 1, n;
+  int i;
 
 #define LoadRamp(type) { type *ptr = (type *)out_ptr->pointer; for (i=0;i<n;i++) ptr[i] = (type)i; break;}
 #define LoadRampF(type,dtype,native) { type *ptr = (type *)out_ptr->pointer; type tmp; \
@@ -256,7 +257,7 @@ int			Tdi3Zero(
 struct descriptor_a	*out_ptr)
 {
 STATIC_CONSTANT int	i0 = 0;
-STATIC_CONSTANT struct descriptor con0 = {sizeof(int),DTYPE_L,CLASS_S,(char *)&i0};
+ STATIC_CONSTANT struct descriptor con0 = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,(char *)&i0);
 int	status;
 
 	status = TdiConvert(&con0, out_ptr MDS_END_ARG);

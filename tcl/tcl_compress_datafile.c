@@ -26,16 +26,16 @@ int   TclCompressDatafile()
 
     cli_get_value("FILE",&dsc_filnam);
     cli_get_value("SHOTID",&dsc_asciiShot);
-    sscanf(dsc_asciiShot.dscA_pointer,"%d",&shot);
+    sscanf(dsc_asciiShot.pointer,"%d",&shot);
     if ((shot != -1) && (!(cli_present("OVERRIDE") & 1)))
        {
         TclTextOut(nocompress);
         return 1;
        }
-    sts = TreeCompressDatafile(dsc_filnam.dscA_pointer,shot);
+    sts = TreeCompressDatafile(dsc_filnam.pointer,shot);
     if (~sts & 1)
        {
-        MdsMsg(sts,"Problem compressing %s",dsc_filnam.dscA_pointer);
+        MdsMsg(sts,"Problem compressing %s",dsc_filnam.pointer);
 #ifdef vms
         lib$signal(sts,0);
 #endif

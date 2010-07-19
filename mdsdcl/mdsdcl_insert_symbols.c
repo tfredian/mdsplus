@@ -37,7 +37,7 @@ static char  *insertSymbol(		/* Return: addr in cmdline	*/
     char  symbol[32];
     static DYNAMIC_DESCRIPTOR(dsc_value);
 
-    p = dsc_cmdline->dscA_pointer + offsetToSymbol;
+    p = dsc_cmdline->pointer + offsetToSymbol;
     if (!isalpha(*p))
        {
         fprintf(stderr,"*WARN* 1st char of symbol must be alph\n\n");
@@ -73,14 +73,14 @@ static char  *insertSymbol(		/* Return: addr in cmdline	*/
         str_copy_dx(&dsc_value,p?p:"");
        }
 
-    offsetEnd = p2 - dsc_cmdline->dscA_pointer;
+    offsetEnd = p2 - dsc_cmdline->pointer;
     str_replace(dsc_cmdline,dsc_cmdline,offsetStart,offsetEnd,&dsc_value);
 
 		/*-------------------------------------------------------
 		 * Return addr of last char of symbol ...
 		 *------------------------------------------------------*/
-    vlen = dsc_value.dscA_pointer ? strlen(dsc_value.dscA_pointer) : 0;
-    return(dsc_cmdline->dscA_pointer + offsetStart + vlen - 1);
+    vlen = dsc_value.pointer ? strlen(dsc_value.pointer) : 0;
+    return(dsc_cmdline->pointer + offsetStart + vlen - 1);
    }
 
 
@@ -96,7 +96,7 @@ void  mdsdcl_insert_symbols(		/* Returns: void		*/
     int   offsetStart;
     char  *p;
 
-    p = dsc_cmdline->dscA_pointer;
+    p = dsc_cmdline->pointer;
     if (!p)  return;
 
     doubleQuotes = 0;
@@ -119,7 +119,7 @@ void  mdsdcl_insert_symbols(		/* Returns: void		*/
                     strcpy(p,p+1);	/* replace by single quote	*/
                 else
                    {			/*...else, replace symbol	*/
-                    offsetStart = p - dsc_cmdline->dscA_pointer;
+                    offsetStart = p - dsc_cmdline->pointer;
                     p = insertSymbol(dsc_cmdline,offsetStart,offsetStart+1,
                             dsc_prmList);
                    }
@@ -128,7 +128,7 @@ void  mdsdcl_insert_symbols(		/* Returns: void		*/
                {		/* inside quoted string ...		*/
                 if (*(p+1) == '\'')
                    {			/* 2 single quotes denote symbol */
-                    offsetStart = p - dsc_cmdline->dscA_pointer;
+                    offsetStart = p - dsc_cmdline->pointer;
                     p = insertSymbol(dsc_cmdline,offsetStart,offsetStart+2,
                             dsc_prmList);
                    }

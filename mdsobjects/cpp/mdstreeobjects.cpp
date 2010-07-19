@@ -439,9 +439,10 @@ TreeNode *Tree::getDefault()
 
 bool Tree::versionsInPulseEnabled()
 {
-	int supports, len, status;
+        unsigned long len;
+	int supports, status;
 	struct dbi_itm dbiList[] = 
-	{{sizeof(int), DbiVERSIONS_IN_PULSE, &supports, &len},
+	{{sizeof(supports), DbiVERSIONS_IN_PULSE, &supports, &len},
 	{0, DbiEND_OF_LIST,0,0}};
 
 	status = _TreeGetDbi(ctx, dbiList);
@@ -452,7 +453,8 @@ bool Tree::versionsInPulseEnabled()
 
 bool Tree::versionsInModelEnabled()
 {
-	int supports, len, status;
+        unsigned long len;
+	int supports, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiVERSIONS_IN_MODEL, &supports, &len},
 	{0, DbiEND_OF_LIST,0,0}};
@@ -465,7 +467,8 @@ bool Tree::versionsInModelEnabled()
 
 bool Tree::isModified()
 {
-	int modified, len, status;
+        unsigned long len;
+	int modified, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiMODIFIED, &modified, &len},
 	{0, DbiEND_OF_LIST,0,0}};
@@ -478,7 +481,8 @@ bool Tree::isModified()
 
 bool Tree::isOpenForEdit()
 {
-	int edit, len, status;
+        unsigned long len;
+	int edit, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiOPEN_FOR_EDIT, &edit, &len},
 	{0, DbiEND_OF_LIST,0,0}};
@@ -491,7 +495,8 @@ bool Tree::isOpenForEdit()
 
 bool Tree::isReadOnly()
 {
-	int readOnly, len, status;
+        unsigned long len;
+	int readOnly, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiOPEN_READONLY, &readOnly, &len},
 	{0, DbiEND_OF_LIST,0,0}};
@@ -504,7 +509,8 @@ bool Tree::isReadOnly()
 
 void Tree::setVersionsInModel(bool verEnabled)
 {
-	int supports, len, status;
+        unsigned long len;
+	int supports, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiVERSIONS_IN_MODEL, &supports, &len},
 	{0, DbiEND_OF_LIST,0,0}};
@@ -517,7 +523,8 @@ void Tree::setVersionsInModel(bool verEnabled)
 
 void Tree::setVersionsInPulse(bool verEnabled)
 {
-	int supports, len, status;
+        unsigned long len;
+	int supports, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiVERSIONS_IN_PULSE, &supports, &len},
 	{0, DbiEND_OF_LIST,0,0}};
@@ -2114,9 +2121,9 @@ void MDSplus::setActiveTree(Tree *tree)
 
 Tree *MDSplus::getActiveTree()
 {
+        unsigned long retNameLen, retShotLen;
 	char name[1024];
 	int shot;
-	int retNameLen, retShotLen;
 	
 	DBI_ITM dbiItems[] = {
 		{1024, DbiNAME, name, &retNameLen},

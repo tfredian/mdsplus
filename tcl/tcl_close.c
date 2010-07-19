@@ -28,8 +28,8 @@ int TclClose()
     if (cli_get_value("FILE",&exp) & 1)
        {
         cli_get_value("SHOTID",&dsc_shotid);
-        sscanf(dsc_shotid.dscA_pointer,"%d",&shotid);
-        sts = TreeClose(exp.dscA_pointer,shotid);
+        sscanf(dsc_shotid.pointer,"%d",&shotid);
+        sts = TreeClose(exp.pointer,shotid);
        }
     else
        {

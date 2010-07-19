@@ -177,21 +177,21 @@ char			c0;
 	return cmp;
 }
 TdiRefStandard(Tdi1GetNci)
-STATIC_CONSTANT struct descriptor_d	EMPTY_D = {0,DTYPE_T,CLASS_D,0};
+STATIC_CONSTANT struct descriptor_d	EMPTY_D = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
 STATIC_CONSTANT DESCRIPTOR_A(arr0,1,DTYPE_B,0,960);
 struct descriptor_a		*holda_ptr=0;
 struct descriptor_d		string = EMPTY_D;
 struct descriptor_xd	nids = EMPTY_XD, tmp = EMPTY_XD, holdxd = EMPTY_XD;
 struct item			*key_ptr=0;
 int				class=0, j, outcount = 0;
-unsigned long step;
+unsigned short step;
 int				dtype=0, flag, nelem=0, retlen, len=0;
 int 				nid;
 char				*hold_ptr=0, *dat_ptr=0;
 unsigned char omits[] = {DTYPE_NID,DTYPE_PATH,0};
 int				wild, usage_mask;
 void			*pctx = NULL;
-unsigned long                  maxlen = 0;
+unsigned short                  maxlen = 0;
 
 	if (list[0]) {
 		status = TdiGetData(omits, list[0], &nids);
@@ -206,14 +206,15 @@ unsigned long                  maxlen = 0;
 			if (status & 1 && class != CLASS_A) switch (dtype) {
 			case DTYPE_T :
 			case DTYPE_PATH :
-				{struct descriptor path_d = {0,DTYPE_PATH,CLASS_S,0};
-				 char *path;
-                                 path_d.length = (unsigned char)len;
-                                 path_d.pointer = dat_ptr;
-				 path=MdsDescrToCstring(&path_d);
-				 if (!(TreeFindNode(path, &nid) & 1)) class = CLASS_A;
-				 MdsFree(path);
-				}
+			  {
+			    struct descriptor path_d = DESCRIPTOR_INIT(0,DTYPE_PATH,CLASS_S,0);
+			    char *path;
+			    path_d.length = (unsigned char)len;
+			    path_d.pointer = dat_ptr;
+			    path=MdsDescrToCstring(&path_d);
+			    if (!(TreeFindNode(path, &nid) & 1)) class = CLASS_A;
+			    MdsFree(path);
+			  }
 			}
 		}
 	}
@@ -245,7 +246,7 @@ unsigned long                  maxlen = 0;
 		if (status & 1) {
 		struct descriptor	allow = *tmp.pointer;
 		int length;
-		struct descriptor	usage = {0,DTYPE_T,CLASS_S,0};
+		struct descriptor	usage = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
 		int	nallow;
 			N_ELEMENTS(tmp.pointer, nallow);
 			length=allow.length;
@@ -291,23 +292,24 @@ unsigned long                  maxlen = 0;
 more:		switch (dtype) {
 		case DTYPE_PATH :
 		case DTYPE_T :
-			{struct descriptor path_d = {0,DTYPE_PATH,CLASS_S,0};
-			 char *path;
-                                path_d.length = (unsigned short)len;
-                                path_d.pointer = dat_ptr;
-			 path = MdsDescrToCstring(&path_d);
-				if (status & 1) status = TreeFindNodeWild(path, &nid, &pctx, usage_mask);
-				MdsFree(path);
-			}
-			if (status == TreeNMN || status == TreeNNF) {
-				TreeFindNodeEnd(&pctx);
-				pctx = NULL;
-				if (status == TreeNMN)
-                                  status = 1;
-				continue;
-			}
-			wild = 1;
-			break;
+		  {
+		    struct descriptor path_d = DESCRIPTOR_INIT(0,DTYPE_PATH,CLASS_S,0);
+		    char *path;
+		    path_d.length = (unsigned short)len;
+		    path_d.pointer = dat_ptr;
+		    path = MdsDescrToCstring(&path_d);
+		    if (status & 1) status = TreeFindNodeWild(path, &nid, &pctx, usage_mask);
+		    MdsFree(path);
+		  }
+		  if (status == TreeNMN || status == TreeNNF) {
+		    TreeFindNodeEnd(&pctx);
+		    pctx = NULL;
+		    if (status == TreeNMN)
+		      status = 1;
+		    continue;
+		  }
+		  wild = 1;
+		  break;
 		case DTYPE_L :
 		case DTYPE_LU :
 		case DTYPE_NID :
@@ -367,7 +369,7 @@ more:		switch (dtype) {
 		*************************/
 		else if (key_ptr->item_test) {
                 unsigned char dtype = (unsigned char)DTYPE_NID;
-                unsigned long dlen = sizeof(nid);
+                unsigned short dlen = sizeof(nid);
 		array arr = *(array *)&arr0;
 		NCI_ITM tested[2] = {{sizeof(int),0,0,0},EOL};
                         tested[0].code = key_ptr->item_test;
@@ -449,13 +451,13 @@ skip:		if (status & 1 && wild) goto more;
                       for (j=0,p=out_ptr->pointer->pointer,dp = (struct descriptor_xd *)holda_ptr->pointer;
                            j<outcount;j++,p+=maxlen,dp++)
 		      {
-                        memcpy(p,dp->pointer,dp->length);
+                        memcpy(p,dp->pointer,dp->l_length);
                       }
                     }
                         
                   }
 		else {
-                       unsigned long dlen = sizeof(int *);
+                       unsigned short dlen = sizeof(int *);
                        unsigned char dtype = (unsigned char)DTYPE_L;
 			status = MdsGet1DxA(holda_ptr, &dlen, &dtype, &tmp);
 			if (status & 1) {

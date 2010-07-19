@@ -125,7 +125,7 @@ int	in_size, out_size, dimct, status = 1;
 }
 /*----------------------------------------------------------------------------
 */
-STATIC_CONSTANT struct descriptor missing_dsc = {0,DTYPE_MISSING,CLASS_S,0};
+STATIC_CONSTANT struct descriptor missing_dsc = DESCRIPTOR_INIT(0,DTYPE_MISSING,CLASS_S,0);
 int				TdiGetData(
 unsigned char			omits[],
 struct descriptor		*their_ptr,
@@ -288,35 +288,36 @@ int				status = 1;
 	*********************/
 	case CLASS_S :
 	case CLASS_D :
-		switch (in_ptr->dtype) {
-		case DTYPE_BU :			*val_ptr = (float) *(unsigned char *)	in_ptr->pointer; break;
-		case DTYPE_B :			*val_ptr = (float) *(char *)		in_ptr->pointer; break;
-		case DTYPE_WU :			*val_ptr = (float) *(unsigned short *)	in_ptr->pointer; break;
-		case DTYPE_W :			*val_ptr = (float) *(short *)		in_ptr->pointer; break;
-		case DTYPE_LU :			*val_ptr = (float) *(unsigned int *)	in_ptr->pointer; break;
-		case DTYPE_L :			*val_ptr = (float) *(int *)		in_ptr->pointer; break;
-		default : {struct descriptor val_dsc = {sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0};
-                           val_dsc.pointer = (char *)val_ptr;
-			   status = TdiConvert(in_ptr, &val_dsc MDS_END_ARG);
-			  } break;
-		}
-		break;
-	default : status = TdiINVCLADSC; break;
+	  switch (in_ptr->dtype) {
+	  case DTYPE_BU :			*val_ptr = (float) *(unsigned char *)	in_ptr->pointer; break;
+	  case DTYPE_B :			*val_ptr = (float) *(char *)		in_ptr->pointer; break;
+	  case DTYPE_WU :			*val_ptr = (float) *(unsigned short *)	in_ptr->pointer; break;
+	  case DTYPE_W :			*val_ptr = (float) *(short *)		in_ptr->pointer; break;
+	  case DTYPE_LU :			*val_ptr = (float) *(unsigned int *)	in_ptr->pointer; break;
+	  case DTYPE_L :			*val_ptr = (float) *(int *)		in_ptr->pointer; break;
+	  default : {
+	    struct descriptor val_dsc = DESCRIPTOR_INIT(sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0);
+	    val_dsc.pointer = (char *)val_ptr;
+	    status = TdiConvert(in_ptr, &val_dsc MDS_END_ARG);
+	  } break;
+	  }
+	  break;
+	  default : status = TdiINVCLADSC; break;
 	}
 	else {
-	struct descriptor_xd	tmp = EMPTY_XD;
-		status = TdiData(in_ptr, &tmp MDS_END_ARG);
-		if (status & 1) switch (tmp.pointer->class) {
-		case CLASS_S :
-		case CLASS_D :
-		case CLASS_A :
-			status = TdiGetFloat(tmp.pointer, val_ptr);
-			break;
-		default :
-			status = TdiINVCLADSC;
-			break;
-		}
-		MdsFree1Dx(&tmp,NULL);
+	  struct descriptor_xd	tmp = EMPTY_XD;
+	  status = TdiData(in_ptr, &tmp MDS_END_ARG);
+	  if (status & 1) switch (tmp.pointer->class) {
+	    case CLASS_S :
+	    case CLASS_D :
+	    case CLASS_A :
+	      status = TdiGetFloat(tmp.pointer, val_ptr);
+	      break;
+	    default :
+	      status = TdiINVCLADSC;
+	      break;
+	    }
+	  MdsFree1Dx(&tmp,NULL);
 	}
 	return status;
 }
@@ -340,35 +341,36 @@ int				status = 1;
 	*********************/
 	case CLASS_S :
 	case CLASS_D :
-		switch (in_ptr->dtype) {
-		case DTYPE_BU :			*val_ptr = (int) *(unsigned char *)	in_ptr->pointer; break;
-		case DTYPE_B :			*val_ptr = (int) *(char *)		in_ptr->pointer; break;
-		case DTYPE_WU :			*val_ptr = (int) *(unsigned short *)	in_ptr->pointer; break;
-		case DTYPE_W :			*val_ptr = (int) *(short *)		in_ptr->pointer; break;
-		case DTYPE_L : case DTYPE_LU : *val_ptr = *(int *)		in_ptr->pointer; break;
-		default : {struct descriptor val_dsc = {sizeof(int),DTYPE_L,CLASS_S,0};
-			        val_dsc.pointer = (char *)val_ptr;
-				status = TdiConvert(in_ptr, &val_dsc MDS_END_ARG);
-			}
-			break;
-		}
-		break;
-	default : status = TdiINVCLADSC; break;
+	  switch (in_ptr->dtype) {
+	  case DTYPE_BU :			*val_ptr = (int) *(unsigned char *)	in_ptr->pointer; break;
+	  case DTYPE_B :			*val_ptr = (int) *(char *)		in_ptr->pointer; break;
+	  case DTYPE_WU :			*val_ptr = (int) *(unsigned short *)	in_ptr->pointer; break;
+	  case DTYPE_W :			*val_ptr = (int) *(short *)		in_ptr->pointer; break;
+	  case DTYPE_L : case DTYPE_LU : *val_ptr = *(int *)		in_ptr->pointer; break;
+	  default : {
+	    struct descriptor val_dsc = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,0);
+	    val_dsc.pointer = (char *)val_ptr;
+	    status = TdiConvert(in_ptr, &val_dsc MDS_END_ARG);
+	  }
+	    break;
+	  }
+	  break;
+	  default : status = TdiINVCLADSC; break;
 	}
 	else {
-	struct descriptor_xd	tmp = EMPTY_XD;
-		status = TdiData(in_ptr, &tmp MDS_END_ARG);
-		if (status & 1) switch (tmp.pointer->class) {
-		case CLASS_S :
-		case CLASS_D :
-		case CLASS_A :
-			status = TdiGetLong(tmp.pointer, val_ptr);
-			break;
-		default :
-			status = TdiINVCLADSC;
-			break;
-		}
-		MdsFree1Dx(&tmp,NULL);
+	  struct descriptor_xd	tmp = EMPTY_XD;
+	  status = TdiData(in_ptr, &tmp MDS_END_ARG);
+	  if (status & 1) switch (tmp.pointer->class) {
+	    case CLASS_S :
+	    case CLASS_D :
+	    case CLASS_A :
+	      status = TdiGetLong(tmp.pointer, val_ptr);
+	      break;
+	    default :
+	      status = TdiINVCLADSC;
+	      break;
+	    }
+	  MdsFree1Dx(&tmp,NULL);
 	}
 	return status;
 }

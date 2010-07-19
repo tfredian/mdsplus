@@ -80,7 +80,7 @@ int TclDeleteNode()
     while (cli_get_value("NODENAME",&dsc_nodnam) & 1)
        {
         ctx = 0;
-        nodename = dsc_nodnam.dscA_pointer;
+        nodename = dsc_nodnam.pointer;
         l2u(nodename,0);
         while (TreeFindNodeWild(nodename,&nid,&ctx,usageMask) & 1 && (status & 1))
            {
@@ -110,13 +110,13 @@ int TclDeleteNode()
 
         TclTextOut(message);
         ans = 0;
-        while (dsc_answer.dscW_length ? (ans!='D' && ans!='Q') : 1)
+        while (dsc_answer.length ? (ans!='D' && ans!='Q') : 1)
            {
             str_free1_dx(&dsc_answer);
             mdsdcl_get_input(prompt,&dsc_answer);
-            if (dsc_answer.dscW_length == 0)
+            if (dsc_answer.length == 0)
               str_append(&dsc_answer,"Q");
-            ans = toupper(*dsc_answer.dscA_pointer);
+            ans = toupper(*dsc_answer.pointer);
             if (ans == 'L')
                {
                 nid = 0;
@@ -138,7 +138,7 @@ int TclDeleteNode()
            {
             pathnam = TreeGetPath(nid);
             str_concat(&dsc_out,"TCL-I-DELETE, deleted node ",pathnam);
-            TclTextOut(dsc_out.dscA_pointer);
+            TclTextOut(dsc_out.pointer);
             TreeFree(pathnam);
             str_free1_dx(&dsc_out);
            }
