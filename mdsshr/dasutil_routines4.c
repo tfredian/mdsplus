@@ -577,7 +577,7 @@ int   str_element(			/* Returns: status		*/
     char  *p,*p2;
     char  *srcBase;
     struct descriptor  *dsc;
-    struct descriptor  dsc_substring = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0) ;
+    struct descriptor  dsc_substring = {DESCRIPTOR_HEAD_INI(0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0)} ;
 
 		/*======================================================
 		 * Set up substring descriptor ...
@@ -658,7 +658,7 @@ char  *str_dupl_char(			/* Returns: dsc_ret->pointer */
 struct descriptor *cstring_to_dsc( char *src) 
 {
 /*********** NOTE THIS ROUTINE IS NOT THREADSAFE ****************/
-  static struct descriptor ans = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0) ;
+  static struct descriptor ans = {DESCRIPTOR_HEAD_INI(0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0)} ;
   ans.length = strlen(src);
   ans.pointer = src;
   return &ans;

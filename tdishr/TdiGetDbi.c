@@ -98,7 +98,8 @@ DBI_ITM lst[] = {{sizeof(index),DbiINDEX,0,0},EOL,EOL};
 	if (status & 1) {
 		lst[1].code = key_ptr->item_code;
 		if ((lst[1].buffer_length = key_ptr->item_length) != 0) {
-			status = MdsGet1DxS(&lst[1].buffer_length, &key_ptr->item_dtype, out_ptr);
+		  descriptor_llength len = lst[1].buffer_length;
+			status = MdsGet1DxS(&len, &key_ptr->item_dtype, out_ptr);
 			if (status & 1) {
 				lst[1].pointer = (unsigned char *)out_ptr->pointer->pointer;
 				status = TreeGetDbi(lst);
@@ -175,12 +176,12 @@ unsigned char	omits[] = {DTYPE_PATH,0};
 			if (status & 1 && xd.pointer) switch (xd.pointer->dtype) {
 			case DTYPE_T :
 			case DTYPE_PATH :
-				status = StrCopyDx(&def, xd.pointer);
+			  status = StrCopyDx(&def, xd.pointer);
 				break;
 			default :
 				status = TdiINVDTYDSC;
 				break;
-			}
+			  }
 			MdsFree1Dx(&xd, NULL);
 		}
 		if (!list[1] || def.length == 0) {

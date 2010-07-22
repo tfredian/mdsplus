@@ -44,7 +44,7 @@ int TclClose()
            sts = TreeQuitTree(0,0);
          else
 	 {
-	   printf(promptWritefirst);
+	   printf("%s",promptWritefirst);
 	   if (yesno(1))
            {
             sts = TreeWriteTree(0,0);

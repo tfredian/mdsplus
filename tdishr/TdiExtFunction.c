@@ -66,7 +66,7 @@ STATIC_CONSTANT DESCRIPTOR(def_path, "MDS_PATH:");
 STATIC_CONSTANT DESCRIPTOR(def_image, "MdsFunctions");
 STATIC_CONSTANT DESCRIPTOR(def_path, "MDS_PATH:");
 #endif
-STATIC_CONSTANT struct descriptor_d EMPTY_D = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+STATIC_CONSTANT struct descriptor_d EMPTY_D = {0,DTYPE_T,CLASS_D,0};
 
 int	TdiFindImageSymbol(
 struct descriptor_d	*image,
@@ -143,7 +143,7 @@ int                             geterror = 0;
 		else if (pfun->dtype == DTYPE_IDENT) {
 ident:
 			{unsigned char test;
-		    struct descriptor dtest = DESCRIPTOR_INIT(sizeof(test),DTYPE_BU,CLASS_S,0);
+			 struct descriptor dtest = {sizeof(test),DTYPE_BU,CLASS_S,0};
                                 dtest.pointer = (char *)&test;
 				status = TdiAllocated(pfun, &dtest MDS_END_ARG);
 				if (status && !test) status = TdiPutIdent(pfun, 0);
@@ -163,12 +163,12 @@ ident:
 	Gather, compile.
 	***************/
  else {
-   struct descriptor file = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_D, 0);
+        struct descriptor file = {0, DTYPE_T, CLASS_D, 0};
 	status = StrConcat(&file, list[0] ? (struct descriptor *)&image : (struct descriptor *)&def_path, &entry, 
                              &dfun MDS_END_ARG);
 	if (status & 1) {
 	  void *ctx = 0;
-	  struct descriptor dcs = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+	  struct descriptor dcs = {0,DTYPE_T,CLASS_S,0};
 	  LibFindFileRecurseCaseBlind(&file, &file, &ctx);
 	  LibFindFileEnd(&ctx);
 	  StrAppend(&file,&dnul);
@@ -181,7 +181,7 @@ ident:
             fseek(unit,0,SEEK_SET);
             dcs.pointer = (char *)malloc(flen);
 	    dcs.length = (unsigned short)flen;
-            fread(dcs.pointer, (size_t)flen,1,unit); 
+            status = fread(dcs.pointer, (size_t)flen,1,unit) == 1 ? 0 : -1; 
 	    fclose(unit);
 	    status = TdiCompile(&dcs, out_ptr MDS_END_ARG);
             free(dcs.pointer);

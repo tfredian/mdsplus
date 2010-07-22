@@ -894,7 +894,7 @@ int TreeFindNodeTagsDsc(int nid_in, void **ctx_ptr, struct descriptor *tag)
   char *tagname = TreeFindNodeTags(nid_in, ctx_ptr);
   if (tagname)
   {
-    struct descriptor tagd = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+    struct descriptor tagd = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
     tagd.length = strlen(tagname);
     tagd.pointer = tagname;
     StrCopyDx(tag,&tagd);
@@ -1267,7 +1267,7 @@ int TreeAbsPathDsc(char *inpath, struct descriptor *outpath)
     return 0;
   else
     {
-      struct descriptor ans_d = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
+      struct descriptor ans_d = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0)};
       ans_d.length = strlen(ans_c);
       ans_d.pointer = ans_c;
       StrCopyDx(outpath,&ans_d);

@@ -1292,7 +1292,7 @@ static void throwMdsException(JNIEnv *env, int status)
 static unsigned int getCtx1(void *ctx)
 {
 	if(sizeof(void *) == 8)
-		return (unsigned int)((unsigned long)ctx & 0x00000000ffffffff);
+		return (unsigned int)((unsigned long long)ctx & 0x00000000ffffffff);
 	else
 		return (unsigned int)ctx;
 }
@@ -1300,7 +1300,7 @@ static unsigned int getCtx1(void *ctx)
 static unsigned int getCtx2(void *ctx)
 {
 	if(sizeof(void *) == 8)
-		return (unsigned int)(((unsigned long)ctx & 0xffffffff00000000)>>32);
+		return (unsigned int)(((unsigned long long)ctx & 0xffffffff00000000)>>32);
 	else
 		return 0;
 }
@@ -1310,7 +1310,7 @@ static void *getCtx(unsigned int ctx1, unsigned int ctx2)
 	if(sizeof(void *) == 8)
 	{
 		unsigned long ctx; 
-		ctx = (unsigned long) ctx1 | ((unsigned long)ctx2 << 32);
+		ctx = (unsigned long) ctx1 | ((unsigned long long)ctx2 << 32);
 		return (void *)ctx;
 	}
 	else
@@ -1327,7 +1327,7 @@ JNIEXPORT jobject JNICALL Java_MDSplus_Tree_getActiveTree
 {
 	char name[1024];
 	int shot, status;
-	int retNameLen, retShotLen;
+	descriptor_length retNameLen, retShotLen;
 	jclass treeCls;
 	jmethodID constr;
 	jvalue args[2];
@@ -3209,12 +3209,13 @@ static char getNDims(struct descriptor *dsc)
 
 static void getDims(struct descriptor *dsc, int *dims)
 {
-	ARRAY_BOUNDS(char *, MAX_DIMS) *arrPtr;
+        typedef ARRAY_BOUNDS(char *, MAX_DIMS) AB;
+	AB *arrPtr;
 	int i;
 
 	if(dsc->class != CLASS_A)
 		return;
-	arrPtr = (ARRAY_BOUNDS(char *, 64) *)dsc;
+	arrPtr = (AB*)dsc;
 	for(i = 0; i < arrPtr->dimct; i++)
 		dims[i] = arrPtr->m[i];
 }

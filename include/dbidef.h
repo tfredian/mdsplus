@@ -24,9 +24,9 @@
 
 typedef struct dbi_itm
 {
-	unsigned long buffer_length;
+	descriptor_length buffer_length;
 	short int code;
 	void *pointer;
-	unsigned long *return_length_address;
+	descriptor_length *return_length_address;
 } DBI_ITM;
 #endif

@@ -51,7 +51,7 @@ int TclShowAttribute() {
 	  TclTextOut("Defined attributes for this node:");
 	  for (name=array->pointer;name<array->pointer+array->arsize;name+=array->length) {
 	    char *out=malloc(array->length+6);
-	    sprintf(out,"    %.*s",(int)array->length,name);
+	    sprintf(out,"    %.*s",array->length,name);
 	    TclTextOut(out);
 	    free(out);
 	  }

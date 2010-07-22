@@ -439,7 +439,7 @@ TreeNode *Tree::getDefault()
 
 bool Tree::versionsInPulseEnabled()
 {
-        unsigned long len;
+        descriptor_length len;
 	int supports, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(supports), DbiVERSIONS_IN_PULSE, &supports, &len},
@@ -453,7 +453,7 @@ bool Tree::versionsInPulseEnabled()
 
 bool Tree::versionsInModelEnabled()
 {
-        unsigned long len;
+        descriptor_length len;
 	int supports, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiVERSIONS_IN_MODEL, &supports, &len},
@@ -467,7 +467,7 @@ bool Tree::versionsInModelEnabled()
 
 bool Tree::isModified()
 {
-        unsigned long len;
+        descriptor_length len;
 	int modified, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiMODIFIED, &modified, &len},
@@ -481,7 +481,7 @@ bool Tree::isModified()
 
 bool Tree::isOpenForEdit()
 {
-        unsigned long len;
+        descriptor_length len;
 	int edit, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiOPEN_FOR_EDIT, &edit, &len},
@@ -495,7 +495,7 @@ bool Tree::isOpenForEdit()
 
 bool Tree::isReadOnly()
 {
-        unsigned long len;
+        descriptor_length len;
 	int readOnly, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiOPEN_READONLY, &readOnly, &len},
@@ -509,7 +509,7 @@ bool Tree::isReadOnly()
 
 void Tree::setVersionsInModel(bool verEnabled)
 {
-        unsigned long len;
+        descriptor_length len;
 	int supports, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiVERSIONS_IN_MODEL, &supports, &len},
@@ -523,7 +523,7 @@ void Tree::setVersionsInModel(bool verEnabled)
 
 void Tree::setVersionsInPulse(bool verEnabled)
 {
-        unsigned long len;
+        descriptor_length len;
 	int supports, status;
 	struct dbi_itm dbiList[] = 
 	{{sizeof(int), DbiVERSIONS_IN_PULSE, &supports, &len},
@@ -2121,7 +2121,7 @@ void MDSplus::setActiveTree(Tree *tree)
 
 Tree *MDSplus::getActiveTree()
 {
-        unsigned long retNameLen, retShotLen;
+        descriptor_length retNameLen, retShotLen;
 	char name[1024];
 	int shot;
 	

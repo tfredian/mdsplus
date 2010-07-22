@@ -13,15 +13,15 @@ using namespace MDSplus;
 
 extern "C"  void *getManyObj(char *serializedIn);
 extern "C"  void *putManyObj(char *serializedIn);
-extern "C" void *compileFromExprWithArgs(char *expr, int nArgs, void *args, void *tree);
+extern "C" void *compileFromExprWithArgs(const char *expr, int nArgs, void *args, void *tree);
 extern "C" int  SendArg(int sock, unsigned char idx, char dtype, unsigned char nargs, short length, char ndims,
 int *dims, char *bytes);
 extern "C" int GetAnswerInfoTS(int sock, char *dtype, short *length, char *ndims, int *dims, int *numbytes, void * *dptr, void **m);
-extern "C" int MdsOpen(int sock, char *tree, int shot);
-extern "C" int MdsSetDefault(int sock, char *node);
+extern "C" int MdsOpen(int sock, const char *tree, int shot);
+extern "C" int MdsSetDefault(int sock, const char *node);
 extern "C" int MdsClose(int sock);
-extern "C" int ConnectToMds(char *host);
-extern "C" int ConnectToMdsEvents(char *host);
+extern "C" int ConnectToMds(const char *host);
+extern "C" int ConnectToMdsEvents(const char *host);
 extern "C" void DisconnectFromMds(int sockId);
 extern "C" void FreeMessage(void *m);
 
@@ -237,9 +237,9 @@ void Connection::unlock()
 
 
 
-void Connection::openTree(char *tree, int shot)
+void Connection::openTree(const char *tree, int shot)
 {
-	int status = MdsOpen(sockId, tree, shot);
+  int status = MdsOpen(sockId, tree, shot);
 	if(!(status & 1))
 		throw new MdsException(status);
 }
@@ -249,7 +249,7 @@ void Connection::closeAllTrees()
 	if(!(status & 1))
 		throw new MdsException(status);
 }
-Data *Connection::get(char *expr, Data **args, int nArgs)
+Data *Connection::get(const char *expr, Data **args, int nArgs)
 {
 	char clazz, dtype, nDims;
 	short length;
@@ -268,7 +268,7 @@ Data *Connection::get(char *expr, Data **args, int nArgs)
 			throw new MdsException("Invalid argument passed to Connection::get(). Can only be Scalar or Array");
 	}
 	lock();
-	status = SendArg(sockId, 0, DTYPE_CSTRING_IP, nArgs+1, strlen(expr), 0, 0, expr);
+	status = SendArg(sockId, 0, DTYPE_CSTRING_IP, nArgs+1, strlen(expr), 0, 0, (char *)expr);
 	if(!(status & 1))
 	{
 		unlock();
@@ -370,7 +370,7 @@ Data *Connection::get(char *expr, Data **args, int nArgs)
 	return resData;	
 }
 
-void Connection::put(char *inPath, char *expr, Data **args, int nArgs)
+void Connection::put(const char *inPath, const char *expr, Data **args, int nArgs)
 {
 	char clazz, dtype, nDims;
 	short length;
@@ -442,14 +442,14 @@ void Connection::put(char *inPath, char *expr, Data **args, int nArgs)
 		throw new MdsException(status);
 }
 
-void Connection::setDefault(char *path)
+void Connection::setDefault(const char *path)
 {
 	int status = MdsSetDefault(sockId, path);
 	if(!(status & 1))
 		throw new MdsException(status);
 }
 
-void GetMany::insert(int idx, char *name, char *expr, Data **args, int nArgs)
+void GetMany::insert(int idx, const char *name, const char *expr, Data **args, int nArgs)
 {
 	String *nameStr = new String(name);
 	String *exprStr = new String(expr);
@@ -468,12 +468,12 @@ void GetMany::insert(int idx, char *name, char *expr, Data **args, int nArgs)
 }
 
 
-void GetMany::append(char *name, char *expr, Data **args, int nArgs)
+void GetMany::append(const char *name, const char *expr, Data **args, int nArgs)
 {
 	insert(len(), name, expr, args, nArgs);
 }
 
-void GetMany::insert(char * beforeName, char *name, char *expr, Data **args, int nArgs)
+void GetMany::insert(const char * beforeName, const char *name, const char *expr, Data **args, int nArgs)
 {
 	int nItems = len();
 	int idx;
@@ -497,7 +497,7 @@ void GetMany::insert(char * beforeName, char *name, char *expr, Data **args, int
 	deleteData(nameStr);
 }
 
-void GetMany::remove(char *name)
+void GetMany::remove(const char *name)
 {
 	int nItems = len();
 	int idx;
@@ -535,7 +535,7 @@ void GetMany::execute()
 }
 
 
-Data *GetMany::get(char *name)
+Data *GetMany::get(const char *name)
 {
 	if(!evalRes)
 		throw new MdsException("Data have not been evaluated yet");
@@ -572,7 +572,7 @@ Data *GetMany::get(char *name)
 
 /////////////////
 
-void PutMany::insert(int idx, char *nodeName, char *expr, Data **args, int nArgs)
+void PutMany::insert(int idx, const char *nodeName, const char *expr, Data **args, int nArgs)
 {
 	String *nodeNameStr = new String(nodeName);
 	String *exprStr = new String(expr);
@@ -591,12 +591,12 @@ void PutMany::insert(int idx, char *nodeName, char *expr, Data **args, int nArgs
 }
 
 
-void PutMany::append(char *name, char *expr, Data **args, int nArgs)
+void PutMany::append(const char *name, const char *expr, Data **args, int nArgs)
 {
 	insert(len(), name, expr, args, nArgs);
 }
 
-void PutMany::insert(char * beforeName, char *nodeName, char *expr, Data **args, int nArgs)
+void PutMany::insert(const char * beforeName, const char *nodeName, const char *expr, Data **args, int nArgs)
 {
 	int nItems = len();
 	int idx;
@@ -620,7 +620,7 @@ void PutMany::insert(char * beforeName, char *nodeName, char *expr, Data **args,
 	deleteData(nodeNameStr);
 }
 
-void PutMany::remove(char *nodeName)
+void PutMany::remove(const char *nodeName)
 {
 	int nItems = len();
 	int idx;
@@ -658,7 +658,7 @@ void PutMany::execute()
 }
 
 
-void PutMany::checkStatus(char *nodeName)
+void PutMany::checkStatus(const char *nodeName)
 {
 	if(!evalRes)
 		throw new MdsException("Data have not written yet");

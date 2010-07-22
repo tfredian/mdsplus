@@ -107,9 +107,9 @@ int _TreeDoMethod(void *dbid, struct descriptor *nid_dsc, struct descriptor *met
   STATIC_CONSTANT DESCRIPTOR(tdishr,"TdiShr");
   STATIC_CONSTANT DESCRIPTOR(tdiexecute,"TdiExecute");
   STATIC_CONSTANT DESCRIPTOR(tdievaluate,"TdiEvaluate");
-  static struct descriptor_xd xd = {0, 0, CLASS_XD, 0, 0};
+  static struct descriptor_xd xd = {DESCRIPTOR_HEAD_INI(0, 0, CLASS_XD, 0), 0};
   static    DESCRIPTOR(underunder, "__");
-  static struct descriptor_d method = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_D, 0);
+  static struct descriptor_d method = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
   static struct descriptor_conglom *conglom_ptr;
   int nargs;
   void *arglist[256];
@@ -141,7 +141,7 @@ int _TreeDoMethod(void *dbid, struct descriptor *nid_dsc, struct descriptor *met
     if (conglom_ptr->image && conglom_ptr->image->length == strlen("__python__") && strncmp(conglom_ptr->image->pointer,"__python__",strlen("__python__"))==0) {
       void *dbid=DBID;
       /**** Try python class ***/
-      struct descriptor exp = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_D, 0);
+      struct descriptor exp = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
       STATIC_CONSTANT DESCRIPTOR(open,"PyDoMethod(");
       StrCopyDx(&exp, &open);
       if (nargs==4 && method_ptr->length == strlen("DW_SETUP") && strncmp(method_ptr->pointer,"DW_SETUP",strlen("DW_SETUP")) == 0) {

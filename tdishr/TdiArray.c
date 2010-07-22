@@ -42,11 +42,11 @@ extern int Tdi3Add();
 extern int CvtConvertFloat();
 
 TdiRefStandard(Tdi1Array)
-array_coeff arr = {0,DTYPE_B,CLASS_A,(char *)0,1,0,0,{0,1,1,1,0},MAXDIM,0};
-array_int cvt = {0,DTYPE_L,CLASS_A,(int *)0,sizeof(int),0,0,{0,1,1,0,0},1,0};
+array_coeff arr = {DESCRIPTOR_HEAD_INI(1,DTYPE_B,CLASS_A,(char *)0),0,0,{0,1,1,1,0},MAXDIM,0};
+array_int cvt = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_A,(int *)0),0,0,{0,1,1,0,0},1,0};
 struct TdiFunctionStruct	*fun_ptr = (struct TdiFunctionStruct *)&TdiRefFunction[opcode];
 struct descriptor_xd	tmp = EMPTY_XD;
-unsigned long length;
+descriptor_llength length;
 unsigned char dtype;
 int				j, ndim=0;
 
@@ -100,7 +100,7 @@ int				j, ndim=0;
 	*****************************/
 	if (status & 1) {
 		if (arr.class == CLASS_A) {
-		  unsigned short slen = (unsigned short)length;
+		  descriptor_length slen = (descriptor_length)length;
 		  for (arr.arsize = 1, j = ndim; --j >= 0;) arr.arsize *= arr.m[j];
 		  status = MdsGet1DxA((struct descriptor_a *)&arr, &slen, &dtype, out_ptr);
 		}
@@ -129,8 +129,8 @@ int			Tdi3Ramp(
 struct descriptor	*out_ptr)
 {
   STATIC_CONSTANT int	i0 = 0, i1 = 1;
-  STATIC_CONSTANT struct descriptor con0 = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,(char *)&i0);
-  STATIC_CONSTANT struct descriptor con1 = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,(char *)&i1);
+  STATIC_CONSTANT struct descriptor con0 = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,(char *)&i0)};
+  STATIC_CONSTANT struct descriptor con1 = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,(char *)&i1)};
   int	status = 1, n;
   int i;
 
@@ -257,7 +257,7 @@ int			Tdi3Zero(
 struct descriptor_a	*out_ptr)
 {
 STATIC_CONSTANT int	i0 = 0;
- STATIC_CONSTANT struct descriptor con0 = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,(char *)&i0);
+ STATIC_CONSTANT struct descriptor con0 = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,(char *)&i0)};
 int	status;
 
 	status = TdiConvert(&con0, out_ptr MDS_END_ARG);

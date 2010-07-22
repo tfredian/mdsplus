@@ -23,12 +23,12 @@ STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 int				TdiGetShape(
 int				narg,
 struct descriptor_xd	dat[1],
-unsigned long			length,
+descriptor_length	length,
 unsigned char			dtype,
 int				*cmode_ptr,
 struct descriptor_xd	*out_ptr)
 {
-  unsigned long ulen,len;
+  descriptor_llength ulen,len;
   int	cmode = -1, status = 1, count = 0x7fffffff, j, nelem;
   struct descriptor_a		*aptr;
 
@@ -42,7 +42,7 @@ struct descriptor_xd	*out_ptr)
 		case CLASS_D :
 			break;
 		case CLASS_A :
-			nelem = ((int)aptr->length >0) ? aptr->arsize / aptr->length : 0;
+			nelem = (aptr->length != 0) ? aptr->arsize / aptr->length : 0;
 			if (nelem < count) {
 				count = nelem;
 				cmode = j;
@@ -58,9 +58,9 @@ struct descriptor_xd	*out_ptr)
 	Get array or scalar as needed.
 	*****************************/
 	if (status & 1) {
-	  unsigned short ulen_s = (unsigned short)ulen;
+	  descriptor_length ulen_s;
 	  if ((len = length) == 0 && dtype < TdiCAT_MAX) len = TdiREF_CAT[dtype].length;
-	  ulen = len;
+	  ulen_s = ulen = len;
 	  if (cmode < 0) 
 	    status = MdsGet1DxS(&ulen, &dtype, out_ptr);
 	  else status = MdsGet1DxA((struct descriptor_a *)dat[cmode].pointer, &ulen_s, &dtype, 

@@ -92,16 +92,16 @@ STATIC_CONSTANT DESCRIPTOR(hilite, "##");
 STATIC_CONSTANT DESCRIPTOR(newline, "\n");
 STATIC_THREADSAFE pthread_mutex_t lock;
 STATIC_THREADSAFE int lock_initialized = 0;
-STATIC_CONSTANT struct descriptor miss_dsc = DESCRIPTOR_INIT(0,DTYPE_MISSING, CLASS_S, 0);
+STATIC_CONSTANT struct descriptor miss_dsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_MISSING, CLASS_S, 0)};
 
 /****************************
 Explain in 300 words or less.
 ****************************/
 #define MAXMESS 1800
 STATIC_ROUTINE void add(char *text) {
-  struct descriptor_d new = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+  struct descriptor_d new = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
   struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
-  new.length = (unsigned short)strlen(text);
+  new.length = strlen(text);
   new.pointer = text;
   if (message->length + new.length < MAXMESS) StrAppend(message, &new);
 }
@@ -137,9 +137,9 @@ TdiRefStandard(TdiTrace)
 
 TdiRefStandard(TRACE)
 int	j;
-struct descriptor_d	text = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+struct descriptor_d	text = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
 struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
-unsigned short		now = message->length;
+descriptor_length		now = message->length;
 
 	if (now > MAXMESS) return 0;
 	if (opcode >= 0 && opcode <= TdiFUNCTION_MAX) {
@@ -348,14 +348,14 @@ TdiRefStandard(TdiIntrinsic)
 			if (nbody + npost > MAXLINE) nbody = MAXLINE - npost;
 		}
 		{
-		  struct descriptor pre = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
-		  struct descriptor body = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
-		  struct descriptor post = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
-                pre.length = (unsigned short)npre;
+		  struct descriptor pre = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+		  struct descriptor body = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+		  struct descriptor post = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+                pre.length = npre;
                 pre.pointer = cur-nbody-npre;
-                body.length = (unsigned short)nbody;
+                body.length = nbody;
                 body.pointer = cur-nbody;
-                post.length = (unsigned short)npost;
+                post.length = npost;
                 post.pointer = cur;
 			StrConcat((struct descriptor *)message, (struct descriptor *)message, &compile_err, &pre, &hilite, &body, &hilite, &post, &newline MDS_END_ARG);
 		}
@@ -381,7 +381,7 @@ int mess_stat = (TdiThreadStatic())->TdiIntrinsic_mess_stat;
 struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
 	if (narg > 0 && list[0]) status = TdiGetLong(list[0], &option);
 	if (option & 1 && mess_stat != 1) {
-	  struct descriptor dmsg = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+	  struct descriptor dmsg = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
         dmsg.pointer = MdsGetMsg(mess_stat);
         dmsg.length = strlen(dmsg.pointer);
 		StrConcat((struct descriptor *)message, &dmsg, &newline, message MDS_END_ARG);

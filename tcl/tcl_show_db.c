@@ -26,8 +26,8 @@ int   TclShowDB()
     static int   idx;
     static char  nameStr[64+1];
     static char  pathStr[132+1];
-    static int  nameLen;
-    static int  pathLen;
+    static descriptor_length  nameLen;
+    static descriptor_length  pathLen;
     static int   shotid;
     static char  modified;
     static char  edit;

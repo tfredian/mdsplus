@@ -27,8 +27,8 @@ extern int TdiMasterData();
 extern int Tdi2Vector();
 
 TdiRefStandard(Tdi1Vector)
-array miss = {0,DTYPE_MISSING,CLASS_A,(char *)0,sizeof(char),0,0,{0,1,1,0,0},1,0};
-array_coeff arr = {0,DTYPE_BU,CLASS_A,(char *)0,sizeof(char),0,0,{0,1,1,1,0},MAXDIM,0};
+array miss = {DESCRIPTOR_HEAD_INI(sizeof(char),DTYPE_MISSING,CLASS_A,(char *)0),0,0,{0,1,1,0,0},1,0};
+array_coeff arr = {DESCRIPTOR_HEAD_INI(sizeof(char),DTYPE_BU,CLASS_A,(char *)0),0,0,{0,1,1,1,0},MAXDIM,0};
 struct descriptor_xd	(*psig)[], (*puni)[]=0, (*pdat)[]=0;
 struct TdiCatStruct		(*pcats)[]=0;
 int	cmode = -1, j, n, (*pnelem)[]=0, jd, mind = MAXDIM, maxd = 0, nmiss = 0;

@@ -125,7 +125,7 @@ int	in_size, out_size, dimct, status = 1;
 }
 /*----------------------------------------------------------------------------
 */
-STATIC_CONSTANT struct descriptor missing_dsc = DESCRIPTOR_INIT(0,DTYPE_MISSING,CLASS_S,0);
+STATIC_CONSTANT struct descriptor missing_dsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_MISSING,CLASS_S,0)};
 int				TdiGetData(
 unsigned char			omits[],
 struct descriptor		*their_ptr,
@@ -296,7 +296,7 @@ int				status = 1;
 	  case DTYPE_LU :			*val_ptr = (float) *(unsigned int *)	in_ptr->pointer; break;
 	  case DTYPE_L :			*val_ptr = (float) *(int *)		in_ptr->pointer; break;
 	  default : {
-	    struct descriptor val_dsc = DESCRIPTOR_INIT(sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0);
+	    struct descriptor val_dsc = {DESCRIPTOR_HEAD_INI(sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0)};
 	    val_dsc.pointer = (char *)val_ptr;
 	    status = TdiConvert(in_ptr, &val_dsc MDS_END_ARG);
 	  } break;
@@ -348,7 +348,7 @@ int				status = 1;
 	  case DTYPE_W :			*val_ptr = (int) *(short *)		in_ptr->pointer; break;
 	  case DTYPE_L : case DTYPE_LU : *val_ptr = *(int *)		in_ptr->pointer; break;
 	  default : {
-	    struct descriptor val_dsc = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,0);
+	    struct descriptor val_dsc = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,0)};
 	    val_dsc.pointer = (char *)val_ptr;
 	    status = TdiConvert(in_ptr, &val_dsc MDS_END_ARG);
 	  }

@@ -161,7 +161,7 @@ char  *MdsGetMsg(	/* Return: addr of "status" string	*/
    {
      STATIC_CONSTANT DESCRIPTOR(msg_files,"MDSMSG_PATH:*Msg.*");
      STATIC_CONSTANT DESCRIPTOR(getmsg_nam,"getmsg");
-     struct descriptor_d filnam = {0, DTYPE_T, CLASS_D, 0};
+     struct descriptor_d filnam = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
      int   i;
      char  *facnam, *msgnam, *msgtext;
      int status = 0;

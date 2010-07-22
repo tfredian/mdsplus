@@ -269,9 +269,10 @@ void *evaluateData(void *dscPtr, int isEvaluate)
 
 		case CLASS_A :
 			{
-				ARRAY_COEFF(char , 64) *arrDscPtr;
+			  typedef ARRAY_COEFF(char, 64) ARRAY_DSC;
+				ARRAY_DSC *arrDscPtr;
 				if(isCa)
-					arrDscPtr = caXd.pointer;
+				  arrDscPtr = (ARRAY_DSC *)caXd.pointer;
 				else
 					arrDscPtr = (void *)dscPtr;
 				if(arrDscPtr->dimct > 1)

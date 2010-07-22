@@ -177,7 +177,7 @@ char			c0;
 	return cmp;
 }
 TdiRefStandard(Tdi1GetNci)
-STATIC_CONSTANT struct descriptor_d	EMPTY_D = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+STATIC_CONSTANT struct descriptor_d	EMPTY_D = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
 STATIC_CONSTANT DESCRIPTOR_A(arr0,1,DTYPE_B,0,960);
 struct descriptor_a		*holda_ptr=0;
 struct descriptor_d		string = EMPTY_D;
@@ -207,7 +207,7 @@ unsigned short                  maxlen = 0;
 			case DTYPE_T :
 			case DTYPE_PATH :
 			  {
-			    struct descriptor path_d = DESCRIPTOR_INIT(0,DTYPE_PATH,CLASS_S,0);
+			    struct descriptor path_d = {DESCRIPTOR_HEAD_INI(0,DTYPE_PATH,CLASS_S,0)};
 			    char *path;
 			    path_d.length = (unsigned char)len;
 			    path_d.pointer = dat_ptr;
@@ -246,7 +246,7 @@ unsigned short                  maxlen = 0;
 		if (status & 1) {
 		struct descriptor	allow = *tmp.pointer;
 		int length;
-		struct descriptor	usage = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+		struct descriptor	usage = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 		int	nallow;
 			N_ELEMENTS(tmp.pointer, nallow);
 			length=allow.length;
@@ -293,7 +293,7 @@ more:		switch (dtype) {
 		case DTYPE_PATH :
 		case DTYPE_T :
 		  {
-		    struct descriptor path_d = DESCRIPTOR_INIT(0,DTYPE_PATH,CLASS_S,0);
+		    struct descriptor path_d = {DESCRIPTOR_HEAD_INI(0,DTYPE_PATH,CLASS_S,0)};
 		    char *path;
 		    path_d.length = (unsigned short)len;
 		    path_d.pointer = dat_ptr;

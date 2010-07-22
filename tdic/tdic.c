@@ -181,8 +181,9 @@ int main(int argc, char **argv) {
 		exit(1);
 		}
 	 else if(*line_in == '!') {
+	   int status;
 	    *line_in = ' ';			/* replace by a space */
-	    system(line_in);
+	    status = system(line_in);
 	 }
 	 else if(!strcmp(line_in,"help") || !strcmp(line_in,"man")) {
 	    printf("TDI(C) reference (October 1999)\n");
@@ -231,21 +232,24 @@ int main(int argc, char **argv) {
 		 strcat(line_in, nameStart);/* put back the target */
 		 strcat(line_in, ".fun");
 		 if(!stat(line_in+5,&statf)) {
+		   int status;
 		    printf("Found <%s>\n",line_in+5);
-		    system(line_in);
+		    status = system(line_in);
 		    tpath = NULL;
 		 }
 	      } while(tpath != NULL);
 	 }
 	 else if(!strncmp(line_in,"man ",4)) {
+	   int status;
 	    strcpy(temp, line_in+4);   /* copy the target */
 	    strcpy(line_in,"man ");
 	    strcat(line_in, temp);		/* put back the target */
-	    system(line_in);
+	    status = system(line_in);
 	 }
 	 else if(!strncmp(line_in,"tcl",3)) {
+	   int status;
 	    strcpy(line_in, "$MDSPLUS/bin/tcl");	/* move the text to the left */
-	    system(line_in);
+	    status = system(line_in);
 	 }
 #ifdef NEVER
 	 else if(!strncmp(line_in,"tcl",3)) {

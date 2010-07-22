@@ -213,7 +213,7 @@ static int   cduGetCmd(
     int   sts;
     char  *p;
 
-    sts = cduGetString(prompt,(struct descriptor *)&dsc_token,0);
+    sts = cduGetString(prompt,&dsc_token,0);
     if (!sts)
         return(sts);
 
@@ -243,7 +243,7 @@ static int   notHandlingOption(	/* Return: status			*/
 
     p = pp;
     startOfCmdline = getString_startOfLine();
-    ascToken(&p,(struct descriptor *)&dsc_token,0,0);
+    ascToken(&p,&dsc_token,0,0);
     k = pp - startOfCmdline;
     printf("\n-->Not handling option '%s'\n",token);
     printf("   Command line = '%.52s'\n",startOfCmdline);
@@ -538,7 +538,7 @@ static struct valueClause  *cmd_value()	/* Return: addr of structure	*/
         if (p && *p==',')
             bumpString_linePtr();
 
-        if (!cduGetString("    valueOpt",(struct descriptor *)&dsc_token,0)) {
+        if (!cduGetString("    valueOpt",&dsc_token,0)) {
             illegalCmdline(0,0);
 	    return 0;
 	}
@@ -560,7 +560,7 @@ static struct valueClause  *cmd_value()	/* Return: addr of structure	*/
                 break;
 
             case VAL_DEFAULT:
-	      if (!getEqualsString("=defaultVal",(struct descriptor *)&dsc_token,0))
+                if (!getEqualsString("=defaultVal",&dsc_token,0))
                    {
                     illegalCmdline(0,"requires default string");
                     return(0);
@@ -578,7 +578,7 @@ static struct valueClause  *cmd_value()	/* Return: addr of structure	*/
                 break;
 
             case VAL_TYPE:
-	      if (!getEqualsString("=type",(struct descriptor *)&dsc_token,0)) {
+	      if (!getEqualsString("=type",&dsc_token,0)) {
                     illegalCmdline(psave,"unexpected eof");
 		    return 0;
 	      }
@@ -613,7 +613,7 @@ static int   cmd_verbQualifier(		/* Return: status		*/
     char  qualName[32];
     struct qualifier  *q;
 
-    if (!cduGetString("  Qualifier name",(struct descriptor *)&dsc_token,0))
+    if (!cduGetString("  Qualifier name",&dsc_token,0))
         return(illegalCmdline(psave,"requires Qualifier name"));
 
     l2u(qualName,token);
@@ -625,7 +625,7 @@ static int   cmd_verbQualifier(		/* Return: status		*/
         if (p && *p==',')
             bumpString_linePtr();
 
-        if (!cduGetString("  Qualifier option",(struct descriptor *)&dsc_token,0))
+        if (!cduGetString("  Qualifier option",&dsc_token,0))
             return(0);
 
         strncpy(cmd,token,sizeof(cmd)-1);
@@ -651,7 +651,7 @@ static int   cmd_verbQualifier(		/* Return: status		*/
                 break;
 
             case QUAL_LABEL:
-	      if (!getEqualsString("  Label-name",(struct descriptor *)&dsc_token,0))
+                if (!getEqualsString("  Label-name",&dsc_token,0))
                     return(illegalCmdline(psave,"requires label name"));
                 l2u(token,0);
                 q->qualA_label = STRING_ALLOC(token);
@@ -666,7 +666,7 @@ static int   cmd_verbQualifier(		/* Return: status		*/
                 break;
 
             case QUAL_SYNTAX:
-	      if (!getEqualsString("  Syntax-name",(struct descriptor *)&dsc_token,0))
+                if (!getEqualsString("  Syntax-name",&dsc_token,0))
                     return(illegalCmdline(psave,"requires syntax name"));
                 l2u(token,0);
                 q->qualA_syntax = STRING_ALLOC(token);
@@ -713,7 +713,7 @@ static int   cmd_verbParameter(	/* Return: status			*/
         if (p && *p==',')
             bumpString_linePtr();
 
-        if (!cduGetString("    Parameter option",(struct descriptor *)&dsc_token,0))
+        if (!cduGetString("    Parameter option",&dsc_token,0))
            {
             sts = STS_EOF;
             break;			/* out of loop			*/
@@ -739,14 +739,14 @@ static int   cmd_verbParameter(	/* Return: status			*/
                 break;
 
             case PARAM_LABEL:
-	      if (!getEqualsString(0,(struct descriptor *)&dsc_token,0))
+                if (!getEqualsString(0,&dsc_token,0))
                     return(illegalCmdline(p,"Requires label name"));
                 l2u(token,0);
                 prm->prmA_label = STRING_ALLOC(token);
                 break;
 
             case PARAM_PROMPT:
-	      if (!getEqualsString(0,(struct descriptor *)&dsc_token,0))
+                if (!getEqualsString(0,&dsc_token,0))
                     return(illegalCmdline(p,"Requires prompt string"));
                 prm->prmA_prompt = STRING_ALLOC(token);
                 break;
@@ -785,7 +785,7 @@ static int   cmd_defineVerb(
     paramId = 0;		/* Initialize paramId for new verb	*/
     define_syntax_flag = (callerOpt == DEFINE_SYNTAX);
 
-    if (!cduGetString("VerbName",(struct descriptor *)&dsc_token,0))
+    if (!cduGetString("VerbName",&dsc_token,0))
         return(illegalCmdline(psave,"unexpected end of input"));
     l2u(verbName,token);
 
@@ -801,7 +801,7 @@ static int   cmd_defineVerb(
         if (p && *p==',')
             bumpString_linePtr();
 
-        if (!cduGetString("  Verb-clause option",(struct descriptor *)&dsc_token,0))
+        if (!cduGetString("  Verb-clause option",&dsc_token,0))
             break;
         strncpy(cmd,token,sizeof(cmd)-1);
 
@@ -834,7 +834,7 @@ static int   cmd_defineVerb(
                 break;
 
             case VERB_IMAGE:
-	      if (!getFilename(0,(struct descriptor *)&dsc_token))
+                if (!getFilename(0,&dsc_token))
                     return(illegalCmdline(psave,"Requires image-filename"));
                 v->vrbA_image = STRING_ALLOC(token);
                 break;
@@ -848,7 +848,7 @@ static int   cmd_defineVerb(
                 break;
 
             case VERB_ROUTINE:
-	      if (!cduGetString("    Routine",(struct descriptor *)&dsc_token,0))
+                if (!cduGetString("    Routine",&dsc_token,0))
                     return(illegalCmdline(psave,"Requires routine-name"));
                 v->vrbA_routine = STRING_ALLOC(token);
                 break;
@@ -856,7 +856,7 @@ static int   cmd_defineVerb(
             case VERB_SYNONYM:
                 if (define_syntax_flag)
                     return(illegalCmdline(psave,"Not allowed in SYNTAX"));
-                if (!cduGetString("    Synonym",(struct descriptor *)&dsc_token,0))
+                if (!cduGetString("    Synonym",&dsc_token,0))
                     return(illegalCmdline(psave,"Requires synonym name"));
                 printf("    Synonym = '%s'\n\n",token);
                 printf("      *NOTE* NOT HANDLING SYNONYMS AT THIS TIME\n");
@@ -887,7 +887,7 @@ static int   cmd_parseKeywordClauses(
         if (p && *p==',')
             bumpString_linePtr();
 
-        if (!cduGetString("    Keyword option",(struct descriptor *)&dsc_token,0))
+        if (!cduGetString("    Keyword option",&dsc_token,0))
             break;
         strncpy(cmd,token,sizeof(cmd)-1);
 
@@ -909,7 +909,7 @@ static int   cmd_parseKeywordClauses(
                 break;
 
             case KEY_LABEL:
-	      if (!getEqualsString(0,(struct descriptor *)&dsc_token,0))
+                if (!getEqualsString(0,&dsc_token,0))
                     return(illegalCmdline(p,"Requires label name"));
                 l2u(token,0);
                 key->keyA_label = STRING_ALLOC(token);
@@ -924,7 +924,7 @@ static int   cmd_parseKeywordClauses(
                 break;
 
             case KEY_SYNTAX:
-	      if (!getEqualsString(0,(struct descriptor *)&dsc_token,0))
+                if (!getEqualsString(0,&dsc_token,0))
                     return(illegalCmdline(p,"Requires syntax name"));
                 l2u(token,0);
                 key->keyA_syntax = STRING_ALLOC(token);
@@ -953,7 +953,7 @@ static int   cmd_defineType()	/* Return: status			*/
     char  keywordName[32];
     struct keyword  *key;
 
-    if (!cduGetString("typeName",(struct descriptor *)&dsc_token,0))
+    if (!cduGetString("typeName",&dsc_token,0))
         return(illegalCmdline(psave,"unexpected end of input"));
     l2u(typeName,token);
 
@@ -963,7 +963,7 @@ static int   cmd_defineType()	/* Return: status			*/
         if (p && *p==',')
             bumpString_linePtr();
 
-        if (!cduGetString("  'Type' option (i.e. KEYWORD)",(struct descriptor *)&dsc_token,0))
+        if (!cduGetString("  'Type' option (i.e. KEYWORD)",&dsc_token,0))
             break;
         l2un(cmd,token,sizeof(cmd)-1);
         if (strcmp(cmd,"KEYWORD"))
@@ -976,7 +976,7 @@ static int   cmd_defineType()	/* Return: status			*/
 		/*--------------------------------------------------------
 		 * Get the keyword name;  get keyword struct ...
 		 *-------------------------------------------------------*/
-        if (!cduGetString("    Keyword name",(struct descriptor *)&dsc_token,0))
+        if (!cduGetString("    Keyword name",&dsc_token,0))
             break;
         l2un(keywordName,token,sizeof(keywordName)-1);
 
@@ -999,7 +999,7 @@ static int   cmd_define()	/* Return: status			*/
     char  cmd[32];
     char  *p;
 
-    if (!cduGetString("'Define' option",(struct descriptor *)&dsc_token,0))
+    if (!cduGetString("'Define' option",&dsc_token,0))
         return(illegalCmdline(psave,"Unexpected end of line"));
     strncpy(cmd,token,sizeof(cmd)-1);
 
@@ -1036,7 +1036,7 @@ static int   cmd_define()	/* Return: status			*/
 	 ******************************************************************/
 static int   cmd_ident()	/* Return: status			*/
    {
-     if (!cduGetString("Ident string",(struct descriptor *)&dsc_token,0))
+    if (!cduGetString("Ident string",&dsc_token,0))
         return(illegalCmdline(0,"Requires IDENT name"));
     strncpy(identString,token,sizeof(identString)-1);
     printf("\nIdent = '%s'\n",identString);
@@ -1050,7 +1050,7 @@ static int   cmd_ident()	/* Return: status			*/
 	 ******************************************************************/
 static int   cmd_module()	/* Return: status			*/
    {
-     if (!cduGetString("Module name",(struct descriptor *)&dsc_token,0))
+    if (!cduGetString("Module name",&dsc_token,0))
         return(illegalCmdline(0,"Requires MODULE name"));
     strncpy(moduleName,token,sizeof(moduleName)-1);
     if (interactive())
@@ -1073,7 +1073,7 @@ static int   cdu_parse(		/* Return: status			*/
 
     for ( ; ; )
        {
-	 if (!cduGetString("Enter >  ",(struct descriptor *)&dsc_token,0))
+        if (!cduGetString("Enter >  ",&dsc_token,0))
             break;
         strncpy(cmd,token,sizeof(cmd)-1);
 

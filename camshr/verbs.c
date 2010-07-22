@@ -261,7 +261,7 @@ int Autoconfig()
 
 	// loop thru list
 	for( i = 0; i < numOfEntries; ++i ) {
-		fscanf(fp, "%s", line);								// get a crate.db entry
+		int num = fscanf(fp, "%s", line);								// get a crate.db entry
 		sprintf(pHighwayName, "%.6s", line);				// trim it
 
 		// NB! this is a work-around -- seems necessary for the moment

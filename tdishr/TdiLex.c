@@ -144,7 +144,7 @@ extern void TdiYyReset()
 
 extern int TdiHash(  );
 
-STATIC_ROUTINE void	upcase(unsigned char *str, int str_len) {
+STATIC_ROUTINE void	upcase(unsigned char *str, descriptor_length str_len) {
 	unsigned char	*pc;
 
 	for (pc = str; pc < str+str_len; ++pc) if (*pc >= 'a' && *pc <= 'z') *pc += (unsigned char)('A' - 'a');
@@ -155,7 +155,7 @@ STATIC_ROUTINE void	upcase(unsigned char *str, int str_len) {
 	Limitation:	Not ANSI C standard use of delimiters.
 */
 STATIC_ROUTINE int			TdiLexComment(
-int			len,
+descriptor_length			len,
 unsigned char		*str,
 struct marker		*mark_ptr)
 {
@@ -196,13 +196,13 @@ STATIC_CONSTANT DESCRIPTOR(valid_dsc, "+-.0123456789DEFGHSTV \t");
 STATIC_ROUTINE int ConvertFloating(struct descriptor_s *str, struct descriptor_r *out_d)
 {
   char str_c[64];
-  int len = str->length > 63 ? 63 : str->length;
+  descriptor_length len = str->length > 63 ? 63 : str->length;
   strncpy(str_c,str->pointer,len);
   str_c[len]=0;
   if (out_d->length == sizeof(double))
   {
     double tmp;
-    struct descriptor tmp_d = DESCRIPTOR_INIT(sizeof(double),DTYPE_NATIVE_DOUBLE,CLASS_S,0);
+    struct descriptor tmp_d = {DESCRIPTOR_HEAD_INI(sizeof(double),DTYPE_NATIVE_DOUBLE,CLASS_S,0)};
     tmp_d.pointer = (char *)&tmp;
     tmp = atof(str_c);
     return TdiConvert(&tmp_d,out_d);
@@ -210,7 +210,7 @@ STATIC_ROUTINE int ConvertFloating(struct descriptor_s *str, struct descriptor_r
   else
   {
     float tmp;
-    struct descriptor tmp_d = DESCRIPTOR_INIT(sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0);
+    struct descriptor tmp_d = {DESCRIPTOR_HEAD_INI(sizeof(float),DTYPE_NATIVE_FLOAT,CLASS_S,0)};
     tmp_d.pointer = (char *)&tmp;
     sscanf(str_c,"%g",&tmp);
     return TdiConvert(&tmp_d,out_d);
@@ -218,14 +218,14 @@ STATIC_ROUTINE int ConvertFloating(struct descriptor_s *str, struct descriptor_r
 }
 
 STATIC_ROUTINE int			TdiLexFloat(
-int		str_len,
+descriptor_length		str_len,
 unsigned char		*str,
 struct marker		*mark_ptr)
 {
-  struct descriptor_s str_dsc = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+  struct descriptor_s str_dsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 int			bad, idx, status, tst, type;
 STATIC_CONSTANT struct {
-	unsigned long	length;
+	descriptor_length	length;
 	unsigned char	dtype;
 } table[] = {
 		{4,	DTYPE_NATIVE_FLOAT},
@@ -286,11 +286,11 @@ struct TdiFunctionStruct	*s2)
 }
 
 STATIC_ROUTINE int			TdiLexIdent(
-int 			len,
+descriptor_length 			len,
 unsigned char		*str,
 struct marker		*mark_ptr)
 {
-  struct descriptor_s		sd = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+  struct descriptor_s		sd = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 int				j, token;
 	unsigned char *str_l;
 
@@ -386,7 +386,7 @@ unsigned char	*str,
 struct marker		*mark_ptr)
 {
 STATIC_ROUTINE struct {
-	unsigned long	length;
+	descriptor_length	length;
 	unsigned char	udtype, sdtype;
 } table[] = {
 	{1,	DTYPE_BU,DTYPE_B},
@@ -551,11 +551,11 @@ struct marker		*mark_ptr)
 	}
 	else
 	{
-	  struct descriptor	abs_dsc = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+	  struct descriptor	abs_dsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
 		char *apath = TreeAbsPath((char *)str_l);
 		if (apath != NULL)
 		{
-			unsigned long alen = strlen(apath);
+			descriptor_length alen = strlen(apath);
 			StrCopyR(&abs_dsc,&alen,apath);
 			TreeFree(apath);
 			MAKE_S(DTYPE_PATH, abs_dsc.length, mark_ptr->rptr);
@@ -579,7 +579,7 @@ int			len,
 unsigned char		*str,
 struct marker		*mark_ptr)
 {
-unsigned long		lenx = len - 2;
+descriptor_length		lenx = len - 2;
 	while (str[lenx+1] == '.' || str[lenx+1] == ':') --lenx;
 	mark_ptr->builtin = -1;
 	MAKE_S(DTYPE_T, lenx, mark_ptr->rptr);

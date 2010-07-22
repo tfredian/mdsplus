@@ -81,10 +81,10 @@ union __bswap { char   b[8];
 #endif
 
 STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr, 
-                        unsigned long *b_out, unsigned long *b_in)
+                        descriptor_llength *b_out, descriptor_llength *b_in)
 {
   unsigned int status = 1,i,j;
-  unsigned long
+  descriptor_llength
               bytes_out = 0,
               bytes_in = 0,
               size_out,
@@ -126,22 +126,20 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
      case CLASS_XS_SHORT:
      case CLASS_XD_SHORT:
      {
-	struct descriptor_xs in;
-	struct descriptor_xs *po = (struct descriptor_xs *) out_dsc_ptr;
-        in.len_fill = 0;
-        in.dtype = dtype();
-        in.class = CLASS_XS;
-        set_l_length(in.l_length);
-	if (po)
-	{
-	  *po = in;
-	  po->pointer = (struct descriptor *) (po + 1);
-          memcpy(po->pointer,in_ptr+12,in.l_length);
-	}
-	bytes_out = align(sizeof(struct descriptor_xs) + in.l_length,sizeof(void *));
-	bytes_in = 12 + in.l_length;
-      }
-      break;
+       struct descriptor_xs in = {DESCRIPTOR_HEAD_INI(0,0,0,0)};
+       struct descriptor_xs *po = (struct descriptor_xs *) out_dsc_ptr;
+       in.dtype = dtype();
+       in.class = CLASS_XS;
+       set_l_length(in.l_length);
+       if (po) {
+	 *po = in;
+	 po->pointer = (struct descriptor *) (po + 1);
+	 memcpy(po->pointer,in_ptr+12,in.l_length);
+       }
+       bytes_out = align(sizeof(struct descriptor_xs) + in.l_length,sizeof(void *));
+       bytes_in = 12 + in.l_length;
+     }
+     break;
 
      case CLASS_R_SHORT:
      {
@@ -431,8 +429,8 @@ STATIC_ROUTINE int copy_rec_dx( char *in_ptr, struct descriptor_xd *out_dsc_ptr,
 
 int MdsSerializeDscIn(char *in, struct descriptor_xd *out)
 {
-  unsigned long size_out;
-  unsigned long size_in;
+  descriptor_llength size_out;
+  descriptor_llength size_in;
   int       status;
   STATIC_CONSTANT const unsigned char dsc_dtype = DTYPE_DSC;
   status = copy_rec_dx(in, 0, &size_out, &size_in);
@@ -447,10 +445,10 @@ int MdsSerializeDscIn(char *in, struct descriptor_xd *out)
   return status;
 }
 
-STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,unsigned long long *b_out, unsigned long long *b_in)
+STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descriptor_llength *b_out, descriptor_llength *b_in)
 {
   unsigned int status = 1,j,num_dsc;
-  unsigned long long
+  descriptor_llength
               bytes_out = 0,
               bytes_in = 0,
               size_out,
@@ -772,17 +770,17 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,unsigned
   return status;
 }
 
-STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc_ptr, unsigned long long *reclen)
+STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc_ptr, descriptor_llength *reclen)
 {
-  unsigned long long size_out;
-  unsigned long long size_in;
+  descriptor_llength size_out;
+  descriptor_llength size_in;
   int       status;
   STATIC_CONSTANT const unsigned char dsc_dtype = DTYPE_B;
   status = copy_dx_rec((struct descriptor *)inp, 0, &size_out, &size_in);
   if (status & 1 && size_out)
   {
-    unsigned short nlen = 1;
-    array out_template = {0,DTYPE_B,CLASS_A,0,1,0,0,{0,1,1,0,0},1,0};
+    descriptor_length nlen = 1;
+    array out_template = {DESCRIPTOR_HEAD_INI(1,DTYPE_B,CLASS_A,0),0,0,{0,1,1,0,0},1,0};
     out_template.arsize = *reclen = size_out;
     status = MdsGet1DxA((struct descriptor_a *)&out_template, &nlen, (unsigned char *) &dsc_dtype, out_dsc_ptr);
     if (status & 1)
@@ -796,7 +794,7 @@ STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc
   return status;
 }
 
-STATIC_CONSTANT int PointerToOffset(struct descriptor *dsc_ptr, unsigned long long *length)
+STATIC_CONSTANT int PointerToOffset(struct descriptor *dsc_ptr, descriptor_llength *length)
 {
   int       status = 1;
   if ((dsc_ptr->dtype == DTYPE_DSC) && (dsc_ptr->class != CLASS_A) && (dsc_ptr->class != CLASS_APD))
@@ -880,7 +878,7 @@ STATIC_CONSTANT int PointerToOffset(struct descriptor *dsc_ptr, unsigned long lo
      case CLASS_CA:
       if (dsc_ptr->pointer)
       {
-	unsigned long long dummy_length;
+	descriptor_llength dummy_length;
 	struct descriptor_a *a_ptr = (struct descriptor_a *) dsc_ptr;
 	*length += sizeof(struct descriptor_a)
 		+ (a_ptr->aflags.coeff ? sizeof(int) * (a_ptr->dimct + 1) : 0)
@@ -906,8 +904,8 @@ int MdsSerializeDscOutZ(struct descriptor *in,
              void *fixupPathArg,
              int compress,
              int *compressible_out,
-             unsigned long long *length_out,
-             unsigned long long *reclen_out,
+             descriptor_llength *length_out,
+             descriptor_llength *reclen_out,
              unsigned char *dtype_out,
              unsigned char *class_out,
              int  altbuflen,
@@ -918,8 +916,8 @@ int MdsSerializeDscOutZ(struct descriptor *in,
   struct descriptor *out_ptr;
   struct descriptor_xd tempxd;
   int compressible = 0;
-  unsigned long long length = 0;
-  unsigned long long reclen = 0;
+  descriptor_llength length = 0;
+  descriptor_llength reclen = 0;
   unsigned char dtype = 0;
   unsigned char class = 0;
   int data_in_altbuf = 0;

@@ -382,7 +382,7 @@ static int CvtAdscT(struct descriptor_a *in_dsc_ptr,int depth)
        }
     else
        {
-        sprintf(bchars,"%lld",in_dsc_ptr->arsize / in_dsc_ptr->length);
+        sprintf(bchars,"%d",in_dsc_ptr->arsize / in_dsc_ptr->length);
         str_append(&out_str,bchars);
        }
     str_append(&out_str," ]");

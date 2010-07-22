@@ -26,7 +26,7 @@ STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 #define LibVM_BOUNDARY_TAGS  1
 #define LibVM_EXTEND_AREA    32
 #define LibVM_TAIL_LARGE     128
-#define align(bytes,size) ((((unsigned long)(bytes) + (size) - 1)/(size)) * (size))
+#define align(bytes,size) ((((descriptor_llength)(bytes) + (size) - 1)/(size)) * (size))
 #define compression_threshold 128
 #define _MOVC3(a,b,c) memcpy(c,b,a)
 
@@ -34,7 +34,7 @@ void MdsFixDscLength(struct descriptor *in);
 
 STATIC_CONSTANT void *MdsVM_ZONE = 0;
 
-int  MdsGet1Dx(unsigned long *length_ptr, unsigned char *dtype_ptr, struct descriptor_xd *dsc_ptr, void **zone)
+int  MdsGet1Dx(descriptor_llength *length_ptr, unsigned char *dtype_ptr, struct descriptor_xd *dsc_ptr, void **zone)
 {
   int       status;
   if (dsc_ptr->class == CLASS_XD)
@@ -52,7 +52,6 @@ int  MdsGet1Dx(unsigned long *length_ptr, unsigned char *dtype_ptr, struct descr
       status = 1;
     if (status & 1)
     {
-      dsc_ptr->len_fill = 0;
       dsc_ptr->l_length = *length_ptr;
       dsc_ptr->class = CLASS_XD;
       dsc_ptr->dtype = *dtype_ptr;
@@ -97,14 +96,14 @@ STATIC_ROUTINE struct descriptor *FixedArray();
 STATIC_ROUTINE int copy_dx(
 		               struct descriptor_xd *in_dsc_ptr,
 		               struct descriptor_xd *out_dsc_ptr,
-		               unsigned long *bytes_used_ptr,
+		               descriptor_llength *bytes_used_ptr,
 		               int (*fixup_nid) (),
 		               void  *fixup_nid_arg,
 		               int (*fixup_path) (),
 		               void  *fixup_path_arg, int *compressible)
 {
   unsigned int status = 1,j;
-  unsigned long
+  descriptor_llength
               bytes = 0,
               size;
   struct descriptor *in_ptr = (struct descriptor *) in_dsc_ptr;
@@ -119,7 +118,7 @@ STATIC_ROUTINE int copy_dx(
       {
 	struct descriptor in;
 	struct descriptor *po = (struct descriptor *) out_dsc_ptr;
-        struct descriptor_d path = {0, DTYPE_T, CLASS_D, 0};
+        struct descriptor_d path = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
 	in = *(struct descriptor *) in_ptr;
 	in.class = CLASS_S;
 	if (in.dtype == DTYPE_NID && fixup_nid
@@ -156,7 +155,7 @@ STATIC_ROUTINE int copy_dx(
       {
 	struct descriptor_xs in;
 	struct descriptor_xs *po = (struct descriptor_xs *) out_dsc_ptr;
-        struct descriptor_d path = {0, DTYPE_T, CLASS_D, 0};
+        struct descriptor_d path = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
 	in = *(struct descriptor_xs *) in_ptr;
 	if (in.dtype == DTYPE_NID && fixup_nid
 	    && (*fixup_nid) (in.pointer, fixup_nid_arg, &path))
@@ -215,7 +214,7 @@ STATIC_ROUTINE int copy_dx(
 	  }
       }
       break;
-
+      /*
      case CLASS_NCA:
       {
 	array_coeff *pi = (array_coeff *) FixedArray(in_ptr);
@@ -237,7 +236,7 @@ STATIC_ROUTINE int copy_dx(
         free(pi);
       }
       break;
-
+      */
      case CLASS_A:
       {
         int dscsize;
@@ -343,7 +342,7 @@ STATIC_ROUTINE int copy_dx(
 int MdsCopyDxXdZ(struct descriptor *in_dsc_ptr, struct descriptor_xd *out_dsc_ptr, void **zone,
                   int (*fixup_nid) (), void *fixup_nid_arg, int (*fixup_path) (), void *fixup_path_arg)
 {
-  unsigned long size;
+  descriptor_llength size;
   int       status;
   STATIC_CONSTANT unsigned char dsc_dtype = DTYPE_DSC;
 /************************************************

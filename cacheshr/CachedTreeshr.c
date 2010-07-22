@@ -206,7 +206,8 @@ static int rebuildFromDataTypeAndShape(char *inData, int *shape, int shapeSize, 
 
 static int getNameShot(void *dbi, char *name, int *shot)
 {
-	int nameLen, shotLen, status;
+        descriptor_length nameLen, shotLen;
+        int  status;
 	struct dbi_itm dbiList[] = {{64, DbiNAME, name, &nameLen},
 	{sizeof(int), DbiSHOTID, shot, &shotLen},
 	{0, DbiEND_OF_LIST, 0, 0}};

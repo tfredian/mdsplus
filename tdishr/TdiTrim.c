@@ -74,11 +74,13 @@ STATIC_CONSTANT unsigned char dtype = (unsigned char)DTYPE_T;
 	status = TdiGetLong(in_ptr, &ind);
 	if (status & 1 && ind < (unsigned int)TdiFUNCTION_MAX) {
 	char *name_ptr = TdiRefFunction[ind].name;
-	struct descriptor str2 = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
-                str2.length = (unsigned short)strlen(name_ptr);
-                str2.pointer = name_ptr;
-		status = MdsGet1DxS(&str2.length, &dtype, out_ptr);
-		if (status & 1) status = StrCopyDx(out_ptr->pointer, &str2);
+	struct descriptor str2 = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+        descriptor_llength len;
+	str2.length = strlen(name_ptr);
+	str2.pointer = name_ptr;
+        len = str2.length;
+	status = MdsGet1DxS(&len, &dtype, out_ptr);
+	if (status & 1) status = StrCopyDx(out_ptr->pointer, &str2);
 	}
 	else if (status & 1) status = TdiINV_OPC;
 	return status;
@@ -97,11 +99,11 @@ STATIC_CONSTANT unsigned char dtype = (unsigned char)DTYPE_T;
 	status = TdiGetLong(in_ptr, &ind);
 	if (status & 1 && ind < (unsigned int)TdiFUNCTION_MAX) {
 	char *name_ptr = TdiRefFunction[ind].name;
-	struct descriptor str2 = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
-	unsigned long total;
-                str2.length = (unsigned short)strlen(name_ptr);
+	struct descriptor str2 = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+	descriptor_llength total;
+                str2.length = strlen(name_ptr);
                 str2.pointer = name_ptr;
-	        total = (unsigned short)(str1.length + str2.length);
+	        total = (str1.length + str2.length);
 		status = MdsGet1DxS(&total, &dtype, out_ptr);
 		if (status & 1) status = StrConcat((struct descriptor *)out_ptr->pointer, (struct descriptor *)&str1, &str2 MDS_END_ARG);
 	}

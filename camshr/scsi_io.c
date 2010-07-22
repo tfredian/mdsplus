@@ -165,7 +165,7 @@ static int OpenScsi(int scsiDevice, char **buff_out)
   }
   else
   {
-    fprintf( stderr, "%(): scsi device number (%d) is out of range, must be between 0 and 9\n", ROUTINE_NAME, scsiDevice);
+    fprintf( stderr, "%s(): scsi device number (%d) is out of range, must be between 0 and 9\n", ROUTINE_NAME, scsiDevice);
   }
   *buff_out = buff;
   return fd;

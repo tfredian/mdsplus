@@ -209,13 +209,13 @@ int l8501___store(struct descriptor *niddsc_ptr, InStoreStruct *setup)
         static DESCRIPTOR_FUNCTION_2(mult,(unsigned char *)&OpcMultiply,&dt2,&f2_count);
         static DESCRIPTOR_FUNCTION_2(fswitch,(unsigned char *)&OpcAdd,&mult,&trigger1);
 	static FUNCTION(3) r_start = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
                 (struct descriptor *)&past, (struct descriptor *)&trigger1, (struct descriptor *)&fswitch};
 	static FUNCTION(3) r_end = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
                 (struct descriptor *)&trigger1, (struct descriptor *)&fswitch, (struct descriptor *)&future};
         static FUNCTION(3) r_delta = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
                 (struct descriptor *)&dt1, (struct descriptor *)&dt2, (struct descriptor *)&dt3};
         static DESCRIPTOR_RANGE(range,&r_start,&r_end,&r_delta);
         static DESCRIPTOR_WITH_UNITS(clock,&range,&seconds);
@@ -256,13 +256,13 @@ int l8501___store(struct descriptor *niddsc_ptr, InStoreStruct *setup)
         if (lam & 6)
         {
   	  static FUNCTION(3) r_start = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
                (struct descriptor *)&past, (struct descriptor *)&trigger1, (struct descriptor *)&trigger2};
 	  static FUNCTION(3) r_end = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
                (struct descriptor *)&trigger1,(struct descriptor *)&trigger2, (struct descriptor *)&future};
           static FUNCTION(3) r_delta = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
 	       (struct descriptor *)&dt1, (struct descriptor *)&dt2, (struct descriptor *)&dt3};
           static DESCRIPTOR_RANGE(range, &r_start, &r_end, &r_delta);
           static DESCRIPTOR_WITH_UNITS(clock,&range,&seconds);
@@ -289,13 +289,13 @@ int l8501___store(struct descriptor *niddsc_ptr, InStoreStruct *setup)
           static DESCRIPTOR_FUNCTION_2(mult,(unsigned char *)&OpcMultiply,&dt2,&f2_count_act);
           static DESCRIPTOR_FUNCTION_2(fswitch,(unsigned char *)&OpcAdd,&mult,&trigger1);
           static FUNCTION(3) r_start = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
 			(struct descriptor *)&past, (struct descriptor *)&trigger1, (struct descriptor *)&fswitch};
           static FUNCTION(3) r_end = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
 			(struct descriptor *)&trigger1, (struct descriptor *)&fswitch, (struct descriptor *)&future};
           static FUNCTION(3) r_delta = 
-            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, __fill_name__
+            {sizeof(unsigned short), DTYPE_FUNCTION, CLASS_R, (unsigned char *)&OpcVector, 3, 
 			(struct descriptor *)&dt1, (struct descriptor *)&dt2, (struct descriptor *)&dt3};
           static DESCRIPTOR_RANGE(range, (struct descriptor *)&r_start, (struct descriptor *)&r_end,
                                           (struct descriptor *)&r_delta);

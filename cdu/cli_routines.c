@@ -931,7 +931,7 @@ int   cli_get_value(		/* Return: status			*/
     struct cduEntity  *e;
     struct cduValue  *val;
     static struct descriptor  dsc_util = {
-                                0,DTYPE_T,CLASS_S,0};
+                                0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0};
 
     if (!currentSyntax)
         return(CLI_STS_IVREQTYP);

@@ -42,7 +42,7 @@ extern int TdiTrace();
 int Tdi0Decompile(struct descriptor *in_ptr,int prec, struct descriptor_d *out_ptr);
 
 TdiRefStandard(Tdi1Decompile)
-struct descriptor_d		answer = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_D,0);
+struct descriptor_d		answer = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
 
 	TdiIndent = 1;
 	if (narg > 1 && list[1]) status = TdiGetLong(list[1], &TdiDECOMPILE_MAX);
@@ -87,7 +87,7 @@ int			TdiSingle(
 int			val,
 struct descriptor_d	*out_ptr)
 {
-  struct descriptor	val_dsc = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,0);
+  struct descriptor	val_dsc = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,0)};
 	val_dsc.pointer = (char *)&val;
 	return Tdi0Decompile(&val_dsc, P_ARG, out_ptr);
 }
@@ -101,7 +101,7 @@ char			**item_ptr_ptr,
 struct descriptor_d	*out_ptr)
 {
 array_bounds_desc *a_ptr = (array_bounds_desc *)in_ptr;
-int	n = a_ptr->aflags.coeff ? a_ptr->m[level] : (int)a_ptr->arsize / max((unsigned int)1,a_ptr->length);
+descriptor_a_arsize	n = a_ptr->aflags.coeff ? a_ptr->m[level] : a_ptr->arsize / max(1,a_ptr->length);
 int	j, status;
 
 	status = StrAppend(out_ptr, &LEFT_BRACKET);
@@ -308,8 +308,8 @@ int			prec,
 struct descriptor_d	*out_ptr)
 {
 char		c0[85], *cptr, *bptr;
- struct descriptor	cdsc = DESCRIPTOR_INIT(11,DTYPE_T,CLASS_S,0);
- struct descriptor	t2 = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+ struct descriptor	cdsc = {DESCRIPTOR_HEAD_INI(11,DTYPE_T,CLASS_S,0)};
+ struct descriptor	t2 = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 int	status = 1, j, dtype, n1, n2;
 char n1c;
         cdsc.pointer = c0;
@@ -405,7 +405,7 @@ char n1c;
 			status = TdiConvert(in_ptr, &cdsc MDS_END_ARG);
 			if (status & 1) status = noblanks(&cdsc);
 			if (status & 1) {
-			  struct descriptor	sdsc = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+			  struct descriptor	sdsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
                                 sdsc.length = strlen(TdiREF_CAT[dtype].name);
                                 sdsc.pointer = TdiREF_CAT[dtype].name;
 				status = StrConcat((struct descriptor *)out_ptr, (struct descriptor *)out_ptr, &cdsc, &sdsc MDS_END_ARG);
@@ -436,7 +436,7 @@ char n1c;
 #endif
 			while (cdsc.pointer < cptr-1 && *cdsc.pointer == '0') {cdsc.pointer++;}
 			cdsc.length = cptr - cdsc.pointer;
-			{struct descriptor	sdsc = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+			{struct descriptor	sdsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
                                 sdsc.length = strlen(TdiREF_CAT[dtype].name);
                                 sdsc.pointer = TdiREF_CAT[dtype].name;
 				status = StrConcat((struct descriptor *)out_ptr, (struct descriptor *)out_ptr, &HEX, &cdsc, &sdsc MDS_END_ARG);
@@ -539,7 +539,7 @@ char n1c;
 			break;
 		case DTYPE_POINTER : {
 			char outstr[256];
-                        struct descriptor out=DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,outstr);
+                        struct descriptor out={DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,outstr)};
 			out.length=sprintf(outstr,"Pointer(%p)",*(void **)in_ptr->pointer);
 			status = StrAppend(out_ptr,&out);
 			break;
@@ -574,7 +574,7 @@ char n1c;
 		int	length = a_ptr->length;
 		int	coeff = a_ptr->aflags.coeff;
 		int	dimct = coeff ? a_ptr->dimct : 1;
-		unsigned int	count = (int)a_ptr->arsize / max(1,length);
+		descriptor_llength	count = a_ptr->arsize / max(1,length);
 		int	more = count > TdiDECOMPILE_MAX || a_ptr->arsize >= 32768;
 
 		/**************************************
@@ -589,7 +589,7 @@ char n1c;
 			default : 		bptr = 0; break;
 			}
 			if (bptr) {
-			  struct descriptor text = DESCRIPTOR_INIT(0,DTYPE_T,CLASS_S,0);
+			  struct descriptor text = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 				text.length = strlen(bptr);
 				text.pointer = bptr;
 				status = StrAppend(out_ptr, &text);

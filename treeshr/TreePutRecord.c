@@ -196,8 +196,8 @@ int       _TreePutRecord(void *dbid, int nid, struct descriptor *descriptor_ptr,
           unsigned char tree = (unsigned char)nid_ptr->tree;
           int compressible;
           int data_in_altbuf;
-          unsigned long long len;
-          unsigned long long reclen;
+          descriptor_llength len;
+          descriptor_llength reclen;
           nid_reference = 0;
           path_reference = 0;
 	  status = MdsSerializeDscOutZ(descriptor_ptr, info_ptr->data_file->data,TreeFixupNid,&tree,FixupPath,0,
@@ -344,7 +344,7 @@ int TreeFixupNid(NID *nid, unsigned char *tree, struct descriptor *path)
     char *path_c = TreeGetPath(*(int *)nid);
     if (path_c)
       {
-        struct descriptor path_d = DESCRIPTOR_INIT(0, DTYPE_T, CLASS_S, 0);
+        struct descriptor path_d = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0)};
         path_d.length = strlen(path_c);
         path_d.pointer = path_c;
         StrCopyDx(path,&path_d);
@@ -564,13 +564,13 @@ static int UpdateDatafile(TREE_INFO *info, int nodenum, NCI *nci_ptr, struct des
   memset(&info->data_file->record_header->rfa,0,sizeof(RFA));
   while (bytes_to_put && (status & 1))
   {
-    int bytes_this_time = min(DATAF_C_MAX_RECORD_SIZE + 2, bytes_to_put);
+    unsigned short bytes_this_time = min(DATAF_C_MAX_RECORD_SIZE + 2, bytes_to_put);
     _int64 rfa_l = RfaToSeek(nci_ptr->DATA_INFO.DATA_LOCATION.rfa);
     status = TreeLockDatafile(info, 0, rfa_l);
     if (status & 1)
     {
       bytes_to_put -= bytes_this_time;
-      info->data_file->record_header->rlength = (unsigned short)(bytes_this_time + 10);
+      info->data_file->record_header->rlength = bytes_this_time + 10;
       info->data_file->record_header->rlength = swapshort((char *)&info->data_file->record_header->rlength);
       MDS_IO_LSEEK(info->data_file->put,rfa_l,SEEK_SET);
       status = (MDS_IO_WRITE(info->data_file->put,(void *) info->data_file->record_header,sizeof(RECORD_HEADER)) == sizeof(RECORD_HEADER))

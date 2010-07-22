@@ -3,7 +3,7 @@
 #include        <string.h>
 #include        <time.h>
 #include		<config.h>
-#include <mdsdescrip.h>
+
 /********************************************************************
 * DASUTIL.H --
 *
@@ -149,28 +149,43 @@ int   wc_match(
 		/*=======================================================
 		 * string utility functions ...
 		 *======================================================*/
+#define DSC_K_DTYPE_T    14
+#define DSC_K_CLASS_S    1	/* Static descriptor	*/
+#define DSC_K_CLASS_D    2	/* Dynamic descriptor	*/
 
+#include <mdsdescrip.h>
+#ifdef MDSDESCRIP_H_DEFINED
+#undef DESCRIPTOR
+#else
+struct descriptor  {
+        short length;
+        char  dtype,class;
+        char  *pointer;
+       };
+#endif
+#define DESCRIPTOR(name,string)  struct descriptor  name = \
+                {sizeof(string)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,string}
 #define DYNAMIC_DESCRIPTOR(D)  struct descriptor  D = {\
-                                      0,DTYPE_T,CLASS_D,0 }
+                                      0,DSC_K_DTYPE_T,DSC_K_CLASS_D,0 }
 #ifdef vms
 #define is_cdescr(d)  ((d) &&		\
             ((struct descriptor *)(d))->length<=1024) && \
-            ((struct descriptor *)(d))->dtype==DTYPE_T && \
-            ((struct descriptor *)(d))->class==CLASS_S
+            ((struct descriptor *)(d))->dtype==DSC_K_DTYPE_T && \
+            ((struct descriptor *)(d))->class==DSC_K_CLASS_S
 #define is_ddescr(d)  ((d) &&		\
             ((struct descriptor *)(d))->length<=1024) && \
-            ((struct descriptor *)(d))->dtype==DTYPE_T && \
-            ((struct descriptor *)(d))->class==CLASS_D
+            ((struct descriptor *)(d))->dtype==DSC_K_DTYPE_T && \
+            ((struct descriptor *)(d))->class==DSC_K_CLASS_D
 #else
 #define ALIGN_MASK(x)  (sizeof(x) - 1)
 #define is_cdescr(d)  ((d) && ((long)(d) & ALIGN_MASK(void *))==0 &&	\
             ((struct descriptor *)(d))->length<=1024) && \
-            ((struct descriptor *)(d))->dtype==DTYPE_T && \
-            ((struct descriptor *)(d))->class==CLASS_S
+            ((struct descriptor *)(d))->dtype==DSC_K_DTYPE_T && \
+            ((struct descriptor *)(d))->class==DSC_K_CLASS_S
 #define is_ddescr(d)  ((d) && ((long)(d) & ALIGN_MASK(void *))==0 &&	\
             ((struct descriptor *)(d))->length<=1024) && \
-            ((struct descriptor *)(d))->dtype==DTYPE_T && \
-            ((struct descriptor *)(d))->class==CLASS_D
+            ((struct descriptor *)(d))->dtype==DSC_K_DTYPE_T && \
+            ((struct descriptor *)(d))->class==DSC_K_CLASS_D
 #endif
 #define dsc_descriptor  descriptor
 

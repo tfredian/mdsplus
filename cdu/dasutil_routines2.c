@@ -175,7 +175,7 @@ int   asc2time(
         tm.tm_mday = tmDefault->tm_mday;
     else
        {
-	 if (!longToken(&p,(struct descriptor *)&dsc_token,0,&k))  return(0);
+        if (!longToken(&p,&dsc_token,0,&k))  return(0);
         if (*p && p!=p2)  return(0);
         tm.tm_mday = k;
        }
@@ -198,7 +198,7 @@ int   asc2time(
         tm.tm_year = tmDefault->tm_year;
     else
        {
-	 if (!(longToken(&p,(struct descriptor *)&dsc_token,0,&k)))  return(0);
+        if (!(longToken(&p,&dsc_token,0,&k)))  return(0);
         tm.tm_year = (k<1900) ? k : k-1900;
        }
 
@@ -210,7 +210,7 @@ int   asc2time(
         p = nonblank(p+1);
         if (p && isdigit(*p))
             {
-	      longToken(&p,(struct descriptor *)&dsc_token,0,&k);
+             longToken(&p,&dsc_token,0,&k);
              tm.tm_hour = k;
             }
         else
@@ -221,7 +221,7 @@ int   asc2time(
             p = nonblank(p+1);
             if (p && isdigit(*p))
                 {
-		  longToken(&p,(struct descriptor *)&dsc_token,0,&k);
+                 longToken(&p,&dsc_token,0,&k);
                  tm.tm_min = k;
                 }
             else
@@ -232,7 +232,7 @@ int   asc2time(
                 p = nonblank(p+1);
                 if (p && isdigit(*p))
                     {
-		      longToken(&p,(struct descriptor *)&dsc_token,0,&k);
+                     longToken(&p,&dsc_token,0,&k);
                      tm.tm_sec = k;
                     }
                 else
@@ -556,7 +556,7 @@ static successReturn(
            {
             if (*linePtr == '\\')
                 linePtr++;
-            ascToken(&linePtr,(struct descriptor *)&dsc_token,0,0);
+            ascToken(&linePtr,&dsc_token,0,0);
            }
        }
     if (dsc_flag)
@@ -595,7 +595,7 @@ static void  openIndirectFile(
         exit(dasmsg(0,"openIndirectFile: bad param"));
 
     linePtr++;
-    if (inIdx<MAX_INDIRECT && ascFilename(&linePtr,(struct descriptor *)&dsc_token,0) &&
+    if (inIdx<MAX_INDIRECT && ascFilename(&linePtr,&dsc_token,0) &&
 #ifdef vms
         (fp=fopen(token,"r","dna=.inp")))
 #else
@@ -868,7 +868,7 @@ int   getString(
         if (*linePtr == ',')
             return(successReturn(linePtr,1));
 
-        sts = ascToken(&linePtr,(struct descriptor *)&dsc_token,0,otherAlph);
+        sts = ascToken(&linePtr,&dsc_token,0,otherAlph);
         if (~sts & 1)
            {
             badInput("  --> Bad input??  With getString???");
@@ -941,7 +941,7 @@ int   getDouble(
 		/*--------------------------------------------------------
 		 * Try to read characters as a number ...
 		 *-------------------------------------------------------*/
-        sts = doubleToken(&linePtr,(struct descriptor *)&dsc_token,0,&dval);
+        sts = doubleToken(&linePtr,&dsc_token,0,&dval);
         if (~sts & 1)
            {
 			/*===============================================
@@ -1218,7 +1218,7 @@ int   getYesno(
             return(ynDefault);
            }
 
-        sts = ascToken(&linePtr,(struct descriptor *)&dsc_token,0,0);
+        sts = ascToken(&linePtr,&dsc_token,0,0);
         if (~sts & 1)
            {
             badInput("  --> Bad input??  With getYesno???");
@@ -1255,14 +1255,14 @@ int   getCmd(
     static DESCRIPTOR(dsc_string,string);
 
     strcpy(string,defaultCmd?defaultCmd:" ");
-    if (!getString(prompt,(struct descriptor *)&dsc_string,0))
+    if (!getString(prompt,&dsc_string,0))
         exit(0);
     strcpy(cmdString,string);
     if (string[0] == '/')
        {
         if (isalpha(*inputStruct[inIdx].linePtr))
            {
-	     getString(0,(struct descriptor *)&dsc_string,0);
+            getString(0,&dsc_string,0);
             strcpy(cmdString+1,string);
            }
        }

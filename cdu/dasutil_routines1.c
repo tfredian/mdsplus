@@ -889,7 +889,7 @@ int   doubleToken(
     int   tknLen;
     char  utilString[80];
     static struct descriptor  dsc_utilString = {
-            sizeof(utilString)-1,DTYPE_T,CLASS_S,0 };
+            sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0 };
 
     dsc_utilString.pointer = utilString;
     token = dsc_token->pointer;
@@ -980,7 +980,7 @@ int   deltatimeToken(		/* Returns: status			*/
     char  hundString[8];
     char  utilString[80];
     static struct descriptor  dsc_utilString = {
-            sizeof(utilString)-1,DTYPE_T,CLASS_S,0 };
+            sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0 };
     static char  token[20];
     static DESCRIPTOR(dsc_token,token);
 
@@ -995,14 +995,14 @@ int   deltatimeToken(		/* Returns: status			*/
 			/*------------------- day...--------------------*/
     if (isdigit(*p))
        {		/* string starts with decimal digit ...		*/
-	 sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
+        sts = longToken(&p,&dsc_token,0,&kk);
         if (!p || *p!='-')
             day = 0;
         else
            {
             day = kk;
             p++;
-            sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
+            sts = longToken(&p,&dsc_token,0,&kk);
            }
        }
     else
@@ -1012,24 +1012,24 @@ int   deltatimeToken(		/* Returns: status			*/
             p++;
         if (!(isdigit(*p) || *p==':'))
             return(0);			/*---------------> return: err	*/
-        sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
+        sts = longToken(&p,&dsc_token,0,&kk);
        }
 			/*-------------------- hr...--------------------*/
     hr = sts ? kk : 0;
     if (p && *p==':')  p++;
 
 			/*------------------- min...--------------------*/
-    sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
+    sts = longToken(&p,&dsc_token,0,&kk);
     min = sts ? kk : 0;
     if (p && *p==':')  p++;
 
 			/*------------------- sec...--------------------*/
-    sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
+    sts = longToken(&p,&dsc_token,0,&kk);
     sec = sts ? kk : 0;
     if (p && *p=='.')  p++;
 
 			/*------------------ hund...--------------------*/
-    sts = longToken(&p,(struct descriptor *)&dsc_token,0,&kk);
+    sts = longToken(&p,&dsc_token,0,&kk);
     hund = sts ? kk : 0;
     if (sts)
         sprintf(hundString,".%.3s",token);

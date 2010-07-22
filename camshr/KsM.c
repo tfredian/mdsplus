@@ -51,7 +51,7 @@ static int KsMultiIo(
 
 
   // sprintf(dev_name, "GK%c%d", Key.scsi_port, Key.scsi_address); 
-  sprintf(dev_name, "GK%c%d%0.2d", Key.scsi_port, Key.scsi_address, Key.crate);
+  sprintf(dev_name, "GK%c%d%.2d", Key.scsi_port, Key.scsi_address, Key.crate);
 
 
   if( (scsiDevice = get_scsi_device_number( dev_name, &enhanced, &online )) < 0 ) {

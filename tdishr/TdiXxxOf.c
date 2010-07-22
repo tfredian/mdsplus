@@ -259,8 +259,8 @@ STATIC_CONSTANT unsigned char omits[] = {
 			u = (int)pa->arsize / (int)pa->length - 1;
 		}
 		if (status&1) {
-		  struct descriptor	ldsc = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,0);
-		  struct descriptor	udsc = DESCRIPTOR_INIT(sizeof(int),DTYPE_L,CLASS_S,0);
+		  struct descriptor	ldsc = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,0)};
+		  struct descriptor	udsc = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,0)};
                         ldsc.pointer = (char *)&l;
                         udsc.pointer = (char *)&u;
 			status=TdiBuildRange(&ldsc, &udsc, out_ptr MDS_END_ARG);
@@ -791,7 +791,7 @@ STATIC_CONSTANT unsigned char omits[] = {
 	case DTYPE_DEPENDENCY :
 	case DTYPE_DISPATCH :
 	case DTYPE_FUNCTION :
-	  {struct descriptor x = DESCRIPTOR_INIT(0,0,CLASS_S,0);
+	  {struct descriptor x = {DESCRIPTOR_HEAD_INI(0,0,CLASS_S,0)};
                 x.length = pd->length;
                 x.dtype = (char) (pd->length==1 ? DTYPE_BU : DTYPE_WU);
 		x.pointer = pd->pointer;
@@ -859,7 +859,7 @@ STATIC_CONSTANT unsigned char omits[] = {
 */
 TdiRefStandard(Tdi1SlopeOf)
 STATIC_CONSTANT unsigned char one_val = 1;
-STATIC_CONSTANT struct descriptor one = DESCRIPTOR_INIT(sizeof(unsigned char),DTYPE_BU,CLASS_S,(char *)&one_val);
+STATIC_CONSTANT struct descriptor one = {DESCRIPTOR_HEAD_INI(sizeof(unsigned char),DTYPE_BU,CLASS_S,(char *)&one_val)};
 
 struct descriptor_xd	tmp = EMPTY_XD;
 unsigned int			n = 0;

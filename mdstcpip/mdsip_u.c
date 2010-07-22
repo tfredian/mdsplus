@@ -1252,10 +1252,10 @@ static void ProcessMessage(Client *c, Message *message)
         }
 #ifndef HAVE_WINDOWS_H
         if ((fd != -1) && ((fopts & O_CREAT) != 0)) {
-          int stat;
+          int status;
           char *cmd=(char *)malloc(64+strlen(filename));
           sprintf(cmd,"SetMdsplusFileProtection %s 2> /dev/null",filename);
-          stat = system(cmd);
+          status = system(cmd);
 	  free(cmd);
 	}
 #endif

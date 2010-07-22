@@ -1,6 +1,7 @@
 #ifndef MDSOBJECTS_H
 #define MDSOBJECTS_H
 
+typedef unsigned short descriptor_length;
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
@@ -30,6 +31,12 @@
 #define EXPORT
 #endif
 
+
+#ifndef HAVE_WINDOWS_H
+#define EXPORT
+#else
+#define EXPORT __declspec(dllexport)
+#endif
 
 #define DTYPE_BU 2 
 #define DTYPE_WU 3 
@@ -72,13 +79,13 @@
 #define DTYPE_DICTIONARY 216
 #define DTYPE_POINTER 51
 
-#define DTYPE_DSC	24		
+#define DTYPE_DSC     24
 
-#define TreeNEGATE_CONDITION 	7
-#define TreeIGNORE_UNDEFINED 	8
-#define TreeIGNORE_STATUS	9
-#define TreeDEPENDENCY_AND	10
-#define TreeDEPENDENCY_OR	11
+#define TreeNEGATE_CONDITION  7
+#define TreeIGNORE_UNDEFINED  8
+#define TreeIGNORE_STATUS     9
+#define TreeDEPENDENCY_AND    10
+#define TreeDEPENDENCY_OR     11
 
 
 #define CLASS_S 1 
@@ -88,13 +95,6 @@
 #define CLASS_APD 196 
 
 #define MAX_DIMS 32
-
-
-#ifndef HAVE_WINDOWS_H
-#define EXPORT
-#else
-#define EXPORT __declspec(dllexport)
-#endif
 
 extern "C" char *MdsGetMsg(int status);
 
@@ -609,7 +609,7 @@ protected:
 	class  EXPORT String : public Scalar
 	{
 	public:
-		String(char *val, Data *units = 0, Data *error = 0, Data *help = 0, Data *validation = 0)
+		String(const char *val, Data *units = 0, Data *error = 0, Data *help = 0, Data *validation = 0)
 		{
 			clazz = CLASS_S;
 			dtype = DTYPE_T;
@@ -2272,12 +2272,12 @@ protected:
 			if(evalRes)
 				deleteData(evalRes);
 		}
-		void append(char *name, char *expr, Data **args, int nArgs);
-		void insert(int idx, char *name, char *expr, Data **args, int nArgs);
-		void insert(char *beforeName, char *name, char *expr, Data **args, int nArgs);
-		void remove(char *name);
+		void append(const char *name, const char *expr, Data **args, int nArgs);
+		void insert(int idx, const char *name, const char *expr, Data **args, int nArgs);
+		void insert(const char *beforeName, const char *name, const char *expr, Data **args, int nArgs);
+		void remove(const char *name);
 		void execute();
-		Data *get(char *name);
+		Data *get(const char *name);
 	};
 
 	class EXPORT PutMany: public List
@@ -2296,12 +2296,12 @@ protected:
 			if(evalRes)
 				deleteData(evalRes);
 		}
-		void append(char *name, char *expr, Data **args, int nArgs);
-		void insert(int idx, char *name, char *expr, Data **args, int nArgs);
-		void insert(char *beforeName, char *name, char *expr, Data **args, int nArgs);
-		void remove(char *name);
+		void append(const char *name, const char *expr, Data **args, int nArgs);
+		void insert(int idx, const char *name, const char *expr, Data **args, int nArgs);
+		void insert(const char *beforeName, const char *name, const char *expr, Data **args, int nArgs);
+		void remove(const char *name);
 		void execute();
-		void checkStatus(char *name);
+		void checkStatus(const char *name);
 	};
 
 
@@ -2321,19 +2321,19 @@ protected:
 	public:
 		Connection(char *mdsipAddr);
 		~Connection();
-		void openTree(char *tree, int shot);
+		void openTree(const char *tree, int shot);
 		void closeAllTrees();
-		void closeTree(char *tree, int shot)
+		void closeTree(const char *tree, int shot)
 		{
 			closeAllTrees();
 		}
-		void setDefault(char *path);
-		Data *get(char *expr, Data **args, int nArgs);
-		Data *get(char *expr)
+		void setDefault(const char *path);
+		Data *get(const char *expr, Data **args, int nArgs);
+		Data *get(const char *expr)
 		{
 		    return get(expr, 0, 0);
 		}
-		void put(char *path, char *expr, Data **args, int nArgs);
+		void put(const char *path, const char *expr, Data **args, int nArgs);
 		PutMany *putMany()
 		{
 			return new PutMany(this);
