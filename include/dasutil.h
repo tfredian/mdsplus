@@ -163,10 +163,17 @@ struct descriptor  {
         char  *pointer;
        };
 #endif
+#ifdef BIG_DESC
+#define DESCRIPTOR(name,string)  struct descriptor  name = \
+                {0,DSC_K_DTYPE_T,DSC_K_CLASS_S,string,sizeof(string)-1}
+#define DYNAMIC_DESCRIPTOR(D)  struct descriptor  D = {\
+                                      0,DSC_K_DTYPE_T,DSC_K_CLASS_D,0,0 }
+#else
 #define DESCRIPTOR(name,string)  struct descriptor  name = \
                 {sizeof(string)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,string}
 #define DYNAMIC_DESCRIPTOR(D)  struct descriptor  D = {\
                                       0,DSC_K_DTYPE_T,DSC_K_CLASS_D,0 }
+#endif
 #ifdef vms
 #define is_cdescr(d)  ((d) &&		\
             ((struct descriptor *)(d))->length<=1024) && \
