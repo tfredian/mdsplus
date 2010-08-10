@@ -674,7 +674,6 @@ Data * Array::getElementAt(int *getDims, int getNumDims)
 	return (Data *)createArrayData(dtype, length, nDims - getNumDims, &dims[getNumDims], ptr+(startIdx * length), 0,0,0,0);
 }
 
-
 void Array::setElementAt(int *getDims, int getNumDims, Data *data)
 {
 	int i;

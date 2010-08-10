@@ -268,7 +268,7 @@ Data *Connection::get(const char *expr, Data **args, int nArgs)
 			throw new MdsException("Invalid argument passed to Connection::get(). Can only be Scalar or Array");
 	}
 	lock();
-	status = SendArg(sockId, 0, DTYPE_CSTRING_IP, nArgs+1, strlen(expr), 0, 0, (char *)expr);
+	status = SendArg(sockId, 0, DTYPE_CSTRING_IP, nArgs+1, strlen((char *)expr), 0, 0, (char *)expr);
 	if(!(status & 1))
 	{
 		unlock();

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.NumberFormatException;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import java.security.AccessControlException;
 import java.awt.print.*;
 
@@ -359,8 +360,12 @@ public class CompositeWaveDisplay extends JApplet implements WaveContainerListen
             }
         }
     }
-
     public static CompositeWaveDisplay createWindow(String title)
+    {
+    	return createWindow(title, false);
+    }
+
+    public static CompositeWaveDisplay createWindow(String title, boolean enableLiveUpdate)
     {
        if(title != null)
             f = new JFrame(title);
@@ -386,6 +391,8 @@ public class CompositeWaveDisplay extends JApplet implements WaveContainerListen
 
         CompositeWaveDisplay cwd = new CompositeWaveDisplay(false);
         cwd.init();
+	if(enableLiveUpdate)
+	    cwd.enableLiveUpdate();
         f.getContentPane().add(cwd);
         return cwd;
     }
@@ -435,7 +442,7 @@ public class CompositeWaveDisplay extends JApplet implements WaveContainerListen
     }
 
 
-    JRadioButton liveUpdate;
+    JCheckBox liveUpdate;
 
     public void init()
     {
@@ -483,14 +490,16 @@ public class CompositeWaveDisplay extends JApplet implements WaveContainerListen
 		       }
 		    });
 
-        liveUpdate = new JRadioButton("Live Update", true);
-        liveUpdate.addItemListener(new ItemListener ()
+        liveUpdate = new JCheckBox("Live Update", false);
+        liveUpdate.addChangeListener(new ChangeListener ()
         {
-            public void itemStateChanged(ItemEvent e)
+            public void stateChanged(ChangeEvent e)
             {
-                setLiveUpdate(e.getStateChange() == ItemEvent.SELECTED, false);
+                setLiveUpdate(liveUpdate.isSelected(), false);
             }
         });
+	//liveUpdate.setSelected(false);
+	liveUpdate.setVisible(false);
 
 
         pointer_mode = new ButtonGroup();
@@ -556,10 +565,15 @@ public class CompositeWaveDisplay extends JApplet implements WaveContainerListen
         appendThread = new AppendThread(100);
         appendThread.start();
 
-        setEnabledMode(false);
-        wave_container.SetMode(Waveform.MODE_WAIT);
+        setEnabledMode(true);
+        wave_container.SetMode(Waveform.MODE_ZOOM);
 
 
+    }
+
+    public void enableLiveUpdate()
+    {
+     	liveUpdate.setVisible(true);
     }
 
     private int currentMode = Waveform.MODE_ZOOM;
@@ -574,9 +588,13 @@ public class CompositeWaveDisplay extends JApplet implements WaveContainerListen
             liveUpdate.setSelected(state);
             return;
         }
+	if(wave_container.GetMode() != Waveform.MODE_WAIT)
+	{
+	    currentMode = wave_container.GetMode();
+	}
         if( state )
         {
-            currentMode = wave_container.GetMode();
+
             setEnabledMode(false);
             wave_container.SetMode(Waveform.MODE_WAIT);
             appendThread.resumeThread();
@@ -1072,6 +1090,17 @@ public class CompositeWaveDisplay extends JApplet implements WaveContainerListen
             if(signals1DVector.size() > 0 ) signals1DVector.clear();
             if(signals2DVector.size() > 0 ) signals2DVector.clear();
 	}
+	/**
+	 * Remove all signals added to the panels.
+	 */
+	public void removeAllSignals(int row, int col)
+	{
+	    if(wave_container != null)
+	    {
+	    	MultiWaveform wave = (MultiWaveform)wave_container.getGridComponent(row, col);
+	    	wave.Erase();
+	    }
+ 	}
 
 
     /**

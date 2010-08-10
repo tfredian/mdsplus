@@ -386,8 +386,9 @@ int       main(int argc, String *argv)
 static void DoPrint(char *filename)
 {
   char cmd[512];
+  int status;
   sprintf(cmd,"dwscopePrint %s %s",filename,ScopePrinter);
-  system(cmd);
+  status = system(cmd);
 }
 
 static char *GetPrinterList()

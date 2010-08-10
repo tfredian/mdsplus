@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <mdsshr.h>
 #include <strroutines.h>
+#include <string.h>
 STATIC_THREADSAFE  pthread_mutex_t mutex;
 /* Key for the thread-specific buffer */
 STATIC_THREADSAFE pthread_key_t buffer_key;
@@ -24,7 +25,7 @@ ThreadStatic *TdiThreadStatic()
   p = (ThreadStatic *) pthread_getspecific(buffer_key);
   if (p == NULL)
   {
-    p = (ThreadStatic *)malloc(sizeof(ThreadStatic));
+    p = (ThreadStatic *)memset(malloc(sizeof(ThreadStatic)),0,sizeof(ThreadStatic));
     p->TdiGetData_recursion_count = 0;
     p->TdiIntrinsic_mess_stat = -1;
     p->TdiIntrinsic_recursion_count = 0;
@@ -41,6 +42,7 @@ ThreadStatic *TdiThreadStatic()
     p->TdiVar_new_narg_d.dtype = DTYPE_L;
     p->TdiVar_new_narg_d.class = CLASS_S;
     p->TdiVar_new_narg_d.pointer = (char *)&p->TdiVar_new_narg;
+    p->compiler_recursing=0;
     pthread_setspecific(buffer_key,(void *)p);
   }
   return p;

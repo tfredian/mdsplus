@@ -38,6 +38,9 @@ typedef struct _thread_static {
   } TdiVar_private;
   int TdiVar_new_narg;
   struct descriptor TdiVar_new_narg_d;
+  int compiler_recursing;
+  struct descriptor *TdiRANGE_PTRS[3];
+  struct descriptor *TdiSELF_PTR;
 } ThreadStatic;
 
 #ifdef HAVE_VXWORKS_H

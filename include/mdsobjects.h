@@ -618,7 +618,7 @@ protected:
 			memcpy(ptr, val, length);
 			setAccessory(units, error, help, validation);
 		}
-		String(char *val, int len, Data *units = 0, Data *error = 0, Data *help = 0, Data *validation = 0)
+		String(const char *val, int len, Data *units = 0, Data *error = 0, Data *help = 0, Data *validation = 0)
 		{
 			clazz = CLASS_S;
 			dtype = DTYPE_T;
@@ -2066,7 +2066,7 @@ protected:
 		CachedTreeNode(int nid, Tree *tree):TreeNode(nid, tree){cachePolicy = MDS_WRITE_BACK;}
 		void setCachePolicy(int cachePolicy) {this->cachePolicy = cachePolicy;}
 		void flush();
-		void putLastRow(Data *data, Int64 *time);
+		void putLastRow(Data *data, _int64 *time);
 		void terminateSegment();
 	};
 
@@ -2118,6 +2118,7 @@ protected:
 		Tree(void *dbid, char *name, int shot);
 
 	protected:
+		Tree(){}
 		char *name;
 		int shot;
 		void *ctx;
@@ -2184,6 +2185,7 @@ protected:
 	public:
 		CachedTree(char *name,int shot,bool shared,int size);
 		CachedTree(char *name, int shot);
+		~CachedTree();
 
 		virtual void open();
 

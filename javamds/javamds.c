@@ -180,7 +180,7 @@ static void *MdsGetArray(char *in, int *out_dim, int type)
 			break;
 		case QUADWORD:
 			expanded_in = malloc(strlen(in) + 16);
-			strcpy(expanded_in,in);
+			sprintf(expanded_in, "%s",in);
 			in_d.length = strlen(expanded_in);
 			in_d.pointer = expanded_in;
 			break;
@@ -662,25 +662,25 @@ JNIEXPORT void JNICALL Java_LocalDataProvider_unregisterEvent
 
 
 
-/* CompositeWaveDisplay management routines for using 
+/* CompositeWaveDisplay management routines for using
 jScope panels outside java application */
 #ifdef HAVE_WINDOWS_H
 #define PATH_SEPARATOR ';'
 #else
 #define PATH_SEPARATOR ':'
 #endif
-
+#define MAX_WINDOWS 10000
 JNIEnv *env = 0;
-static jobject jobjects[1024];
+static jobject jobjects[MAX_WINDOWS];
 
-void createWindow(char *name, int idx)
+int createWindow(char *name, int idx, int enableLiveUpdate)
 {
 	jint res;
 	jclass cls;
 	jmethodID mid;
 	jstring jstr;
 	char classpath[2048], *curr_classpath;
-
+	jvalue args[2];
 
 	JavaVM *jvm;
 	JavaVMInitArgs vm_args;
@@ -713,29 +713,40 @@ void createWindow(char *name, int idx)
 		if(res < 0)
 		{
 			printf("\nCannot create Java VM (result = %d)!!\n", res);
-			return ;
+			return -1;
 		}
 	}
 	cls = (*env)->FindClass(env, "CompositeWaveDisplay");
 	if(cls == 0)
 	{
-		printf("\nCannot find CompositeWaveDisplay classes!");
-		return;
+		printf("\nCannot find CompositeWaveDisplay classes!\n");
+		return -1;
 	}	
-	mid = (*env)->GetStaticMethodID(env, cls, "createWindow", "(Ljava/lang/String;)LCompositeWaveDisplay;");
+	mid = (*env)->GetStaticMethodID(env, cls, "createWindow", "(Ljava/lang/String;Z)LCompositeWaveDisplay;");
 	if(mid == 0)
 	{
 		printf("\nCannot find main\n");
-		return;
+		return -1;
 	}
 	if(name)
 		jstr = (*env)->NewStringUTF(env, name);
 	else
 		jstr = (*env)->NewStringUTF(env, "");
-	jobjects[idx] = (*env)->CallStaticObjectMethod(env, cls, mid, jstr);
+	args[0].l = jstr;
+	args[1].z = enableLiveUpdate;
+
+//	jobjects[idx] = (*env)->CallStaticObjectMethod(env, cls, mid, jstr);
+	if(idx == -1) //Find the first free Object Slot
+	{
+	    for(idx = 0; idx < MAX_WINDOWS; idx++)
+		if(!jobjects[idx])
+		    break;
+	}
+	jobjects[idx] = (*env)->CallStaticObjectMethodA(env, cls, mid, args);
+	return idx;
 }
 
-void clearWindow(char *name, int idx)
+int clearWindow(char *name, int idx)
 {
 	jclass cls;
 	jmethodID mid;
@@ -744,13 +755,13 @@ void clearWindow(char *name, int idx)
 	if(env == 0)
 	{
 		printf("\nJava virtual machine not set!!\n");
-		return;
+		return -1;
 	}
 	cls = (*env)->FindClass(env, "CompositeWaveDisplay");
 	if(cls == 0)
 	{
-		printf("\nCannot find CompositeWaveDisplay classes!");
-		return;
+		printf("\nCannot find CompositeWaveDisplay classes!\n");
+		return -1;
 	}	
 	if(jobjects[idx] != 0)
 	{
@@ -761,26 +772,26 @@ void clearWindow(char *name, int idx)
 		mid = (*env)->GetMethodID(env, cls, "setTitle","(Ljava/lang/String;)V");
 		if (mid == 0)
 		{
-			printf("\nCannot find method setTitle in CompositeWaveDisplay!");
-			return;
+			printf("\nCannot find method setTitle in CompositeWaveDisplay!\n");
+			return -1;
 		}
 		(*env)->CallVoidMethod(env, jobjects[idx], mid, jstr);
 		mid = (*env)->GetMethodID(env, cls, "removeAllSignals","()V");
 		if (mid == 0)
 		{
-			printf("\nCannot find method removeAllSignals in CompositeWaveDisplay!");
-			return;
+			printf("\nCannot find method removeAllSignals in CompositeWaveDisplay!\n");
+			return -1;
 		}
 		(*env)->CallVoidMethod(env, jobjects[idx], mid);
 	}
 	else
 	{
-		printf("\nWindow %d not create!!\n", idx);
-		return;
+		printf("\nWindow %d not created!!\n", idx);
+		return -1;
 	}
 }
 
-void addSignalWithParam(int obj_idx, float *x, float *y, int num_points, int row, int column,
+int addSignalWithParam(int obj_idx, float *x, float *y, int num_points, int row, int column,
 			   char *colour, char *name, int inter, int marker)
 {
 	jstring jname, jcolour;
@@ -793,7 +804,7 @@ void addSignalWithParam(int obj_idx, float *x, float *y, int num_points, int row
 	if(env == 0)
 	{
 		printf("\nJava virtual machine not set!!\n");
-		return;
+		return -1;
 	}
 	jinter = inter;
 	jx = (*env)->NewFloatArray(env,  num_points);
@@ -811,18 +822,19 @@ void addSignalWithParam(int obj_idx, float *x, float *y, int num_points, int row
 	cls = (*env)->FindClass(env,  "CompositeWaveDisplay");
 	if(cls == 0)
 	{
-		printf("\nCannot find CompositeWaveDisplay classes!");
-		return;
+		printf("\nCannot find CompositeWaveDisplay classes!\n");
+		return -1;
 	}
 	mid = (*env)->GetMethodID(env,  cls, "addSignal",
 		"([F[FIILjava/lang/String;Ljava/lang/String;ZI)V");
     if (mid == 0)
 	{
-		printf("\nCannot find method addSignal in CompositeWaveDisplay classes!");
-		return;
+		printf("\nCannot find method addSignal in CompositeWaveDisplay classes!\n");
+		return -1;
 	}
 
     (*env)->CallVoidMethod(env, jobj, mid, jx, jy, row, column, jname, jcolour, jinter, marker);
+    return 0;
 }
 void addSignal(int obj_idx, float *x, float *y, int num_points, int row, int column,
 			   char *colour, char *name)
@@ -830,7 +842,7 @@ void addSignal(int obj_idx, float *x, float *y, int num_points, int row, int col
    addSignalWithParam(obj_idx, x, y, num_points, row, column, name, colour, 1, 0);
 }
 
-void showWindow(int obj_idx, int x, int y, int width, int height)
+int showWindow(int obj_idx, int x, int y, int width, int height)
 {
 	jclass cls;
 	jmethodID mid;
@@ -839,21 +851,49 @@ void showWindow(int obj_idx, int x, int y, int width, int height)
 	if(env == 0)
 	{
 		printf("\nJava virtual machine not set!!\n");
-		return;
+		return -1;
 	}
 	cls = (*env)->FindClass(env, "CompositeWaveDisplay");
 	if(cls == 0)
 	{
-		printf("\nCannot find jScope classes!");
-		return;
+		printf("\nCannot find jScope classes!\n");
+		return -1;
 	}
 	mid = (*env)->GetMethodID(env, cls, "showWindow", "(IIII)V");
-    if (mid == 0) 
+    if (mid == 0)
 	{
-		printf("\nCannot find jScope classes!");
-		return;
+		printf("\nCannot find jScope classes!\n");
+		return -1;
 	}
     (*env)->CallVoidMethod(env, jobj, mid, x,y,width,height);
+    return 0;
+}
+
+int removeAllSignals(int obj_idx, int x, int y)
+{
+	jclass cls;
+	jmethodID mid;
+	jobject jobj = jobjects[obj_idx];
+
+	if(env == 0)
+	{
+		printf("\nJava virtual machine not set!!\n");
+		return -1;
+	}
+	cls = (*env)->FindClass(env, "CompositeWaveDisplay");
+	if(cls == 0)
+	{
+		printf("\nCannot find jScope classes!\n");
+		return -1;
+	}
+	mid = (*env)->GetMethodID(env, cls, "removeAllSignals", "(II)V");
+    	if (mid == 0)
+	{
+		printf("\nCannot find jScope classes!\n");
+		return -1;
+	}
+    	(*env)->CallVoidMethod(env, jobj, mid, x,y);
+    return 0;
 }
 
 

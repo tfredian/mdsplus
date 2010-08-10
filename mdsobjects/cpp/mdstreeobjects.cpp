@@ -636,31 +636,27 @@ int TreeNode::getFlag(int flagOfs)
 
 	resolveNid();
 	int status = _TreeGetNci(tree->getCtx(), nid, nciList);
+
 	if(!(status & 1))
 		throw new MdsException(status);
 	return (nciFlags & flagOfs)?true:false;
 }
 
-void TreeNode::setFlag(int flagOfs, bool val)
+void TreeNode::setFlag(int flagOfs, bool flag)
 {
 	int nciFlags;
+	int status;
 	int nciFlagsLen = sizeof(int);
-	struct nci_itm nciList[] =  {{4, NciGET_FLAGS, &nciFlags, &nciFlagsLen},
-		{NciEND_OF_LIST, 0, 0, 0}};
-
+	struct nci_itm setNciList[] =  {{4, NciSET_FLAGS, &nciFlags, &nciFlagsLen},
+		{0, NciEND_OF_LIST, 0, 0}};
+	struct nci_itm clearNciList[] =  {{4, NciCLEAR_FLAGS, &nciFlags, &nciFlagsLen},
+		{0, NciEND_OF_LIST, 0, 0}};
 	resolveNid();
-	int status = _TreeGetNci(tree->getCtx(), nid, nciList);
-	if(!(status & 1))
-	{
-		Tree::unlock();
-		throw new MdsException(status);
-	}
-	if(val)
-		nciFlags |= flagOfs;
+	nciFlags = flagOfs;
+	if(flag)
+	    status = _TreeSetNci(tree->getCtx(), nid, setNciList);
 	else
-		nciFlags &= ~flagOfs;
-
-	status = _TreeSetNci(tree->getCtx(), nid, nciList);
+	    status = _TreeSetNci(tree->getCtx(), nid, clearNciList);
 	if(!(status & 1))
 		throw new MdsException(status);
 }
@@ -1381,6 +1377,16 @@ int TreeNode::getDepth()
 
 	return depth;
 }
+#ifdef HAVE_WINDOWS_H
+#define pthread_mutex_t int
+static void LockMdsShrMutex(){}
+static void UnlockMdsShrMutex(){}
+#endif
+#ifdef HAVE_VXWORKS_H
+#define pthread_mutex_t int
+static void LockMdsShrMutex(){}
+static void UnlockMdsShrMutex(){}
+#endif
 	
 
 void TreeNode::makeSegment(Data *start, Data *end, Data *time, Array *initialData)
@@ -1728,7 +1734,7 @@ void TreePath::resolveNid()
 	
 void CachedTreeNode::flush() {_RTreeFlushNode(tree->getCtx(), getNid());}
 
-CachedTree::CachedTree(char *name, int shot, bool cacheShared, int cacheSize):Tree(name,shot)
+CachedTree::CachedTree(char *name, int shot, bool cacheShared, int cacheSize)
 {
 	RTreeConfigure(cacheShared, cacheSize);
 	this->shot = shot;
@@ -1743,7 +1749,7 @@ CachedTree::CachedTree(char *name, int shot, bool cacheShared, int cacheSize):Tr
 	this->cacheShared = cacheShared;
 	this->cacheSize = cacheSize;
 }
-CachedTree::CachedTree(char *name, int shot):Tree(name,shot)
+CachedTree::CachedTree(char *name, int shot)
 {
 	RTreeConfigure(false, 20000);
 	this->shot = shot;
@@ -1759,6 +1765,9 @@ CachedTree::CachedTree(char *name, int shot):Tree(name,shot)
 	this->cacheSize = 20000;
 }
 
+CachedTree::~CachedTree()
+{
+}
 
 void CachedTree::open() 
 {
@@ -1794,11 +1803,11 @@ CachedTreeNode *CachedTree::getCachedNode(char *path)
 }
 
 
-void CachedTreeNode::putLastRow(Data *data, Int64 *time)
+void CachedTreeNode::putLastRow(Data *data, _int64 *time)
 {
-	_int64 time64 = time->getLong();
+	_int64 time64 = *time;
 	resolveNid();
-	int status = putTreeRow(tree->getCtx(), getNid(), data->convertToDsc(), &time64, 1024, true, true, getCachePolicy());
+	int status = putTreeRow(tree->getCtx(), getNid(), data->convertToDsc(), &time64, 1024, true, true, MDS_WRITE_LAST);
 	if(!(status & 1))
 		throw new MdsException(status);
 }

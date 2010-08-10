@@ -117,7 +117,9 @@ RFXDiagTimesSetup.java \
 RFXDiagTimesV1Setup.java \
 MHD_BR_TESTSetup.java\
 EDA3VmeConfigSetup.java\
-MCUSetup.java
+MCUSetup.java\
+SIS3820Setup.java\
+FEMTOSetup.java
 
 
 all: @MAKEJAVADIR@ @MAKEJAVADIR@classes \

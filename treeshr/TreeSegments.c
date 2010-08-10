@@ -6,7 +6,7 @@
 #include <libroutines.h>
 #include <mdsshr.h>
 #include "treeshrp.h"
-extern void *DBID;
+extern void **TreeCtx();
 #ifdef __tolower
 #undef __tolower
 #endif
@@ -31,7 +31,7 @@ int _TreeBeginSegment(void *dbid, int nid, struct descriptor *start, struct desc
 int TreeBeginSegment(int nid, struct descriptor *start, struct descriptor *end, 
 		     struct descriptor *dimension,
 		     struct descriptor_a *initialValue, int idx) {
-  return  _TreeBeginSegment(DBID, nid, start, end, dimension, initialValue, idx);
+  return  _TreeBeginSegment(*TreeCtx(), nid, start, end, dimension, initialValue, idx);
 }
 
 int _TreeMakeSegment(void *dbid, int nid, struct descriptor *start, struct descriptor *end, 
@@ -43,7 +43,7 @@ int _TreeMakeSegment(void *dbid, int nid, struct descriptor *start, struct descr
 int TreeMakeSegment(int nid, struct descriptor *start, struct descriptor *end, 
 		     struct descriptor *dimension,
 		     struct descriptor_a *initialValue, int idx, int rows_filled) {
-  return  _TreeMakeSegment(DBID, nid, start, end, dimension, initialValue, idx,rows_filled);
+  return  _TreeMakeSegment(*TreeCtx(), nid, start, end, dimension, initialValue, idx,rows_filled);
 }
 
 static int __TreeBeginSegment(void *dbid, int nid, struct descriptor *start, struct descriptor *end, 
@@ -264,7 +264,7 @@ int _TreeUpdateSegment(void *dbid, int nid, struct descriptor *start, struct des
 
 int TreeUpdateSegment(int nid, struct descriptor *start, struct descriptor *end, struct descriptor *dimension,
 		      int idx) {
-  return _TreeUpdateSegment(DBID, nid, start, end, dimension, idx);
+  return _TreeUpdateSegment(*TreeCtx(), nid, start, end, dimension, idx);
 }
 
 int _TreeUpdateSegment(void *dbid, int nid, struct descriptor *start, struct descriptor *end, struct descriptor *dimension,
@@ -399,7 +399,7 @@ int _TreeUpdateSegment(void *dbid, int nid, struct descriptor *start, struct des
 
 int _TreePutSegment(void *dbid, int nid, int startIdx, struct descriptor_a *data);
 int TreePutSegment(int nid, int startIdx, struct descriptor_a *data) {
-  return _TreePutSegment(DBID, nid, startIdx, data);
+  return _TreePutSegment(*TreeCtx(), nid, startIdx, data);
 }
 
 int _TreePutSegment(void *dbid, int nid, int startIdx, struct descriptor_a *data) {
@@ -561,7 +561,7 @@ int _TreePutSegment(void *dbid, int nid, int startIdx, struct descriptor_a *data
 int _TreeGetNumSegments(void *dbid, int nid, int *num);
 
 int TreeGetNumSegments(int nid, int *num) {
-  return  _TreeGetNumSegments(DBID, nid, num);
+  return  _TreeGetNumSegments(*TreeCtx(), nid, num);
 }
 
 int _TreeGetNumSegments(void *dbid, int nid, int *num) {
@@ -615,7 +615,7 @@ int _TreeGetNumSegments(void *dbid, int nid, int *num) {
 }
 
 int TreeGetSegment(int nid, int idx, struct descriptor_xd *segment, struct descriptor_xd *dim) {
-  return _TreeGetSegment(DBID, nid, idx, segment, dim);
+  return _TreeGetSegment(*TreeCtx(), nid, idx, segment, dim);
 }
 
 int _TreeGetSegment(void *dbid, int nid, int idx, struct descriptor_xd *segment, struct descriptor_xd *dim) {
@@ -766,7 +766,7 @@ int _TreeGetSegment(void *dbid, int nid, int idx, struct descriptor_xd *segment,
 
 int _TreeGetSegmentLimits(void *dbid, int nid, int idx, struct descriptor_xd *retStart, struct descriptor_xd *retEnd);
 int TreeGetSegmentLimits(int nid, int idx, struct descriptor_xd *retStart, struct descriptor_xd *retEnd) {
-  return _TreeGetSegmentLimits(DBID, nid, idx, retStart, retEnd);
+  return _TreeGetSegmentLimits(*TreeCtx(), nid, idx, retStart, retEnd);
 }
 
 
@@ -879,7 +879,7 @@ int _TreeGetSegmentLimits(void *dbid, int nid, int idx, struct descriptor_xd *re
 int _TreeSetXNci(void *dbid, int nid, char *xnciname, struct descriptor *value);
 
 int TreeSetXNci(int nid, char *xnciname, struct descriptor *value) {
-  return _TreeSetXNci(DBID, nid, xnciname, value);
+  return _TreeSetXNci(*TreeCtx(), nid, xnciname, value);
 }
 
 int _TreeSetXNci(void *dbid, int nid, char *xnciname, struct descriptor *value) {
@@ -1089,10 +1089,10 @@ int _TreeSetXNci(void *dbid, int nid, char *xnciname, struct descriptor *value) 
   return status;
 }
 
- int _TreeGetXNci(void *dbid, int nid, char *xnciname, struct descriptor_xd *value);
+int _TreeGetXNci(void *dbid, int nid, char *xnciname, struct descriptor_xd *value);
 
 int TreeGetXNci(int nid, char *xnciname, struct descriptor_xd *value) {
-  return _TreeGetXNci(DBID, nid, xnciname, value);
+  return _TreeGetXNci(*TreeCtx(), nid, xnciname, value);
 }
 
 int _TreeGetXNci(void *dbid, int nid, char *xnciname, struct descriptor_xd *value) {
@@ -1620,7 +1620,7 @@ int _TreeBeginTimestampedSegment(void *dbid, int nid, struct descriptor_a *initi
 }
 
  int TreeBeginTimestampedSegment(int nid, struct descriptor_a *initialValue, int idx) {
-   return _TreeBeginTimestampedSegment(DBID, nid, initialValue, idx);
+   return _TreeBeginTimestampedSegment(*TreeCtx(), nid, initialValue, idx);
  }
 
 int _TreeMakeTimestampedSegment(void *dbid, int nid, _int64 *timestamps, struct descriptor_a *initialValue, int idx, int rows_filled) {
@@ -1628,7 +1628,7 @@ int _TreeMakeTimestampedSegment(void *dbid, int nid, _int64 *timestamps, struct 
 }
 
 int TreeMakeTimestampedSegment(int nid, _int64 *timestamps, struct descriptor_a *initialValue, int idx, int rows_filled) {
-   return _TreeMakeTimestampedSegment(DBID, nid, timestamps, initialValue, idx, rows_filled);
+   return _TreeMakeTimestampedSegment(*TreeCtx(), nid, timestamps, initialValue, idx, rows_filled);
  }
 
 static int __TreeBeginTimestampedSegment(void *dbid, int nid, _int64 *timestamps, struct descriptor_a *initialValue, int idx, int rows_filled) {
@@ -1861,7 +1861,7 @@ old array is same size.
  int _TreePutTimestampedSegment(void *dbid, int nid, _int64 *timestamp, struct descriptor_a *data);
 
  int TreePutTimestampedSegment(int nid, _int64 *timestamp, struct descriptor_a *data) {
-   return _TreePutTimestampedSegment(DBID, nid, timestamp, data);
+   return _TreePutTimestampedSegment(*TreeCtx(), nid, timestamp, data);
  }
 
 
@@ -2117,29 +2117,29 @@ old array is same size.
        SEGMENT_INFO *sinfo=&index.segment[i];
        int length;
        if (sinfo->data_offset != -1 && sinfo->rows < 0) {
-       length = sinfo->rows & 0x7fffffff;
-       status = DataCopy(info1, info2, sinfo->data_offset,length,&sinfo->data_offset);
-       status = DataCopy(info1, info2, sinfo->dimension_offset,sinfo->dimension_length,&sinfo->dimension_offset);
+	 length = sinfo->rows & 0x7fffffff;
+	 status = DataCopy(info1, info2, sinfo->data_offset,length,&sinfo->data_offset);
+	 status = DataCopy(info1, info2, sinfo->dimension_offset,sinfo->dimension_length,&sinfo->dimension_offset);
        }
        else {
-       status = DataCopy(info1, info2, sinfo->start_offset,sinfo->start_length,&sinfo->start_offset);
-       status = DataCopy(info1, info2, sinfo->end_offset,sinfo->end_length,&sinfo->end_offset);
-       if (sinfo->dimension_length == 0) {
-         length = sinfo->rows * sizeof(_int64);
-       } else {
-         length = sinfo->dimension_length;
-       }
-       status = DataCopy(info1, info2, sinfo->dimension_offset,length,&sinfo->dimension_offset);
-       length=rowlen*sinfo->rows;
-       status = DataCopy(info1, info2, sinfo->data_offset, length, &sinfo->data_offset);
-       if (header->idx == (index.first_idx+i)) {
-         *data_offset=sinfo->data_offset;
-         if (sinfo->dimension_offset != -1 && sinfo->dimension_length == 0) {
-           *dim_offset=sinfo->dimension_offset;
-         } else {
-           *dim_offset=-1;
-         }
-       }
+	 status = DataCopy(info1, info2, sinfo->start_offset,sinfo->start_length,&sinfo->start_offset);
+	 status = DataCopy(info1, info2, sinfo->end_offset,sinfo->end_length,&sinfo->end_offset);
+	 if (sinfo->dimension_length == 0) {
+	   length = sinfo->rows * sizeof(_int64);
+	 } else {
+	   length = sinfo->dimension_length;
+	 }
+	 status = DataCopy(info1, info2, sinfo->dimension_offset,length,&sinfo->dimension_offset);
+	 length=rowlen*sinfo->rows;
+	 status = DataCopy(info1, info2, sinfo->data_offset, length, &sinfo->data_offset);
+	 if (header->idx == (index.first_idx+i)) {
+	   *data_offset=sinfo->data_offset;
+	   if (sinfo->dimension_offset != -1 && sinfo->dimension_length == 0) {
+	     *dim_offset=sinfo->dimension_offset;
+	   } else {
+	     *dim_offset=-1;
+	   }
+	 }
        }
      }
      *index_offset=-1;
@@ -2208,7 +2208,7 @@ old array is same size.
 
 
 int TreeGetSegmentedRecord(int nid, struct descriptor_xd *data) {
-  return _TreeGetSegmentedRecord(DBID,nid,data);
+  return _TreeGetSegmentedRecord(*TreeCtx(),nid,data);
 }
 
  int _TreeGetSegmentedRecord(void *dbid, int nid, struct descriptor_xd *data) {
@@ -2233,7 +2233,7 @@ int TreeGetSegmentedRecord(int nid, struct descriptor_xd *data) {
 int _TreePutRow(void *dbid, int nid, int bufsize, _int64 *timestamp, struct descriptor_a *data);
 
  int TreePutRow(int nid, int bufsize, _int64 *timestamp, struct descriptor_a *data) {
-   return _TreePutRow(DBID, nid, bufsize, timestamp, data);
+   return _TreePutRow(*TreeCtx(), nid, bufsize, timestamp, data);
  }
 
 
@@ -2288,7 +2288,7 @@ int _TreePutRow(void *dbid, int nid, int bufsize, _int64 *timestamp, struct desc
 int _TreeGetSegmentInfo(void *dbid, int nid, int idx, char *dtype, char *dimct, int *dims, int *next_row);
 
 int TreeGetSegmentInfo(int nid, int idx, char *dtype, char *dimct, int *dims, int *next_row) {
-  return _TreeGetSegmentInfo(DBID, nid, idx, dtype, dimct, dims, next_row);
+  return _TreeGetSegmentInfo(*TreeCtx(), nid, idx, dtype, dimct, dims, next_row);
 }
 
 int _TreeGetSegmentInfo(void *dbid, int nid, int idx, char *dtype, char *dimct, int *dims, int *next_row) {
@@ -2352,9 +2352,9 @@ int _TreeGetSegmentInfo(void *dbid, int nid, int idx, char *dtype, char *dimct, 
 	  dims[segment_header.dimct-1]=sinfo->rows;
 	  if (idx == segment_header.idx)
 	    *next_row = segment_header.next_row;
-          else if (sinfo->rows < 1) {
-            status = GetCompressedSegmentRows(info_ptr, sinfo->data_offset, next_row);
-	  } else
+	  else if (sinfo->rows < 1) {
+	    status = GetCompressedSegmentRows(info_ptr, sinfo->data_offset, next_row);
+          } else
 	    *next_row = sinfo->rows;
 	}
       } else {

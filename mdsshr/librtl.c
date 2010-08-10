@@ -1364,6 +1364,7 @@ int StrRight(struct descriptor *out, struct descriptor *in, descriptor_length *s
   return StrFree1Dx(&tmp);
 }
 
+
 #ifndef HAVE_WINDOWS_H
 STATIC_THREADSAFE pthread_mutex_t VmMutex;
 #else

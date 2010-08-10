@@ -92,6 +92,7 @@ void TreeWriter::synch()
 	lock.unlock();
 	if(synchWaiting)
 	{
+		nidEvent.signal();
 		synchEvent.wait();
 	}
 }

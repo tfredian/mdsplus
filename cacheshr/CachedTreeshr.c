@@ -105,6 +105,7 @@ static void setDbid(char *name, int shot, void *dbid)
 			currDescr->dbid = dbid;
 			return;
 		}
+		currDescr = currDescr->nxt;
 	}
 	currDescr = (struct TreeDescr *)malloc(sizeof(struct TreeDescr));
 	currDescr->name = malloc(strlen(name)+1);
@@ -1169,7 +1170,7 @@ int putSegmentInternal(char *name, int shot, int nid, char *start, int startSize
 //4) total dimension in bytes 
 //The remaining elements are the dimension limits
 
-//first build whiole segment description
+//first build whole segment description
 	status = rebuildFromDataTypeAndShape(data, shape, shapeSize, &fullDataXd);
 	if(!(status & 1)) 
 	{
@@ -1214,6 +1215,7 @@ int putSegmentInternal(char *name, int shot, int nid, char *start, int startSize
  		    return status;
 		}
 		MdsFree1Dx(&dataXd, 0);
+		MdsFree1Dx(&fullDataXd, 0);
 	}
 	else
 	{

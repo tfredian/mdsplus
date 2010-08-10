@@ -1,4 +1,7 @@
 #include "Cache.h"
+#ifndef HAVE_WINDOWS_H
+#include <pthread.h>
+#endif
 
 #define WRITE_THROUGH 1
 #define WRITE_BACK 2
@@ -45,13 +48,21 @@ extern "C" int terminateSegment(char *name, int shot, int nid, char *cachePtr);
 extern "C" void synch(char *cachePtr);
 
 static char *cache = 0;
-
+#ifndef HAVE_WINDOWS_H
+static pthread_mutex_t  initMutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 char *getCache(int size)
 {
+#ifndef HAVE_WINDOWS_H
+  pthread_mutex_lock(&initMutex);
+#endif
 	if(!cache)
 	{
 		cache = (char *)new Cache(size);
 	}
+#ifndef HAVE_WINDOWS_H
+  pthread_mutex_unlock(&initMutex);
+#endif
 	return cache;
 }
 
@@ -215,7 +226,7 @@ Cache::Cache():dataManager(true)
 	queueLock.initialize();
 	treeWriter.setDataManager(&dataManager);
 	treeWriter.start();
-	chainHead = chainTail = 0;
+	chainHead = 0;
 
 }
 
@@ -224,7 +235,7 @@ Cache::Cache(int size):dataManager(size)
 	queueLock.initialize();
 	treeWriter.setDataManager(&dataManager);
 	treeWriter.start();
-	chainHead = chainTail = 0;
+	chainHead = 0;
 
 }
 
@@ -236,9 +247,10 @@ void Cache::insertInQueue(TreeDescriptor treeIdx, int nid, char mode, int idx)
 		NidChain *newNid = new NidChain;
 		newNid->nid = nid;
 		newNid->treeIdx = treeIdx;
+      NidChain *chainTail;    
+      for(chainTail = chainHead; chainTail && chainTail->nxt; chainTail = chainTail->nxt);
 		if(chainTail)
 			chainTail->nxt = newNid;
-		chainTail = newNid;
 		newNid->nxt = 0;
 		newNid->idx = idx;
 		newNid->mode = mode;
@@ -442,6 +454,7 @@ int Cache::discardOldSegments(TreeDescriptor treeIdx, int nid, _int64 timestamp)
 
 int Cache::discardData(TreeDescriptor treeIdx, int nid)
 {
+  discardQueue(treeIdx, nid);
 	return dataManager.discardData(treeIdx, nid);
 }
 
@@ -465,6 +478,38 @@ void Cache::synch()
 int Cache::flush(TreeDescriptor treeIdx)
 {
 	return flush(treeIdx, -1);
+}
+
+
+void Cache::discardQueue(TreeDescriptor treeIdx, int nid)
+{
+	NidChain *currChainNid, *prevChainNid;
+	currChainNid = prevChainNid = chainHead;
+	queueLock.lock();
+	while(currChainNid)	
+	{
+		if(currChainNid->treeIdx == treeIdx && currChainNid->nid == nid)
+		{
+			if(currChainNid == chainHead)
+			{
+				chainHead = currChainNid->nxt;
+				delete currChainNid;
+				currChainNid = prevChainNid = chainHead;
+			}
+			else
+			{
+				prevChainNid->nxt = currChainNid->nxt;
+				delete currChainNid;
+				currChainNid = prevChainNid->nxt;
+			}
+    }
+    else //Skip this descriptor
+		{
+			prevChainNid = currChainNid;
+			currChainNid = currChainNid->nxt;
+		}
+  }
+	queueLock.unlock();
 }
 
 int Cache::flush(TreeDescriptor treeIdx, int nid) 
