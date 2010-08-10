@@ -17,65 +17,10 @@ class treeTests(TestCase):
         l=Lock()
         l.acquire()
         try:
-<<<<<<< treeUnitTest.py
-            Tree.lock()
-            if hasattr(treeTests,'shot'):
-                thread_data.shot1=treeTests.shot
-                thread_data.shot2=treeTests.shot+1
-            else:
-                thread_data.shot1=1
-                thread_data.shot2=2
-            shot1=thread_data.shot1
-            treeTests.shot=thread_data.shot2+1
-            pytree=Tree('pytree',thread_data.shot1,'new')
-            pytree_top=pytree.default
-            subtree=pytree_top.addNode('pytreesub','subtree')
-            for i in range(10):
-                node=pytree_top.addNode('val%02d' % (i,),'numeric')
-                node.record=i
-                node=pytree_top.addNode('sig%02d' % (i,),'signal')
-                node.record=Signal(i,None,i)
-                node=pytree_top.addNode('child%02d' % (i,),'structure')
-                node.addNode('text','text')
-                node.addNode('child','structure')
-            pytreesub=Tree('pytreesub',thread_data.shot1,'new')
-            if pytreesub.shot != thread_data.shot1 or thread_data.shot1 != shot1:
-                raise Exception,"Shot number changed! tree.shot=%d, thread.shot=%d, shot=%d" % (pytreesub.shot, thread_data.shot1, shot1)
-            pytreesub_top=pytreesub.default
-            node=pytreesub_top.addNode('.rog','structure')
-            for i in range(10):
-                node=node.addNode('.child','structure')
-            node=node.addNode('rogowski','structure')
-            node.tag='MAG_ROGOWSKI'
-            node=node.addNode('signals','structure')
-            node=node.addNode('rog_fg','signal')
-            node.record=Signal(Range(1.,1000.),None,Range(1.,100.,.1))
-            node=pytreesub_top.addNode('btor','signal')
-            node.tag='BTOR'
-            node.compress_on_put=True
-            node.record=Signal(Range(2.,2000.,2.),None,Range(1.,1000.))
-            ip=pytreesub_top.addNode('ip','signal')
-            ip.record=Data.compile("""Build_Signal(Build_With_Units(\\MAG_ROGOWSKI.SIGNALS:ROG_FG + 2100. * \\BTOR, "ampere"), *, DIM_OF(\\BTOR))""")
-            ip.tag='MAG_PLASMA_CURRENT'
-            ip.tag='MAGNETICS_PLASMA_CURRENT'
-            ip.tag='MAG_IP'
-            ip.tag='MAGNETICS_IP'
-            ip.tag='IP'
-            for i in range(10):
-                node=pytreesub_top.addNode('child%02d' % (i,),'structure')
-                node.addDevice('dt200_%02d' % (i,),'dt200')
-            pytree.write()
-            pytreesub.write()
-=======
             if self.shot == treeTests.shot:
                 self.shot=treeTests.shot+1
                 treeTests.shot=treeTests.shot+2
->>>>>>> 1.8
         finally:
-<<<<<<< treeUnitTest.py
-            Tree.unlock()
-
-=======
             l.release()
 
     def editTrees(self):
@@ -119,7 +64,6 @@ class treeTests(TestCase):
             node.addDevice('dt200_%02d' % (i,),'dt200')
         pytree.write()
         pytreesub.write()
->>>>>>> 1.8
 
     def openTrees(self):
         self.pytree=Tree('pytree',self.shot)
