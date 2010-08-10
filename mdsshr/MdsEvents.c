@@ -1151,9 +1151,9 @@ STATIC_ROUTINE int sendMessage(char *evname, int key, int data_len, char *data)
       printf("Removed dead message pipe %d, error %d\n", key, errno);
       return 0;
     }
-    status = write(msgid,&message,sizeof(message)) == sizeof(message);
+    status = write(msgid,&message,sizeof(message)) == sizeof(message) ? 0 : -1;
     close(msgid);
-    return 0;
+    return status;
 #else
     status = msgid = msgget(key, 0777);
     if(msgid == -1)
@@ -1289,7 +1289,7 @@ STATIC_ROUTINE int createThread(pthread_t *thread, void (*rtn)(), void *par)
 
 STATIC_ROUTINE void startRemoteAstHandler()
 {
-    int status = pipe(fds);
+    int status=pipe(fds);
     external_thread_created = createThread(&external_thread, handleRemoteAst,0);
 }
 	
@@ -1635,7 +1635,7 @@ STATIC_CONSTANT void KillHandler()
   int status;
   void *dummy;
   external_shutdown = 1;
-  status = write(fds[1], "x", 1) == 1;
+  status = write(fds[1], "x", 1) == 1 ? 0 : -1;
   status = pthread_join(external_thread, &dummy);
   status = close(fds[0]);
   status = close(fds[1]);
@@ -1674,8 +1674,8 @@ STATIC_ROUTINE void handleRemoteAst()
       	perror("select error"); return; }
 	if(external_shutdown)
 	{
-	    status = read(fds[0], buf, 1) == 1;
-	    pthread_exit(0);
+	  status = read(fds[0], buf, 1) == 1 ? 0 : -1;
+	  pthread_exit(0);
 	}
 	for(i = 0; i < num_receive_servers; i++)
 	{

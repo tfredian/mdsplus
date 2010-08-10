@@ -891,9 +891,11 @@ int LibSpawn(struct descriptor *cmd, int waitflag, int notifyFlag)
   {
     for ( ; ; )
     {
-      xpid = wait(&sts);
+      xpid = waitpid(pid,&sts,0);
       if (xpid == pid)
-      break;
+        break;
+      else if (xpid == -1)
+        perror("Error during wait call");
     }
   }
   free(cmdstring);
@@ -1361,7 +1363,13 @@ int StrRight(struct descriptor *out, struct descriptor *in, descriptor_length *s
   StrCopyDx(out,&s);
   return StrFree1Dx(&tmp);
 }
-pthread_mutex_t VmMutex;
+
+#ifndef HAVE_WINDOWS_H
+STATIC_THREADSAFE pthread_mutex_t VmMutex;
+#else
+STATIC_THREADSAFE HANDLE VmMutex;
+#endif
+
 int VmMutex_initialized=0;
 
 int LibCreateVmZone(ZoneList **zone)
