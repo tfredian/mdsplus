@@ -220,151 +220,224 @@ TdiRefStandard(TdiIntrinsic)
   struct descriptor_d *message = &((TdiThreadStatic())->TdiIntrinsic_message);
   tmp = emptyxd;
   TdiThreadStatic()->TdiIntrinsic_recursion_count = TdiThreadStatic()->TdiIntrinsic_recursion_count + 1;
-  if (narg < fun_ptr->m1)		status = TdiMISS_ARG;
-  else if (narg > fun_ptr->m2)	status = TdiEXTRA_ARG;
-  else if (TdiThreadStatic()->TdiIntrinsic_recursion_count > 1800) status = TdiRECURSIVE;
+  if (narg < fun_ptr->m1)
+    status = TdiMISS_ARG;
+  else if (narg > fun_ptr->m2)
+    status = TdiEXTRA_ARG;
+  else if (TdiThreadStatic()->TdiIntrinsic_recursion_count > 1800) 
+    status = TdiRECURSIVE;
   else 
   {
-    int list_size = narg * sizeof(struct descriptor *);
     struct descriptor *fixed_list[256];
+    struct descriptor_xd fixed_dscs[256];
+    EMPTYXD(xd);
     char fixed[256];
     int i;
-          for (i=0;i<narg;i++)
-            if (list[i] != NULL && list[i]->class == CLASS_NCA) {
-              fixed[i]=1;
-              fixed_list[i] = FixedArray(list[i]);
-	    }
-            else {
-              fixed[i]=0;
-              fixed_list[i] = list[i];
-	    }
-          status = interlude(fun_ptr->f1, opcode, narg, fixed_list, &tmp);
-          for (i=0;i<narg;i++)
-            if (fixed[i]) free(fixed_list[i]);
-        }
-	if (status & 1
-	|| status == TdiBREAK
-	|| status == TdiCONTINUE
-	|| status == TdiGOTO
-	|| status == TdiRETURN) {
-
-		if (!out_ptr) goto notmp;
-		switch (out_ptr->class) {
-		default :
-			status = TdiINVCLADSC;
-			break;
-
-		/*****************************************
+    for (i=0;i<narg;i++) {
+      memcpy(&fixed_dscs[i],&xd,sizeof(xd));
+      if (list[i] != NULL && list[i]->class == CLASS_NCA) {
+	fixed[i]=1;
+	fixed_list[i] = FixedArray(list[i]);
+      }
+#ifdef BIG_DESC
+      else if (list[i] != NULL && MdsFixDescriptorIn(list[i],&fixed_dscs[i])) {
+	fixed[i]=2;
+	fixed_list[i]=fixed_dscs[i].pointer;
+      }
+#endif
+      else {
+	fixed[i]=0;
+	fixed_list[i] = list[i];
+      }
+    }
+    status = interlude(fun_ptr->f1, opcode, narg, fixed_list, &tmp);
+    for (i=0;i<narg;i++)
+      if (fixed[i]==1)
+	free(fixed_list[i]);
+      else if (fixed[i]==2) {
+	MdsFree1Dx(&fixed_dscs[i],0);
+      }
+  }
+  if (status & 1
+      || status == TdiBREAK
+      || status == TdiCONTINUE
+      || status == TdiGOTO
+      || status == TdiRETURN) {
+  
+    if (!out_ptr) goto notmp;
+    switch (out_ptr->class) {
+    default :
+      status = TdiINVCLADSC;
+      break;
+      
+      /*****************************************
 		To XD, rename it if from XD, else make it.
-		*****************************************/
-		case CLASS_XD :
-		/*************************************************************************
+      *****************************************/
+    case CLASS_XD :
+      /*************************************************************************
 		WARNING could be tricky if an input is same as output and propagated thru.
 		If out overlaps tmp, then some input is the same as the output
 		and the input was freed, so don't free output.
-		*************************************************************************/
-			if (	(char *)out_ptr->pointer + out_ptr->l_length <= (char *)tmp.pointer
-			||	(char *)out_ptr->pointer >= (char *)tmp.pointer + tmp.l_length)
-				MdsFree1Dx(out_ptr, NULL);
-			else if (out_ptr->l_length) {
-				add("%TDI DANGER, part of old output descriptor was input to below.\n");
-				TRACE(opcode, narg, list, out_ptr);
-			}
-			if (tmp.class == CLASS_XD) *out_ptr = tmp;
-			else {
-				stat1 = MdsCopyDxXd((struct descriptor *)&tmp, out_ptr);
-				MdsFree1Dx(&tmp, NULL);
-			}
-			break;
-
-		/************************************
-		To D, allocate and copy it (free XD).
-		************************************/
-		case CLASS_D :
-			if (tmp.class == CLASS_XD) dsc_ptr = (struct descriptor *)tmp.pointer;
-			else dsc_ptr = (struct descriptor *)&tmp;
-			if (dsc_ptr == 0) stat1 = StrFree1Dx(out_ptr);
-			else switch (dsc_ptr->class) {
-			case CLASS_S :
-			case CLASS_D :
-			  if (((struct descriptor *)out_ptr)->length != dsc_ptr->length) {
-					stat1 = StrGet1Dx(&dsc_ptr->length, out_ptr);
-				}
-				if (stat1 & 1) {
-					out_ptr->dtype = dsc_ptr->dtype;
-					_MOVC3(((struct descriptor *)out_ptr)->length, dsc_ptr->pointer, (char *)out_ptr->pointer);
-				}
-				break;
-			default :
-				stat1 = TdiINVCLADSC;
-				break;
-			}
-			MdsFree1Dx(&tmp, NULL);
-			break;
-
-		/*******************************
-		To S, convert (free if from XD).
-		*******************************/
-		case CLASS_S :
-		case CLASS_A :
-			if (tmp.class == CLASS_XD) dsc_ptr = tmp.pointer;
-			else dsc_ptr = (struct descriptor *)&tmp;
-			if (dsc_ptr)	stat1 = TdiConvert(dsc_ptr, out_ptr);
-			else		stat1 = TdiConvert(&miss_dsc, out_ptr);
-			MdsFree1Dx(&tmp, NULL);
-			break;
-		case CLASS_NCA :
-                        { struct descriptor *fixed_out_ptr = FixedArray(out_ptr);
-  			  if (tmp.class == CLASS_XD) dsc_ptr = tmp.pointer;
-			  else dsc_ptr = (struct descriptor *)&tmp;
-			  if (dsc_ptr)	stat1 = TdiConvert(dsc_ptr, out_ptr);
-			  else		stat1 = TdiConvert(&miss_dsc, out_ptr);
-			  MdsFree1Dx(&tmp, NULL);
-                          free(fixed_out_ptr);
-                        }
-			break;
-		}
-		if (stat1 & 1) goto done;
-		status = stat1;
-	}
+      *************************************************************************/
+      if (	(char *)out_ptr->pointer + out_ptr->l_length <= (char *)tmp.pointer
+		||	(char *)out_ptr->pointer >= (char *)tmp.pointer + tmp.l_length)
+	MdsFree1Dx(out_ptr, NULL);
+      else if (out_ptr->l_length) {
+	add("%TDI DANGER, part of old output descriptor was input to below.\n");
 	TRACE(opcode, narg, list, out_ptr);
-
-	/********************************
-	Compiler errors get special help.
-	********************************/
-	if (opcode == OpcCompile && message->length < MAXMESS) {
-	char *cur = MINMAX(TdiRefZone.a_begin, TdiRefZone.a_cur, TdiRefZone.a_end);
-	int npre = MINMAX(0, TdiRefZone.l_ok, MAXLINE);
-	int nbody = cur - TdiRefZone.a_begin - npre;
-	int npost = TdiRefZone.a_end - cur;
-		nbody = MINMAX(0, nbody, MAXLINE);
-		npost = MINMAX(0, npost, MAXLINE);
-		if (npre + nbody + npost > MAXLINE) npre = 0;
-		if (nbody + npost > MAXLINE) {
-			npre = MAXLINE - nbody - npost;
-			if ((int)npre < 0) npre = 0;
-			if (nbody + npost > MAXLINE) npost = MINMAX(0, npost, MAXFRAC);
-			if (nbody + npost > MAXLINE) nbody = MAXLINE - npost;
-		}
-		{
-		  struct descriptor pre = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
-		  struct descriptor body = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
-		  struct descriptor post = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
-                pre.length = npre;
-                pre.pointer = cur-nbody-npre;
-                body.length = nbody;
-                body.pointer = cur-nbody;
-                post.length = npost;
-                post.pointer = cur;
-			StrConcat((struct descriptor *)message, (struct descriptor *)message, &compile_err, &pre, &hilite, &body, &hilite, &post, &newline MDS_END_ARG);
-		}
+      }
+      if (tmp.class == CLASS_XD)
+	*out_ptr = tmp;
+      else {
+	stat1 = MdsCopyDxXd((struct descriptor *)&tmp, out_ptr);
+	MdsFree1Dx(&tmp, NULL);
+      }
+      break;
+    
+      /************************************
+		To D, allocate and copy it (free XD).
+      ************************************/
+    case CLASS_D :
+      if (tmp.class == CLASS_XD) dsc_ptr = (struct descriptor *)tmp.pointer;
+      else dsc_ptr = (struct descriptor *)&tmp;
+      if (dsc_ptr == 0) stat1 = StrFree1Dx(out_ptr);
+      else switch (dsc_ptr->class) {
+	case CLASS_S :
+	case CLASS_D :
+	  if (((struct descriptor *)out_ptr)->length != dsc_ptr->length) {
+	    stat1 = StrGet1Dx(&dsc_ptr->length, out_ptr);
+	  }
+	  if (stat1 & 1) {
+	    out_ptr->dtype = dsc_ptr->dtype;
+	    _MOVC3(((struct descriptor *)out_ptr)->length, dsc_ptr->pointer, (char *)out_ptr->pointer);
+	  }
+	  break;
+	default :
+	  stat1 = TdiINVCLADSC;
+	  break;
 	}
+      MdsFree1Dx(&tmp, NULL);
+      break;
+      
+      /*******************************
+		To S, convert (free if from XD).
+      *******************************/
+    case CLASS_S :
+    case CLASS_A :
+      if (tmp.class == CLASS_XD) dsc_ptr = tmp.pointer;
+      else dsc_ptr = (struct descriptor *)&tmp;
+      if (dsc_ptr)	stat1 = TdiConvert(dsc_ptr, out_ptr);
+      else		stat1 = TdiConvert(&miss_dsc, out_ptr);
+      MdsFree1Dx(&tmp, NULL);
+      break;
+    case CLASS_NCA :
+      { struct descriptor *fixed_out_ptr = FixedArray(out_ptr);
+	if (tmp.class == CLASS_XD) dsc_ptr = tmp.pointer;
+	else dsc_ptr = (struct descriptor *)&tmp;
+	if (dsc_ptr)	stat1 = TdiConvert(dsc_ptr, out_ptr);
+	else		stat1 = TdiConvert(&miss_dsc, out_ptr);
+	MdsFree1Dx(&tmp, NULL);
+	free(fixed_out_ptr);
+      }
+      break;
+#ifdef BIG_DESC
+    case CLASS_XD_SHORT :
+      /*************************************************************************
+		WARNING could be tricky if an input is same as output and propagated thru.
+		If out overlaps tmp, then some input is the same as the output
+		and the input was freed, so don't free output.
+      *************************************************************************/
+      {
+	struct short_descriptor_xd *optr = (struct short_descriptor_xd *)out_ptr;
+	MdsFree1Dx(out_ptr,NULL);
+	stat1 = MdsCopyDxXd((struct descriptor *)&tmp, out_ptr);
+	MdsFree1Dx(&tmp,NULL);
+	break;
+      }
+    
+      /************************************
+		To D, allocate and copy it (free XD).
+      ************************************/
+    case CLASS_D_SHORT :
+      if (tmp.class == CLASS_XD) dsc_ptr = (struct descriptor *)tmp.pointer;
+      else dsc_ptr = (struct descriptor *)&tmp;
+      if (dsc_ptr == 0) stat1 = StrFree1Dx(out_ptr);
+      else switch (dsc_ptr->class) {
+	case CLASS_S :
+	  if (((struct short_descriptor *)out_ptr)->length != dsc_ptr->length) {
+	    stat1 = TdiINVCLADSC;
+	    break;
+	  }
+	case CLASS_D :
+	  if (((struct short_descriptor *)out_ptr)->length != dsc_ptr->length) {
+	    stat1 = StrGet1Dx(&dsc_ptr->length, out_ptr);
+	  }
+	  if (stat1 & 1) {
+	    out_ptr->dtype = dsc_ptr->dtype;
+	    _MOVC3(((struct short_descriptor *)out_ptr)->length, dsc_ptr->pointer, (char *)((struct short_descriptor *)out_ptr)->pointer);
+	  }
+	  break;
+	default :
+	  stat1 = TdiINVCLADSC;
+	  break;
+	}
+      MdsFree1Dx(&tmp, NULL);
+      break;
+      
+      /*******************************
+		To S, convert (free if from XD).
+      *******************************/
+    case CLASS_S_SHORT :
+    case CLASS_A_SHORT :
+      if (tmp.class == CLASS_XD) dsc_ptr = tmp.pointer;
+      else dsc_ptr = (struct descriptor *)&tmp;
+      if (dsc_ptr)	stat1 = TdiConvert(dsc_ptr, out_ptr);
+      else		stat1 = TdiConvert(&miss_dsc, out_ptr);
+      MdsFree1Dx(&tmp, NULL);
+      break;
+#endif
+    }
+    if (stat1 & 1) goto done;
+    status = stat1;
+  }
+  TRACE(opcode, narg, list, out_ptr);
 
-	if (out_ptr) MdsFree1Dx(out_ptr, NULL);
+  /********************************
+	Compiler errors get special help.
+  ********************************/
+  if (opcode == OpcCompile && message->length < MAXMESS) {
+    char *cur = MINMAX(TdiRefZone.a_begin, TdiRefZone.a_cur, TdiRefZone.a_end);
+    int npre = MINMAX(0, TdiRefZone.l_ok, MAXLINE);
+    int nbody = cur - TdiRefZone.a_begin - npre;
+    int npost = TdiRefZone.a_end - cur;
+    nbody = MINMAX(0, nbody, MAXLINE);
+    npost = MINMAX(0, npost, MAXLINE);
+    if (npre + nbody + npost > MAXLINE) npre = 0;
+    if (nbody + npost > MAXLINE) {
+      npre = MAXLINE - nbody - npost;
+      if ((int)npre < 0) npre = 0;
+      if (nbody + npost > MAXLINE) npost = MINMAX(0, npost, MAXFRAC);
+      if (nbody + npost > MAXLINE) nbody = MAXLINE - npost;
+    }
+    {
+      struct descriptor pre = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+      struct descriptor body = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+      struct descriptor post = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
+      pre.length = npre;
+      pre.pointer = cur-nbody-npre;
+      body.length = nbody;
+      body.pointer = cur-nbody;
+      post.length = npost;
+      post.pointer = cur;
+      StrConcat((struct descriptor *)message, (struct descriptor *)message, &compile_err, &pre, &hilite, &body, &hilite, &post, &newline MDS_END_ARG);
+    }
+  }
+
+  if (out_ptr) MdsFree1Dx(out_ptr, NULL);
 notmp:	MdsFree1Dx(&tmp, NULL);
 done:	TdiThreadStatic()->TdiIntrinsic_recursion_count = 0;
-	TdiThreadStatic()->TdiIntrinsic_mess_stat = status;
-	return status;
+  TdiThreadStatic()->TdiIntrinsic_mess_stat = status;
+  return status;
 }
 /*--------------------------------------------------------------
 	Set debugging printout.

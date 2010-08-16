@@ -1988,9 +1988,8 @@ char* DevSkipExpr(int *type)
     static char buffer[1024];
     char word[512], a;
     struct descriptor
-	curr_d = {0, DTYPE_T, CLASS_S, 0};
-    struct descriptor_xd
-	xd = {0, DTYPE_DSC, CLASS_XD, 0, 0};
+      curr_d = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0)};
+    EMPTYXD(xd);
     int i = 0, j, prev_i, status;
     curr_d.pointer = buffer;
     while(1)

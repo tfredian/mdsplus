@@ -67,7 +67,7 @@ typedef unsigned long descriptor_length;
 typedef unsigned long long descriptor_llength;
 typedef unsigned long long descriptor_a_arsize;
 typedef unsigned long long descriptor_a_mult;
-typedef long long descriptor_a_mounds;
+typedef long long descriptor_a_bounds;
 typedef unsigned long descriptor_ndesc;
 #else
 typedef unsigned short descriptor_length;
@@ -117,7 +117,7 @@ typedef unsigned char descriptor_ndesc;
   unsigned char	class; \
   ptr_type	*pointer; \
   descriptor_length length;
-#define DESCRIPTOR_HEAD_INI(length,dtype,class,pointer) 0,dtype,class,pointer
+#define DESCRIPTOR_HEAD_INI(length,dtype,class,pointer) 0,dtype,class,pointer,length
 #else
 #define CLASS_S_SHORT	  1		/* fixed-length descriptor */
 #define CLASS_D_SHORT	  2		/* dynamic string descriptor */
@@ -147,8 +147,18 @@ typedef unsigned char descriptor_ndesc;
 #define DESCRIPTOR_HEAD_INI(length,dtype,class,pointer) length,dtype,class,pointer
 #endif
 
+#define SHORT_DESCRIPTOR_HEAD(ptr_type) \
+  unsigned short length; \
+  unsigned char dtype; \
+  unsigned char class; \
+  ptr_type *pointer;
+
 struct	descriptor {
   DESCRIPTOR_HEAD(char)
+};
+
+struct short_descriptor {
+  SHORT_DESCRIPTOR_HEAD(char)
 };
 
 /*
@@ -189,6 +199,14 @@ typedef	struct _aflags {
   unsigned char	dimct;			\
   descriptor_a_arsize	arsize;
 
+#define SHORT_ARRAY_HEAD(ptr_type)		\
+  SHORT_DESCRIPTOR_HEAD(ptr_type) \
+  char		scale;			\
+  unsigned char	digits;		\
+  aflags    aflags;				\
+  unsigned char	dimct;			\
+  unsigned int	arsize;
+
 struct	descriptor_a {
   ARRAY_HEAD(char)
 
@@ -214,6 +232,10 @@ struct	descriptor_a {
    */
 };
 
+struct short_descriptor_a {
+  SHORT_ARRAY_HEAD(char)
+};
+
 
 /************************************************
   Supplementary definitons for array classes.
@@ -236,6 +258,23 @@ struct	descriptor_a {
   struct {				\
     descriptor_a_bounds l;		\
     descriptor_a_bounds u;		\
+  } bounds[dimct];			\
+  }
+
+#define SHORT_ARRAY_COEFF(ptr_type, dimct)	struct {\
+  SHORT_ARRAY_HEAD(ptr_type)		\
+  ptr_type *a0;			\
+  unsigned int  m[dimct];	\
+  }
+
+
+#define SHORT_ARRAY_BOUNDS(ptr_type, dimct)	struct {\
+  SHORT_ARRAY_HEAD(ptr_type)			\
+  ptr_type	*a0;			\
+  unsigned int m[dimct];		\
+  struct {				\
+    int l;		\
+    int u;		\
   } bounds[dimct];			\
   }
 
@@ -312,6 +351,11 @@ struct descriptor_xd {
   descriptor_llength l_length;
 };
 
+struct short_descriptor_xd {
+  SHORT_DESCRIPTOR_HEAD(struct short_descriptor)
+  unsigned int l_length;
+};
+
 #define EMPTYXD(name) struct descriptor_xd name = {DESCRIPTOR_HEAD_INI(0,DTYPE_DSC,CLASS_XD,0), 0}
 
 /************************************************
@@ -333,8 +377,16 @@ struct descriptor_xs {
   DESCRIPTOR_HEAD(char) \
   descriptor_ndesc	ndesc;
 
+#define SHORT_RECORD_HEAD				\
+  SHORT_DESCRIPTOR_HEAD(char) \
+  unsigned char	ndesc;
+
 struct descriptor_r		{	RECORD_HEAD
 					struct descriptor *dscptrs[1];
+				};
+
+struct short_descriptor_r	{ SHORT_RECORD_HEAD
+                                  struct short_descriptor *dscptrs[1];
 				};
 
 #define RECORD(ndesc)	struct	{\
@@ -698,10 +750,10 @@ struct descriptor_with_error {
 /*
  *	A simple macro to construct a 32-bit string descriptor:
  */
-#define DESCRIPTOR(name,string)	struct descriptor_s name = { sizeof(string)-1, DTYPE_T, CLASS_S, string }
-#define DESCRIPTOR_INIT(length,dtype,class,pointer) {length,dtype,class,pointer}
+#define DESCRIPTOR(name,string)	struct descriptor_s name = { DESCRIPTOR_HEAD_INI(sizeof(string)-1, DTYPE_T, CLASS_S, string) }
+#define DESCRIPTOR_INIT(length,dtype,class,pointer) { DESCRIPTOR_HEAD_INI(length,dtype,class,pointer)}
 #define DESCRIPTOR_FROM_CSTRING(d,cstring) \
-  struct descriptor d = {0,DTYPE_T,CLASS_S,0}; \
+  struct descriptor d = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};	\
   d.length=strlen(cstring); \
   d.pointer=cstring;
 
@@ -718,6 +770,8 @@ typedef ARRAY(char) array;
 typedef ARRAY(int) array_int;
 typedef ARRAY(struct descriptor *) array_desc;
 typedef SIGNAL(MAXDIM) signal_maxdim;
+typedef SHORT_ARRAY_COEFF(char, MAXDIM) short_array_coeff;
+typedef SHORT_ARRAY_BOUNDS(char, MAXDIM) short_array_bounds;
 
 #ifdef __VMS
 #pragma member_alignment restore

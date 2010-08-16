@@ -1784,6 +1784,15 @@ int StrFree1Dx(struct descriptor *out)
     out->pointer = NULL;
     out->length = 0;
   }
+#ifdef BIG_DESC
+  else if (out->class == CLASS_D_SHORT) {
+    struct short_descriptor *o = (struct short_descriptor *)out;
+    if (o->pointer)
+      free(out->pointer);
+    o->pointer = NULL;
+    o->length = 0;
+  }
+#endif
   return 1;
 }
 

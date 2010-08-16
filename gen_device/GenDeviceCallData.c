@@ -79,8 +79,8 @@ int GenDeviceCallData(int mode, int cur_nid, struct descriptor_xd *setting_d_ptr
  Local variables:							      */
 
 register int		    status, size;
-struct descriptor_xd    record_d = {0, 0, CLASS_XD, 0, 0};
-struct descriptor_xd    temp_xd = {0, DTYPE_DSC, CLASS_XD, 0, 0 };
+EMPTYXD(record_d);
+ EMPTYXD(temp_xd);
 unsigned char		    type;
 DESCRIPTOR_RANGE(range_d, 0, 0, 0);	/* for debug */
  DESCRIPTOR_FLOAT(float_d,0);
@@ -103,7 +103,7 @@ DESCRIPTOR_RANGE(range_d, 0, 0, 0);	/* for debug */
             else
 	    {
               char zero=0;
-              struct descriptor null_str = {1,DTYPE_T,CLASS_S,0};
+              struct descriptor null_str = {DESCRIPTOR_HEAD_INI(1,DTYPE_T,CLASS_S,0)};
               null_str.pointer = &zero;
               status = TdiConcat(setting_d_ptr,&null_str,setting_d_ptr MDS_END_ARG);
             }
@@ -133,10 +133,10 @@ DESCRIPTOR_RANGE(range_d, 0, 0, 0);	/* for debug */
 		    MdsFree1Dx(&temp_xd,0);
 		    status = DEV$_BADPARAM;
 		} else {
-		    struct descriptor_xd    begin_xd = {0, DTYPE_DSC, CLASS_XD, 0, 0 };
-		    struct descriptor_xd    end_xd = {0, DTYPE_DSC, CLASS_XD, 0, 0 };
-		    struct descriptor_xd    delta_xd = {0, DTYPE_DSC, CLASS_XD, 0, 0 };
-		    DESCRIPTOR_RANGE(range_d, 0, 0, 0);
+		  EMPTYXD(begin_xd);
+		  EMPTYXD(end_xd);
+		  EMPTYXD(delta_xd);
+		  DESCRIPTOR_RANGE(range_d, 0, 0, 0);
 
 		    status = TdiCvt(((struct descriptor_range *)temp_xd.pointer)->begin, &float_d, &begin_xd MDS_END_ARG);
 		    status = TdiCvt(((struct descriptor_range *)temp_xd.pointer)->ending, &float_d, &end_xd MDS_END_ARG);
@@ -158,9 +158,9 @@ DESCRIPTOR_RANGE(range_d, 0, 0, 0);	/* for debug */
 		    MdsFree1Dx(&temp_xd,0);
 		    status = DEV$_BADPARAM;
 		} else {
-		    struct descriptor_xd    begin_xd = {0, DTYPE_DSC, CLASS_XD, 0, 0 };
-		    struct descriptor_xd    end_xd = {0, DTYPE_DSC, CLASS_XD, 0, 0 };
-		    struct descriptor_xd    delta_xd = {0, DTYPE_DSC, CLASS_XD, 0, 0 };
+		  EMPTYXD(begin_xd);
+		  EMPTYXD(end_xd);
+		  EMPTYXD(delta_xd);
 		    DESCRIPTOR_RANGE(range_d, 0, 0, 0);
 
 		    status = TdiLong(((struct descriptor_range *)temp_xd.pointer)->begin, &begin_xd MDS_END_ARG);

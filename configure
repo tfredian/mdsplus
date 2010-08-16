@@ -762,6 +762,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_nodebug
+enable_bigdsc
 enable_perf
 enable_camac
 enable_java
@@ -1407,6 +1408,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-nodebug        compile without debug info
+ --enable-bigdsc          use big descriptors
   --enable-perf          enable MDSplus I/O statistics
  --enable-camac        Build CAMAC and device libraries
  --disable-java	do not build java libraries and applications
@@ -3628,6 +3630,15 @@ if test "${enable_nodebug+set}" = set; then :
   enableval=$enable_nodebug; if test "$enableval" = yes; then
                CFLAGS="";
                FFLAGS="";
+	fi
+fi
+
+
+
+# Check whether --enable-bigdsc was given.
+if test "${enable_bigdsc+set}" = set; then :
+  enableval=$enable_bigdsc; if test "$enableval" = yes; then
+		CFLAGS="$CFLAGS -DBIG_DESC"
 	fi
 fi
 

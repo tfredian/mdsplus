@@ -50,7 +50,7 @@ extern int TdiNint();
 extern struct descriptor *TdiItoXSpecial;
 
 TdiRefStandard(Tdi1DtypeRange)
-unsigned short len;
+descriptor_length len;
 unsigned char dtype;
 int				cmode = -1, j, nseg=0, nnew = narg;
 int				*pl, tot=0;

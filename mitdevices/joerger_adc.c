@@ -17,7 +17,7 @@ int joerger_adc___store(int *niddsc, InStoreStruct *setup)
   if (TreeIsOn(data_nid)&1)
   {
     static short raw[64];
-    static ARRAY_BOUNDS(short,1) raw_d = {4,DTYPE_W,CLASS_A,raw,0,0,{0,0,1,1,1},1,sizeof(raw),raw-1,32,1,32};
+    static ARRAY_BOUNDS(short,1) raw_d = {DESCRIPTOR_HEAD_INI(4,DTYPE_W,CLASS_A,raw),0,0,{0,0,1,1,1},1,sizeof(raw),raw-1,32,1,32};
     static int vstrap_nid;
     static DESCRIPTOR_NID(vstrap_d,&vstrap_nid);
     static EMPTYXD(xd);

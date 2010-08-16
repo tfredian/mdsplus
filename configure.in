@@ -32,6 +32,13 @@ AC_ARG_ENABLE(nodebug,
                FFLAGS="";
 	fi)
 
+
+AC_ARG_ENABLE(bigdsc,
+	[ --enable-bigdsc          use big descriptors],
+	if test "$enableval" = yes; then
+		CFLAGS="$CFLAGS -DBIG_DESC"
+	fi)
+
 AC_ARG_ENABLE(perf,
 	[  --enable-perf          enable MDSplus I/O statistics])
 	if test "$enableval" = yes; then
