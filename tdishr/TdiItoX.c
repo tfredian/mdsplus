@@ -356,7 +356,6 @@ if (status & 1) switch (paxis->dtype) {
     
     /*****************************************************************
 		When we can't get left side, use right of first segment for limit.
-<<<<<<< TdiItoX.c
     *****************************************************************/
     if (kseg == 0 && big_beg && (nseg > 1 || !big_end)) {
       if (status & 1) {
