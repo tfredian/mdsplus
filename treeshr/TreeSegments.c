@@ -1822,7 +1822,11 @@ old array is same size.
 	   else if (dim_a->dimct != 1)
 	     printf("dim_a->dimct (%d) != 1\n",dim_a->dimct);
 	   else if (dim_a->length != sizeof(_int64))
+#ifdef BIG_DESC
+	    printf("dim_a->length (%ld) != sizeof(_int64)\n",dim_a->length);
+#else
 	     printf("dim_a->length (%d) != sizeof(_int64)\n",dim_a->length);
+#endif
 	   else if (dim_a->dtype != DTYPE_Q)
 	     printf("dim_a->dtype (%d) != DTYPE_Q\n",dim_a->dtype);
 	 }
