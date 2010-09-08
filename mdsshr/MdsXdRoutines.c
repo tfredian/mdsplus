@@ -57,6 +57,31 @@ int  MdsGet1Dx(descriptor_llength *length_ptr, unsigned char *dtype_ptr, struct 
       dsc_ptr->dtype = *dtype_ptr;
     }
   }
+#ifdef BIG_DESC
+  else if (dsc_ptr->class == CLASS_XD_SHORT) {
+    struct short_descriptor_xd *out_ptr = (struct short_descriptor_xd *)dsc_ptr;
+    if (*length_ptr > 0xffffffff)
+      return 0;
+    if (*length_ptr != out_ptr->l_length) {
+      if (out_ptr->l_length) {
+	descriptor_llength len = (descriptor_llength)out_ptr->l_length;
+	status = LibFreeVm(&len, &out_ptr->pointer, zone ? zone : (MdsVM_ZONE ? &MdsVM_ZONE : 0));
+	out_ptr->l_length=0;
+      }
+      else
+	status = 1;
+      if (status & 1)
+	status = LibGetVm(length_ptr, &out_ptr->pointer, zone ? zone : (MdsVM_ZONE ? &MdsVM_ZONE : 0));
+    }
+    else
+      status = 1;
+    if (status & 1) {
+      out_ptr->l_length = *length_ptr;
+      out_ptr->class = CLASS_XD_SHORT;
+      out_ptr->dtype = *dtype_ptr;
+    }
+  }
+#endif
   else
     status = LibINVSTRDES;
   return status;
@@ -108,10 +133,10 @@ typedef struct _bounds { int l; int u; } BOUNDS;
 STATIC_ROUTINE struct descriptor *FixedArray();
 
 #ifdef BIG_DESC
-STATIC_ROUTINE void copy_array_descr_in(struct short_descriptor_a *pi, struct descriptor_a *po) {
+STATIC_ROUTINE void copy_array_descr_in(struct short_descriptor_a *pi, struct descriptor_a *po,unsigned char dsc_class) {
   po->length = pi->length;
   po->dtype = pi->dtype;
-  po->class = pi->class;
+  po->class = dsc_class;
   po->scale = pi->scale;
   po->digits = pi->digits;
   po->aflags = pi->aflags;
@@ -213,7 +238,7 @@ STATIC_ROUTINE int copy_dx(
 	    o->length = in.length;
 	    o->class = CLASS_S_SHORT;
 	    o->dtype = in.dtype;
-	    po->pointer = in.length ? (char *)po + align((char *)po - (char *)0 + sizeof(struct descriptor),align_size)
+	    po->pointer = in.length ? (char *)po + align((char *)po - (char *)0 + sizeof(struct short_descriptor),align_size)
 	      - ((char *)po - (char *)0) : 0;
 	    if (in.length)
 	      _MOVC3(in.length, (char *) in.pointer, (char *) po->pointer);
@@ -310,7 +335,7 @@ STATIC_ROUTINE int copy_dx(
 	  /******************************
           Each descriptor must be copied.
 	  ******************************/
-	  for (j = 0; j < pi->ndesc && status & 1; ++j)
+	  for (j = 0; j < pi->ndesc && status & 1; ++j) {
 	    if (pi->dscptrs[j]) {
 	      status = copy_dx((struct descriptor_xd *) pi->dscptrs[j],
 			       po ? (struct descriptor_xd *) ((char *) po + bytes) : 0, short_dsc_out,
@@ -319,7 +344,9 @@ STATIC_ROUTINE int copy_dx(
 	      if (po)
 		po->dscptrs[j] = size ? (struct short_descriptor *) ((char *) po + bytes) : 0;
 	      bytes = align(bytes + size, sizeof(void *));
-	    }
+	    } else if (po)
+	      po->dscptrs[j]=0;
+	  }
 	  break;
 	}
 #endif
@@ -337,9 +364,8 @@ STATIC_ROUTINE int copy_dx(
       /******************************
       Each descriptor must be copied.
       ******************************/
-	for (j = 0; j < pi->ndesc && status & 1; ++j)
-	  if (pi->dscptrs[j])
-	  {
+	for (j = 0; j < pi->ndesc && status & 1; ++j) {
+	  if (pi->dscptrs[j]) {
 	    status = copy_dx((struct descriptor_xd *) pi->dscptrs[j],
 			     po ? (struct descriptor_xd *) ((char *) po + bytes) : 0, short_dsc_out,
 			     &size, fixup_nid, fixup_nid_arg,
@@ -347,7 +373,9 @@ STATIC_ROUTINE int copy_dx(
 	    if (po)
 	      po->dscptrs[j] = size ? (struct descriptor *) ((char *) po + bytes) : 0;
 	    bytes = align(bytes + size, sizeof(void *));
-	  }
+	  } else if (po)
+	    po->dscptrs[j]=0;
+	}
       }
       break;
       /*
@@ -625,7 +653,7 @@ STATIC_ROUTINE int copy_dx(
 	{
 	  po->length = pi->length;
 	  po->dtype = pi->dtype;
-	  po->class = pi->class;
+	  po->class = CLASS_R;
 	  po->pointer = 0;
 	  po->ndesc = pi->ndesc;
 	  if (pi->length > 0)
@@ -638,7 +666,7 @@ STATIC_ROUTINE int copy_dx(
       /******************************
       Each descriptor must be copied.
       ******************************/
-	for (j = 0; j < pi->ndesc && status & 1; ++j)
+	for (j = 0; j < pi->ndesc && status & 1; ++j) {
 	  if (pi->dscptrs[j])
 	  {
 	    status = copy_dx((struct descriptor_xd *) pi->dscptrs[j],
@@ -648,7 +676,9 @@ STATIC_ROUTINE int copy_dx(
 	    if (po)
 	      po->dscptrs[j] = size ? (struct descriptor *) ((char *) po + bytes) : 0;
 	    bytes = align(bytes + size, sizeof(void *));
-	  }
+	  } else if (po)
+	    po->dscptrs[j]=0;
+	}
       }
       break;
 
@@ -667,7 +697,7 @@ STATIC_ROUTINE int copy_dx(
 	bytes = dscsize + pi->arsize + align_size;
 	if (po)
 	{
-	  copy_array_descr_in(pi,po);
+	  copy_array_descr_in(pi,po,CLASS_A);
 	  po->pointer = (char *)po + align((char *)po -(char *)0 + dscsize,align_size) - ((char *)po - (char *)0);
 	  _MOVC3(pi->arsize, pi->pointer, po->pointer);
 	  if (pi->aflags.coeff)
@@ -693,7 +723,7 @@ STATIC_ROUTINE int copy_dx(
 		+ (pi->aflags.bounds ? sizeof(int) * (pi->dimct * 2) : 0);
 	if (po)
 	{
-	  copy_array_descr_in(pi,po);
+	  copy_array_descr_in(pi,po,CLASS_APD);
 	  pdo = (struct descriptor **) (po->pointer = (char *) po + bytes);
 	}
 	bytes = align(bytes + pi->arsize, sizeof(void *));
@@ -722,7 +752,7 @@ STATIC_ROUTINE int copy_dx(
 		+ (pi->aflags.bounds ? sizeof(int) * (pi->dimct * 2) : 0),sizeof(void *));
 	if (po)
 	{
-	  copy_array_descr_in(pi,po);
+	  copy_array_descr_in(pi,po,CLASS_CA);
 	  if (pi->pointer)
   	    po->pointer = (char *)po + align((char *)po - (char *)0 + bytes,sizeof(void *)) - ((char *)po - (char *)0);
           else
