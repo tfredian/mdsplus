@@ -548,7 +548,7 @@ if (status & 1) switch (paxis->dtype) {
     if (status & 1)
       if (special) {
 	if (flag) {
-	  unsigned short num = j1;
+	  descriptor_length num = j1;
 	  status = MdsGet1DxA((struct descriptor_a *)&duo, &num, &paxis->dtype,
 			      out_ptr);
 	  if (status & 1) {

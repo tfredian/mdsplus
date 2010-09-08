@@ -213,7 +213,7 @@ unsigned char			out_dtype;
 	if (psig) ndim = psig->ndesc-2;
 	else ndim = -1;
 	if (opcode == OpcFirstLoc || opcode == OpcLastLoc) {
-	  unsigned short digits_s=(unsigned short)digits;
+	  descriptor_length digits_s=(descriptor_length)digits;
 	  status = MdsGet1DxA((struct descriptor_a *)pa, &digits_s, &out_dtype, out_ptr);
 	  if (status & 1) status = TdiConvert(&zero, out_ptr->pointer MDS_END_ARG);
 	}
@@ -221,7 +221,7 @@ unsigned char			out_dtype;
 	Shape multiplied for DIM-th.
 	***************************/
 	else if (opcode == OpcReplicate) {
-	  unsigned short digits_s=(unsigned short)digits;
+	  descriptor_length digits_s=(descriptor_length)digits;
 	  if (dim < ndim) psig->dimensions[dim] = 0;
 	  pmask = (struct descriptor *)&ncopies;
 	  /** scalar to simple vector **/
@@ -237,7 +237,7 @@ unsigned char			out_dtype;
 	Shape gets new dimension after DIM-th.
 	*************************************/
 	else if (opcode == OpcSpread) {
-	  unsigned short digits_s=(unsigned short)digits;
+	  descriptor_length digits_s=(descriptor_length)digits;
 	  if (ndim > dim) {
 	    EMPTYXD(tmpxd);
 	    *(struct descriptor_signal *)&tmpsig = *psig;
@@ -290,7 +290,7 @@ unsigned char			out_dtype;
 	Same shape as input.
 	*******************/
 	else if (pfun->f2 == Tdi2Sign) {
-	  unsigned short digits_s=(unsigned short)digits;
+	  descriptor_length digits_s=(descriptor_length)digits;
 	  if (psig && rank <= ndim) pmask = psig->dimensions[dim];
 	  else pmask = 0;
 	  status = MdsGet1DxA((struct descriptor_a *)pa, &digits_s, &out_dtype, out_ptr);
@@ -299,7 +299,7 @@ unsigned char			out_dtype;
 	Subscript vector.
 	****************/
 	else if (pfun->f2 == Tdi2Mask2) {
-	  unsigned short digits_s=(unsigned short)digits;
+	  descriptor_length digits_s=(descriptor_length)digits;
 	  psig = 0;
 	  _MOVC3(head, (char *)&arr0, (char *)&arr);
 	  arr.arsize = arr0.length * rank;
@@ -309,7 +309,7 @@ unsigned char			out_dtype;
 	Rank reduced by one.
 	*******************/
 	else if (dim >= 0 && pa->aflags.coeff && rank > 1) {
-	  unsigned short digits_s=(unsigned short)digits;
+	  descriptor_length digits_s=(descriptor_length)digits;
 	  if (dim < ndim) --psig->ndesc;
 	  for (j = dim; ++j < ndim;) psig->dimensions[j-1] = psig->dimensions[j];
 	  _MOVC3(head, (char *)pa, (char *)&arr);

@@ -25,7 +25,7 @@ struct descriptor_xd	*out_ptr)
   char	value[4096];
   STATIC_CONSTANT unsigned char    dtype = (unsigned char)DTYPE_T;
   int	 status;
-  descriptor_length retlen;
+  unsigned short retlen;
   struct dbi_itm lst[] = {{sizeof(value),DbiDEFAULT,0,0},{0,DbiEND_OF_LIST,0}};
   descriptor_llength len;
   lst[0].pointer = (unsigned char *)value;
@@ -48,7 +48,7 @@ struct descriptor_xd	*out_ptr)
   struct descriptor *dummy = in_ptr;
   char	value[39-7];
   int	status;
-  descriptor_length retlen;
+  unsigned short retlen;
   STATIC_CONSTANT unsigned char dtype = (unsigned char)DTYPE_T;
   struct dbi_itm lst[] = {{sizeof(value),DbiNAME,0,0},{0,DbiEND_OF_LIST,0}};
   descriptor_llength len;
@@ -72,7 +72,7 @@ struct descriptor_xd	*out_ptr)
 struct descriptor *dummy = in_ptr;
  int	value;
  int	status;
- descriptor_length retlen;
+ unsigned short retlen;
  STATIC_CONSTANT unsigned char dtype = (unsigned char)DTYPE_L;
  struct dbi_itm lst[] = {{sizeof(value),DbiSHOTID,0,0},{0,DbiEND_OF_LIST,0}};
  descriptor_llength len;
@@ -96,7 +96,7 @@ struct descriptor_xd	*out_ptr)
   struct descriptor *dummy = in_ptr;
   int	value;
   int	status;
-  descriptor_length retlen;
+  unsigned short retlen;
   struct dbi_itm lst[] = {{sizeof(value),DbiSHOTID,0,0},{0,DbiEND_OF_LIST,0}};
   DESCRIPTOR(dmodel, "MODEL");
   char	string[15];

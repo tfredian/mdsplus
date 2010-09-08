@@ -184,14 +184,14 @@ struct descriptor_d		string = EMPTY_D;
 struct descriptor_xd	nids = EMPTY_XD, tmp = EMPTY_XD, holdxd = EMPTY_XD;
 struct item			*key_ptr=0;
 int				class=0, j, outcount = 0;
-unsigned short step;
+descriptor_length step;
 int				dtype=0, flag, nelem=0, retlen, len=0;
 int 				nid;
 char				*hold_ptr=0, *dat_ptr=0;
 unsigned char omits[] = {DTYPE_NID,DTYPE_PATH,0};
 int				wild, usage_mask;
 void			*pctx = NULL;
-unsigned short                  maxlen = 0;
+descriptor_length                  maxlen = 0;
 
 	if (list[0]) {
 		status = TdiGetData(omits, list[0], &nids);
@@ -257,7 +257,7 @@ unsigned short                  maxlen = 0;
 			  while(((char *)allow.pointer)[allow.length-1]==' ')
 			    allow.length--;
 				for (; --puse >= &usage_table[0];) {
-					usage.length = (unsigned short)strlen(usage.pointer = puse->usage_name);
+					usage.length = (descriptor_length)strlen(usage.pointer = puse->usage_name);
 					if (StrCompare(&allow, &usage) == 0) {
 						usage_mask |= 1 << puse->usage_code;
 						break;
@@ -295,7 +295,7 @@ more:		switch (dtype) {
 		  {
 		    struct descriptor path_d = {DESCRIPTOR_HEAD_INI(0,DTYPE_PATH,CLASS_S,0)};
 		    char *path;
-		    path_d.length = (unsigned short)len;
+		    path_d.length = len;
 		    path_d.pointer = dat_ptr;
 		    path = MdsDescrToCstring(&path_d);
 		    if (status & 1) status = TreeFindNodeWild(path, &nid, &pctx, usage_mask);
@@ -369,7 +369,7 @@ more:		switch (dtype) {
 		*************************/
 		else if (key_ptr->item_test) {
                 unsigned char dtype = (unsigned char)DTYPE_NID;
-                unsigned short dlen = sizeof(nid);
+                descriptor_length dlen = sizeof(nid);
 		array arr = *(array *)&arr0;
 		NCI_ITM tested[2] = {{sizeof(int),0,0,0},EOL};
                         tested[0].code = key_ptr->item_test;
@@ -402,7 +402,7 @@ more:		switch (dtype) {
 			status = TreeGetNci(nid, texted);
 			if (status & 1 && texted[0].pointer)
 			{
-				unsigned short len = (unsigned short)strlen((char *)texted[0].pointer);
+				descriptor_length len = (descriptor_length)strlen((char *)texted[0].pointer);
                                 if (maxlen < len) maxlen = len;
 				StrCopyR((struct descriptor *)hold_ptr,&len,texted[0].pointer);
                                 TreeFree(texted[0].pointer);
@@ -457,7 +457,7 @@ skip:		if (status & 1 && wild) goto more;
                         
                   }
 		else {
-                       unsigned short dlen = sizeof(int *);
+                       descriptor_length dlen = sizeof(int *);
                        unsigned char dtype = (unsigned char)DTYPE_L;
 			status = MdsGet1DxA(holda_ptr, &dlen, &dtype, &tmp);
 			if (status & 1) {
