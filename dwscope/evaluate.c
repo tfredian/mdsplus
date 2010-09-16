@@ -370,8 +370,8 @@ extern int TdiDebug();
 static void ResetErrors()
 {
   static int const four = 4;
-  static struct descriptor const clear_messages = {4,DTYPE_L,CLASS_S,(char *)&four};
-  static struct descriptor messages = {0, DTYPE_T, CLASS_D, 0};
+  static struct descriptor const clear_messages = {DESCRIPTOR_HEAD_INI(4,DTYPE_L,CLASS_S,(char *)&four)};
+  static struct descriptor messages = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
   TdiDebug(&clear_messages,&messages MDS_END_ARG);
   StrFree1Dx(&messages);
 }
@@ -382,11 +382,11 @@ static Boolean Error(Boolean brief, String topic, String *error, struct descript
     *error = XtNewString(topic);
   else
   {
-    static struct descriptor_d messages = {0,DTYPE_T,CLASS_D,0};
+    static struct descriptor_d messages = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
     static int const one = 1;
-    static struct descriptor const get_messages = {4,DTYPE_L,CLASS_S,(char *)&one};
+    static struct descriptor const get_messages = {DESCRIPTOR_HEAD_INI(4,DTYPE_L,CLASS_S,(char *)&one)};
     static DESCRIPTOR(const lflf,"\n\n");
-    struct descriptor topic_d = {0,DTYPE_T,CLASS_S,0};
+    struct descriptor topic_d = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
     topic_d.length = strlen(topic);
     topic_d.pointer = topic;
     TdiDebug(&get_messages,&messages MDS_END_ARG);
@@ -434,7 +434,7 @@ Boolean EvaluateData(Boolean brief, int row, int col, int idx, Boolean *event,
     shotnum = 0;
     if (strlen(shot))
     {
-      struct descriptor shot_dsc = {0,DTYPE_T,CLASS_S,0};
+      struct descriptor shot_dsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
       static DESCRIPTOR_LONG(shotnum_dsc,&shotnum);
       shot_dsc.length = strlen(shot);
       shot_dsc.pointer = shot;
@@ -466,10 +466,10 @@ Boolean EvaluateData(Boolean brief, int row, int col, int idx, Boolean *event,
     TreeSetDefaultNid(0);
   if (strlen(y))
   {
-    struct descriptor y_dsc = {0,DTYPE_T,CLASS_S,0};
+    struct descriptor y_dsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
     static EMPTYXD(sig);
     static float zero=0.0;
-    static struct descriptor float_dsc = {sizeof(float),DTYPE_FLOAT,CLASS_S,(char *)&zero};
+    static struct descriptor float_dsc = {DESCRIPTOR_HEAD_INI(sizeof(float),DTYPE_FLOAT,CLASS_S,(char *)&zero)};
     EMPTYXD(y_xd);
     y_dsc.length = strlen(y);
     y_dsc.pointer = y;
@@ -486,7 +486,7 @@ Boolean EvaluateData(Boolean brief, int row, int col, int idx, Boolean *event,
         ResetErrors();
         if (strlen(x))
         {
-          struct descriptor x_dsc = {0,DTYPE_T,CLASS_S,0};
+          struct descriptor x_dsc = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
           x_dsc.length = strlen(x);
           x_dsc.pointer = x;
           status = (TdiCompile(&x_dsc,&sig MDS_END_ARG) & 1) && (TdiData(&sig,&x_xd MDS_END_ARG) & 1) &&
@@ -539,9 +539,9 @@ Boolean EvaluateText(String text, String error_prefix, String *text_ret, String 
   Boolean status = 1;
   if (strlen(text))
   {
-    struct descriptor text_dsc = {0, DTYPE_T, CLASS_S, 0};
+    struct descriptor text_dsc = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0)};
     static EMPTYXD(string_xd);
-    static struct descriptor_d string_d = {0,DTYPE_T,CLASS_D,0};
+    static struct descriptor_d string_d = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
     text_dsc.length = strlen(text);
     text_dsc.pointer = text;
     ResetErrors();

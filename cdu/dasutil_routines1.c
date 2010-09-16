@@ -889,7 +889,7 @@ int   doubleToken(
     int   tknLen;
     char  utilString[80];
     static struct descriptor  dsc_utilString = {
-            sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0 };
+      DESCRIPTOR_HEAD_INI(sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0) };
 
     dsc_utilString.pointer = utilString;
     token = dsc_token->pointer;
@@ -980,7 +980,7 @@ int   deltatimeToken(		/* Returns: status			*/
     char  hundString[8];
     char  utilString[80];
     static struct descriptor  dsc_utilString = {
-            sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0 };
+      DESCRIPTOR_HEAD_INI(sizeof(utilString)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0) };
     static char  token[20];
     static DESCRIPTOR(dsc_token,token);
 

@@ -150,30 +150,15 @@ int   wc_match(
 		 * string utility functions ...
 		 *======================================================*/
 #define DSC_K_DTYPE_T    14
-#define DSC_K_CLASS_S    1	/* Static descriptor	*/
-#define DSC_K_CLASS_D    2	/* Dynamic descriptor	*/
 
 #include <mdsdescrip.h>
-#ifdef MDSDESCRIP_H_DEFINED
 #undef DESCRIPTOR
-#else
-struct descriptor  {
-        short length;
-        char  dtype,class;
-        char  *pointer;
-       };
-#endif
-#ifdef BIG_DESC
+#define DSC_K_CLASS_S CLASS_S
+#define DSC_K_CLASS_D CLASS_D
 #define DESCRIPTOR(name,string)  struct descriptor  name = \
-                {0,DSC_K_DTYPE_T,DSC_K_CLASS_S,string,sizeof(string)-1}
+                {DESCRIPTOR_HEAD_INI(sizeof(string)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,string)}
 #define DYNAMIC_DESCRIPTOR(D)  struct descriptor  D = {\
-                                      0,DSC_K_DTYPE_T,DSC_K_CLASS_D,0,0 }
-#else
-#define DESCRIPTOR(name,string)  struct descriptor  name = \
-                {sizeof(string)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,string}
-#define DYNAMIC_DESCRIPTOR(D)  struct descriptor  D = {\
-                                      0,DSC_K_DTYPE_T,DSC_K_CLASS_D,0 }
-#endif
+                                      DESCRIPTOR_HEAD_INI(0,DSC_K_DTYPE_T,DSC_K_CLASS_D,0) }
 #ifdef vms
 #define is_cdescr(d)  ((d) &&		\
             ((struct descriptor *)(d))->length<=1024) && \

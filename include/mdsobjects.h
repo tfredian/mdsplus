@@ -146,7 +146,6 @@ EXPORT void deleteNativeArray(Data **array);
 	
 	
 EXPORT void deleteString(char *str);
-
 class Tree;
 void setActiveTree(Tree *tree);
 Tree *getActiveTree();
@@ -194,7 +193,6 @@ Tree *getActiveTree();
 
 
 ////////////////////Data class//////////////////////////////
-
 class EXPORT Data 
 {
 		friend EXPORT Data *compile(const char *expr);
@@ -352,6 +350,7 @@ protected:
 		{
 		    return outStream << data->decompile();
 		}
+		virtual void plot();
 	};
 
 
@@ -2063,7 +2062,7 @@ protected:
 		virtual int getCachePolicy() { return cachePolicy;}
 
 	public:
-		CachedTreeNode(int nid, Tree *tree):TreeNode(nid, tree){cachePolicy = MDS_WRITE_BACK;}
+		CachedTreeNode(int nid, Tree *tree):TreeNode(nid, tree){cachePolicy = MDS_WRITE_BUFFER;}
 		void setCachePolicy(int cachePolicy) {this->cachePolicy = cachePolicy;}
 		void flush();
 		void putLastRow(Data *data, _int64 *time);
@@ -2346,6 +2345,15 @@ protected:
 		}
 	};
 
+	class EXPORT Scope 
+	{
+		int idx;
+		void show(int x, int y, int width, int height);
+	public:
+		Scope(char *name, int x = 100, int y = 100, int width = 400, int height = 400);
+		void plot(Data *x, Data *y , int row = 1, int col = 1, char *color = "black");
+		void oplot(Data *x, Data *y , int row = 1, int col = 1, char *color = "black");
+	};
 
 
 

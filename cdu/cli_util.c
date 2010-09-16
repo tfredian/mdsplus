@@ -85,8 +85,7 @@ int   cliToken(
     char  *p,*p2;
     char  util[1024];
     static char  legalMdsChars[] = "0123456789._-:;*?%\\";
-    static struct descriptor  dscUtil = {
-                        sizeof(util)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0};
+    static struct descriptor  dscUtil = {DESCRIPTOR_HEAD_INI(sizeof(util)-1,DSC_K_DTYPE_T,DSC_K_CLASS_S,0)};
 
     typeflag = flags & 0x0FFF;
     p = *pp = nonblank(*pp);

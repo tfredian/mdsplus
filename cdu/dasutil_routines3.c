@@ -226,7 +226,7 @@ char  *fgets_with_edit(		/* Returns:  addr of usrline, or NULL	*/
     short wlen;
     struct descriptor  *dscPtr;
     static DYNAMIC_DESCRIPTOR(dsc_cmdline);
-    static struct descriptor dsc_prompt = {0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0};
+    static struct descriptor dsc_prompt = {DESCRIPTOR_HEAD_INI(0,DSC_K_DTYPE_T,DSC_K_CLASS_S,0)};
 #else
     int   idx;
     int   ierr;
