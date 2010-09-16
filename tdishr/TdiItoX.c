@@ -97,7 +97,7 @@ STATIC_CONSTANT DESCRIPTOR_A(duo, sizeof(int), DTYPE_L, 0, 2*sizeof(int));
 STATIC_CONSTANT DESCRIPTOR_RANGE(fake0, 0, 0, 0);
 STATIC_CONSTANT DESCRIPTOR_FUNCTION_0(vector0,&OpcVector);
 TdiRefStandard(Tdi1ItoX)
-unsigned long			j1;
+long			j1;
 int left, right, *pcnt=0, *ptest;
 int				k0,k1;
 int				special = narg > 1 && list[1] == TdiItoXSpecial;
