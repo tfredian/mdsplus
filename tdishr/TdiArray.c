@@ -43,7 +43,8 @@ extern int CvtConvertFloat();
 
 TdiRefStandard(Tdi1Array)
 array_coeff arr = {DESCRIPTOR_HEAD_INI(1,DTYPE_B,CLASS_A,(char *)0),0,0,{0,1,1,1,0},MAXDIM,0};
-array_int cvt = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_A,(int *)0),0,0,{0,1,1,0,0},1,0};
+typedef ARRAY(descriptor_llength) array_cvt;
+array_cvt cvt = {DESCRIPTOR_HEAD_INI(sizeof(descriptor_llength),(sizeof(descriptor_llength) == 8) ? DTYPE_QU : DTYPE_LU,CLASS_A,(descriptor_llength *)0),0,0,{0,1,1,0,0},1,0};
 struct TdiFunctionStruct	*fun_ptr = (struct TdiFunctionStruct *)&TdiRefFunction[opcode];
 struct descriptor_xd	tmp = EMPTY_XD;
 descriptor_llength length;
@@ -63,8 +64,8 @@ int				j, ndim=0;
 			arr.a0 = 0;
 			if (ndim > MAXDIM) status = TdiNDIM_OVER;
 			else {
-				cvt.pointer = (int *)&arr.m[0];
-				cvt.arsize = sizeof(int) * ndim;
+				cvt.pointer = (descriptor_llength *)&arr.m[0];
+				cvt.arsize = sizeof(descriptor_llength) * ndim;
 				status = TdiConvert(tmp.pointer, &cvt MDS_END_ARG);
 			}
 		}
@@ -131,8 +132,9 @@ struct descriptor	*out_ptr)
   STATIC_CONSTANT int	i0 = 0, i1 = 1;
   STATIC_CONSTANT struct descriptor con0 = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,(char *)&i0)};
   STATIC_CONSTANT struct descriptor con1 = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L,CLASS_S,(char *)&i1)};
-  int	status = 1, n;
-  int i;
+  int	status = 1;
+  descriptor_a_mult n;
+  descriptor_a_mult i;
 
 #define LoadRamp(type) { type *ptr = (type *)out_ptr->pointer; for (i=0;i<n;i++) ptr[i] = (type)i; break;}
 #define LoadRampF(type,dtype,native) { type *ptr = (type *)out_ptr->pointer; type tmp; \

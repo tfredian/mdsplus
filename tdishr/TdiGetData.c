@@ -374,6 +374,67 @@ int				status = 1;
 	return status;
 }
 /*----------------------------------------------------------------------------
+	Get a descriptor_a_bounds scalar value from an expression or whatever.
+	Useful internal and external function.
+	C only:	status = TdiGetLong(&in_dsc, &long)
+*/
+int				TdiGetArrayBound(
+struct descriptor		*in_ptr,
+descriptor_a_bounds		*val_ptr)
+{
+  int				status = 1;
+
+  if (in_ptr == 0) 
+    *val_ptr = 0;
+  else if (in_ptr->dtype < 160 && in_ptr->dtype != DTYPE_DSC) 
+    switch (in_ptr->class) {
+    case CLASS_A :
+      if (((struct descriptor_a *)in_ptr)->arsize != in_ptr->length) return TdiNOT_NUMBER;
+      /*********************
+	WARNING falls through.
+      *********************/
+    case CLASS_S :
+    case CLASS_D :
+      switch (in_ptr->dtype) {
+      case DTYPE_BU :			*val_ptr = (descriptor_a_bounds) *(unsigned char *)	in_ptr->pointer; break;
+      case DTYPE_B :			*val_ptr = (descriptor_a_bounds) *(char *)		in_ptr->pointer; break;
+      case DTYPE_WU :			*val_ptr = (descriptor_a_bounds) *(unsigned short *)	in_ptr->pointer; break;
+      case DTYPE_W :			*val_ptr = (descriptor_a_bounds) *(short *)		in_ptr->pointer; break;
+      case DTYPE_L : 
+      case DTYPE_LU :                   *val_ptr = (descriptor_a_bounds) *(int *)		in_ptr->pointer; break;
+      case DTYPE_Q :                    *val_ptr = (descriptor_a_bounds) *(long long *)         in_ptr->pointer; break;
+      case DTYPE_QU:                    *val_ptr = (descriptor_a_bounds) *(unsigned long long *)in_ptr->pointer; break;
+      default : {
+	struct descriptor val_dsc = {DESCRIPTOR_HEAD_INI(sizeof(int),
+							 (sizeof(descriptor_a_bounds) == 4) ? DTYPE_L : DTYPE_Q,
+							 CLASS_S,0)};
+	val_dsc.pointer = (char *)val_ptr;
+	status = TdiConvert(in_ptr, &val_dsc MDS_END_ARG);
+      }
+	break;
+      }
+      break;
+    default : status = TdiINVCLADSC; break;
+    }
+  else {
+    struct descriptor_xd	tmp = EMPTY_XD;
+    status = TdiData(in_ptr, &tmp MDS_END_ARG);
+    if (status & 1) 
+      switch (tmp.pointer->class) {
+      case CLASS_S :
+      case CLASS_D :
+      case CLASS_A :
+	status = TdiGetArrayBound(tmp.pointer, val_ptr);
+	break;
+      default :
+	status = TdiINVCLADSC;
+	break;
+      }
+    MdsFree1Dx(&tmp,NULL);
+  }
+  return status;
+}
+/*----------------------------------------------------------------------------
 	Get the Node ID for NID, PATH, or TEXT types including expressions.
 	Useful internal and external function.
 	C only:	status = TdiGetNid(&in_dsc, &nid)

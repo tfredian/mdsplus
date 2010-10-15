@@ -905,18 +905,18 @@ STATIC_ROUTINE void DOUBLEC_TO_TEXT(int itype, char *pa, char *pb, int numb, int
 	defcase(a,FTC)
 
 int TdiConvert(struct descriptor_a *pdin, struct descriptor_a *pdout) {
-  int	lena = (pdin->class == CLASS_A || pdin->class == CLASS_CA || pdin->class == CLASS_R) ? pdin->length : ((struct descriptor *)pdin)->length;
+  descriptor_length	lena = (pdin->class == CLASS_A || pdin->class == CLASS_CA || pdin->class == CLASS_R) ? pdin->length : ((struct descriptor *)pdin)->length;
    int	dtypea = pdin->dtype;
    char	*pa = pdin->pointer;
    int	classa = pdin->class == CLASS_A;
-   int	numa = classa ? (int)pdin->arsize/max(1,lena) : 1L;
-   int	lenb = pdout->length;
+   descriptor_llength	numa = classa ? pdin->arsize/max(1,lena) : 1L;
+   descriptor_length	lenb = pdout->length;
    int	dtypeb = pdout->dtype;
    int	classb = pdout->class == CLASS_A;
    char	*pb = pdout->pointer;
-   register int	numb = classb ? (int)pdout->arsize/max(lenb,1) : 1L;
-   int	numbsave;
-   int  n;
+   register descriptor_llength	numb = classb ? pdout->arsize/max(lenb,1) : 1L;
+   descriptor_llength	numbsave;
+   descriptor_llength  n;
    int status = TdiINVDTYDSC;
  /** no output **/
  if (numb <= 0 || lenb <= 0) return 1;
@@ -938,10 +938,10 @@ int TdiConvert(struct descriptor_a *pdin, struct descriptor_a *pdout) {
  if (dtypea == dtypeb && lena == lenb) {
 same:	if (classa) memmove((void*)pb, (void*)pa, numb*lenb);
 	else switch (lenb) {
-	case 1: for (;--numb>=0; pb+=1) *pb = *pa;
-	case 2: for (;--numb>=0; pb+=2) *(short*)pb = *(short*)pa;
-	case 4: for (;--numb>=0; pb+=4) *(int*)pb = *(int*)pa;
-	default: for (;--numb>=0; pb+=lenb) memmove((void*)pb, (void*)pa, lenb);
+	  case 1: for (;numb>0; pb+=1,numb--) *pb = *pa; break;
+	  case 2: for (;numb>0; pb+=2,numb--) *(short*)pb = *(short*)pa; break;
+	  case 4: for (;numb>0; pb+=4,numb--) *(int*)pb = *(int*)pa; break;
+	  default: for (;numb>0; pb+=lenb,numb--) memmove((void*)pb, (void*)pa, lenb);break;
 	}
 	status = 1;
  }
@@ -954,7 +954,6 @@ same:	if (classa) memmove((void*)pb, (void*)pa, numb*lenb);
 	TdiConvert(pdin, (struct descriptor_a *)&scalarb);
 	pa = pb;
 	pb += lenb;
-	--numb;
 	goto same;
  }
  else {
