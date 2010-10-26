@@ -58,13 +58,22 @@ int _TreeGetRecord(void *dbid, int nid_in, struct descriptor_xd *dsc)
   int       nidx;
   int       retsize;
   int       nodenum;
+#ifdef BIG_DESC
+  EMPTYXD(tmp_dsc);
+  struct descriptor_xd *orig_dsc=0;
   MdsFree1Dx(dsc,NULL);
+  if (dsc->class == CLASS_XD_SHORT) {
+    orig_dsc=dsc;
+    dsc=&tmp_dsc;
+  }
+#else
+  MdsFree1Dx(dsc,NULL);
+#endif
   if (!(IS_OPEN(dblist)))
     return TreeNOT_OPEN;
 
   if (dblist->remote)
-
-	  return GetRecordRemote(dblist, nid_in, dsc);
+    return GetRecordRemote(dblist, nid_in, dsc);
   nid_to_tree_nidx(dblist, nid, info, nidx);
   if (info)
   {
@@ -167,6 +176,12 @@ int _TreeGetRecord(void *dbid, int nid_in, struct descriptor_xd *dsc)
     status = TreeINVTREE;
   if (status & 1)
     status = MakeNidsLocal((struct descriptor *)dsc, (unsigned char)nid->tree);
+#ifdef BIG_DESC
+  if (orig_dsc) {
+    MdsCopyDxXd((struct descriptor *)dsc,orig_dsc);
+    MdsFree1Dx(dsc,0);
+  }
+#endif
   return status;
 }
 

@@ -156,17 +156,18 @@ struct descriptor	*source_ptr,
 struct descriptor	*out_ptr)
 {
 char	*pstart = start_ptr->pointer, *plength = length_ptr->pointer;
-int	start, length, n, status = 1;
+descriptor_length	start, length, n;
+int status = 1;
 struct descriptor	source_dsc = *source_ptr;
 struct descriptor	out_dsc = *out_ptr;
-int	start_step = (start_ptr->class == CLASS_A) ? start_ptr->length : 0;
-int	length_step = (length_ptr->class == CLASS_A) ? length_ptr->length : 0;
-int	source_step = (source_dsc.class == CLASS_A) ? source_dsc.length : 0;
+descriptor_length	start_step = (start_ptr->class == CLASS_A) ? start_ptr->length : 0;
+descriptor_length	length_step = (length_ptr->class == CLASS_A) ? length_ptr->length : 0;
+descriptor_length	source_step = (source_dsc.class == CLASS_A) ? source_dsc.length : 0;
 
 	N_ELEMENTS(out_ptr, n);
 	source_dsc.class = CLASS_S;
 	out_dsc.class = CLASS_S;
-	for (; status & 1 && --n >= 0;) {
+	for (; status & 1 && n-- > 0;) {
 		start = *(int *)pstart + 1, pstart += start_step;
 		length = *(int *)plength, plength += length_step;
 		status = StrLenExtr(&out_dsc, &source_dsc, &start, &length);

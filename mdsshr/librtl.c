@@ -1430,8 +1430,7 @@ int LibResetVmZone(ZoneList **zone)
 }
 
 
-int LibFreeVm(unsigned int *len, void **vm, ZoneList **zone)
-{
+int _LibFreeVm(descriptor_llength *len, void **vm, ZoneList **zone) {
   VmList *list = NULL;
   if (zone != NULL) {
     VmList *prev;
@@ -1452,6 +1451,11 @@ int LibFreeVm(unsigned int *len, void **vm, ZoneList **zone)
   return 1;
 }
 
+int LibFreeVm(unsigned int *len, void **vm, ZoneList **zone) {
+  descriptor_llength llen=0;
+  _LibFreeVm(&llen, vm, zone);
+}
+
 int libfreevm_(int *len, void **vm, ZoneList **zone)
 {
   return(LibFreeVm(len, vm, zone));
@@ -1462,8 +1466,7 @@ int libfreevm(int *len, void **vm, ZoneList **zone)
   return(LibFreeVm(len, vm, zone));
 }
 
-int LibGetVm(unsigned int *len, void **vm, ZoneList **zone)
-{
+int _LibGetVm(descriptor_llength *len, void **vm, ZoneList **zone) {
   *vm = malloc(*len);
   if (*vm == NULL) {
     printf("Insufficient virtual memory\n");
@@ -1481,6 +1484,11 @@ int LibGetVm(unsigned int *len, void **vm, ZoneList **zone)
     UnlockMdsShrMutex(&VmMutex,&VmMutex_initialized);
   }
   return (*vm != NULL);
+}
+
+int LibGetVm(unsigned int *len, void **vm, ZoneList **zone) {
+  descriptor_llength llen = (descriptor_llength)*len;
+  return _LibGetVm(&llen,vm,zone);
 }
 
 int libgetvm_(unsigned int *len, void **vm, ZoneList **zone)

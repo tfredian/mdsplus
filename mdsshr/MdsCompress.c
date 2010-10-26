@@ -66,7 +66,7 @@ typedef RECORD(4) record_four;
 STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 
 STATIC_CONSTANT unsigned short opcode = OpcDECOMPRESS;
-STATIC_CONSTANT record_four rec0 = {sizeof(opcode), DTYPE_FUNCTION, CLASS_R, (unsigned char *) &opcode, 4, 0, 0, 0, 0};
+STATIC_CONSTANT record_four rec0 = {DESCRIPTOR_HEAD_INI(sizeof(opcode), DTYPE_FUNCTION, CLASS_R, (unsigned char *) &opcode), 4, 0, 0, 0, 0};
 STATIC_CONSTANT    DESCRIPTOR_A(dat0, 1, DTYPE_BU, 0, 0);
 STATIC_CONSTANT struct descriptor EMPTY_D = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
 STATIC_CONSTANT EMPTYXD(EMPTY_XD);
@@ -323,6 +323,11 @@ int       MdsDecompress(
 			           struct descriptor_xd *out_ptr)
 {
   struct descriptor_r *prec = rec_ptr;
+#ifdef BIG_DESC
+  EMPTYXD(tmp_xd);
+  EMPTYXD(tmp_out);
+  struct descriptor_xd *orig_out_ptr=out_ptr;
+#endif
   int       status,
               (*symbol) ();
   if (prec == 0)
@@ -330,6 +335,19 @@ int       MdsDecompress(
     MdsFree1Dx(out_ptr, NULL);
     return 1;
   }
+#ifdef BIG_DESC
+  if (prec->class == CLASS_CA_SHORT ||
+      prec->class == CLASS_R_SHORT) {
+    status = MdsCopyDxXd((struct descriptor *)rec_ptr,&tmp_xd);
+    if (!(status & 1))
+      return status;
+    prec=(struct descriptor_r *)tmp_xd.pointer;
+  }
+  if (prec == 0) {
+    MdsFree1Dx(out_ptr, NULL);
+    return 1;
+  }
+#endif
   if (prec->class == CLASS_CA && prec->pointer)
     prec = (struct descriptor_r *) prec->pointer;
   if (prec->class != CLASS_R
@@ -353,10 +371,24 @@ int       MdsDecompress(
       symbol = MdsXpand;
       status = 1;
     }
+#if BIG_DESC
+    if (out_ptr && out_ptr->class == CLASS_XD_SHORT) {
+      out_ptr=&tmp_out;
+    }
+#endif
     if (status & 1)
       status = MdsGet1DxA(pa, &pa->length, &pa->dtype, out_ptr);
     if (status & 1)
       status = (*symbol) (&nitems, prec->dscptrs[3], out_ptr->pointer, &bit);
   }
+#ifdef BIG_DESC
+  if (out_ptr == &tmp_out) {
+    MdsCopyDxXd(tmp_out.pointer,orig_out_ptr);
+    MdsFree1Dx(&tmp_out,NULL);
+  }
+  if (tmp_xd.pointer) {
+    MdsFree1Dx(&tmp_xd,NULL);
+  }
+#endif
   return status;
 }
