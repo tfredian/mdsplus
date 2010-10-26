@@ -48,7 +48,7 @@ static char  *MdsDatime(	/* Return: ptr to date+time string	*/
    {
     int   flags = 0;
     int   sts;
-    short len;
+    descriptor_length len;
     static char  datime[24];
     static DESCRIPTOR(dsc_datime,datime);
 

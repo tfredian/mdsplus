@@ -288,10 +288,10 @@ static int CvtFunctionT(struct descriptor *in_dsc_ptr,int depth)
    {
     int sts;
     char  *dstr;
-    static DYNAMIC_DESCRIPTOR(spaces);
-    static struct descriptor_xd ostr = {0, DTYPE_T, CLASS_XD, 0, 0};
-    static DYNAMIC_DESCRIPTOR(out_str);
-    struct descriptor_s opcode_dsc = {2,DTYPE_WU,CLASS_S,(char *) 0};
+    DYNAMIC_DESCRIPTOR(spaces);
+    EMPTYXD(ostr);
+    DYNAMIC_DESCRIPTOR(out_str);
+    struct descriptor_s opcode_dsc = {DESCRIPTOR_HEAD_INI(2,DTYPE_WU,CLASS_S,(char *) 0)};
 
     opcode_dsc.pointer = (char *) in_dsc_ptr->pointer;
     str_dupl_char(&spaces,depth,' ');
@@ -382,7 +382,7 @@ static int CvtAdscT(struct descriptor_a *in_dsc_ptr,int depth)
        }
     else
        {
-        sprintf(bchars,"%d",in_dsc_ptr->arsize / in_dsc_ptr->length);
+        sprintf(bchars,"%lld",(unsigned long long)in_dsc_ptr->arsize / in_dsc_ptr->length);
         str_append(&out_str,bchars);
        }
     str_append(&out_str," ]");

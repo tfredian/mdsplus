@@ -64,14 +64,18 @@
 
 #ifdef BIG_DESC
 typedef unsigned long descriptor_length;
+typedef signed long s_descriptor_length;
 typedef unsigned long long descriptor_llength;
+typedef signed long long s_descriptor_llength;
 typedef unsigned long long descriptor_a_arsize;
 typedef unsigned long long descriptor_a_mult;
 typedef long long descriptor_a_bounds;
 typedef unsigned long descriptor_ndesc;
 #else
 typedef unsigned short descriptor_length;
+typedef short s_descriptor_length;
 typedef unsigned int descriptor_llength;
+typedef int s_descriptor_llength;
 typedef unsigned int descriptor_a_arsize;
 typedef unsigned int descriptor_a_mult;
 typedef int descriptor_a_bounds;
@@ -767,7 +771,6 @@ typedef ARRAY_COEFF(char, MAXDIM) array_coeff;
 typedef ARRAY_BOUNDS(char,MAXDIM) array_bounds;
 typedef ARRAY_BOUNDS(struct descriptor *,MAXDIM) array_bounds_desc;
 typedef ARRAY(char) array; 
-typedef ARRAY(int) array_int;
 typedef ARRAY(struct descriptor *) array_desc;
 typedef SIGNAL(MAXDIM) signal_maxdim;
 typedef SHORT_ARRAY_COEFF(char, MAXDIM) short_array_coeff;
