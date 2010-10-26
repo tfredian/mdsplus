@@ -64,7 +64,7 @@ def test_all(*arg):
 	#tests.addTest(threadsUnitTest.threadTest())
     tests.append(dataUnitTest.suite())
     #tests.addTest(dataUnitTest.dataTests())
-    tests.append(TestSuite([cleanup('cleanup')]))
+    #tests.append(TestSuite([cleanup('cleanup')]))
     #tests.addTest(cleanup())
     return TestSuite(tests)
 

@@ -18,4 +18,4 @@ class mdsclasses:
         if (self.mdsclass in names):
             return names[self.mdsclass]
         else:
-            return 'CLASS_?'
+            return "CLASS_%d" % (self.mdsclass,)

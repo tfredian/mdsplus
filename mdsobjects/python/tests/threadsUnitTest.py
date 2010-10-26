@@ -24,14 +24,10 @@ class threadTest(TestCase):
             threads.append(t)            
         for t in threads:
             t.start()
-        i=0
         for t in threads:
             t.join()
             if t.result.wasSuccessful():
                 numsuccessful=numsuccessful+1
-            else:
-                print "Thread %d failed test" % (i,)
-            i=i+1
         self.assertEqual(numsuccessful,10)
         return
 
