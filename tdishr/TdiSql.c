@@ -143,7 +143,7 @@ STATIC_CONSTANT DESCRIPTOR(dimage,	"MdsSql");
 #ifdef __APPLE__
 STATIC_CONSTANT DESCRIPTOR(dimage2,	"sybdb");
 #endif	
- struct descriptor dname = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0);
+ struct descriptor dname = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 int	status;
 dname.length = (unsigned short)strlen(name);
 dname.pointer = name;
@@ -159,7 +159,7 @@ STATIC_CONSTANT DESCRIPTOR(dimage,	"MdsSql");
 #ifdef __APPLE__
 	STATIC_CONSTANT DESCRIPTOR(dimage2,	"sybdb");
 #endif	
-	struct descriptor dname = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0);
+	struct descriptor dname = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 int	status;
 dname.length = (unsigned short)strlen(name);
 dname.pointer = name;
@@ -233,7 +233,7 @@ STATIC_ROUTINE void StoreAnswer(int idx, struct descriptor *dst, int type)
 	DESCRIPTOR_A(src, 0, 0, 0, 0);
 	struct descriptor_xd xs = {0, DTYPE_DSC, CLASS_XS, 0, sizeof(src)}; 
 	EMPTYXD(xd);
-	struct descriptor t_dsc = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0 );
+	struct descriptor t_dsc = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0 )};
         xs.pointer = (struct descriptor *)&src;
 	if (((type==SYBDATETIME) || (type==SYBDATETIME4)) && !date) type = SYBTEXT;
         src.pointer = bufs[idx].vptr;
@@ -295,9 +295,9 @@ int 	rblob;
 	
 	struct descriptor_xd	**argv = (struct descriptor_xd **)arg->v;
 	struct descriptor		*dst;
-	struct descriptor_d 	madeup = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0);
+	struct descriptor_d 	madeup = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
 	char				*buf;
-	static struct descriptor name = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0);
+	static struct descriptor name = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_S,0)};
 	
 	if (rows == 0) {
 		if (bufs) {
@@ -569,9 +569,9 @@ ARGLIST 	*arg;
 TdiRefStandard(Tdi1Dsql)
 int		rows = 0;
 ARGLIST		user_args = {0};
-struct descriptor dtext = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0);
-struct descriptor dq_text = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0);
-struct descriptor drows = {DESCRIPTOR_HEAD_INI(sizeof(rows),DTYPE_L,CLASS_S,0);
+struct descriptor dtext = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
+struct descriptor dq_text = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
+struct descriptor drows = {DESCRIPTOR_HEAD_INI(sizeof(rows),DTYPE_L,CLASS_S,0)};
 STATIC_CONSTANT DESCRIPTOR(zero, "\0");
         drows.pointer = (char *)&rows;
 	user_args.c = narg-1;
@@ -626,7 +626,7 @@ STATIC_CONSTANT DESCRIPTOR(zero, "\0");
 	if (status & 1) {
 	  status = MdsCopyDxXd(&drows, out_ptr);
 	} else {
-          struct descriptor msg = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0);
+          struct descriptor msg = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0)};
 	  msg.pointer = SQL_GETDBMSGTEXT();
 	  msg.length = strlen(msg.pointer); 
 	  status = MdsCopyDxXd(&msg, out_ptr);
@@ -637,8 +637,8 @@ STATIC_CONSTANT DESCRIPTOR(zero, "\0");
 TdiRefStandard(Tdi1Isql)
 ARGLIST		user_args = {0};
 int		rows = 0;
-struct descriptor dtext = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0);
-struct descriptor drows = {DESCRIPTOR_HEAD_INI(sizeof(rows),DTYPE_L,CLASS_S,0);
+struct descriptor dtext = {DESCRIPTOR_HEAD_INI(0,DTYPE_T,CLASS_D,0)};
+struct descriptor drows = {DESCRIPTOR_HEAD_INI(sizeof(rows),DTYPE_L,CLASS_S,0)};
         drows.pointer = (char *)&rows;
 	user_args.c = narg-1;
 	user_args.v = &list[1];

@@ -76,7 +76,7 @@ register char			*pin, *pout;
 int				bounded = 0, cmode = -1, dimct, highest = 0, highdim = 0, row;
 int                      	dim;
 register int			j, len;
-int				stride[MAXDIM+1], *px[MAXDIM], count[MAXDIM];
+s_descriptor_llength				stride[MAXDIM+1], *px[MAXDIM], count[MAXDIM];
 struct descriptor_signal	*psig;
 struct descriptor_dimension *pdim;
 struct descriptor		*keeps = TdiThreadStatic()->TdiSELF_PTR;
@@ -185,9 +185,9 @@ struct TdiCatStruct		cats[2];
 				if (status & 1) status = TdiData(xx[dim].pointer, &ii[dim] MDS_END_ARG);
 			}
 			else {
-			int left, right;
-			struct descriptor dleft = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L, CLASS_S,0)};
-			struct descriptor dright = {DESCRIPTOR_HEAD_INI(sizeof(int),DTYPE_L, CLASS_S,0)};
+			s_descriptor_llength left, right;
+			struct descriptor dleft = {DESCRIPTOR_HEAD_INI(sizeof(left),(sizeof(left)==8) ? DTYPE_Q : DTYPE_L, CLASS_S,0)};
+			struct descriptor dright = {DESCRIPTOR_HEAD_INI(sizeof(right),(sizeof(right)==8) ? DTYPE_Q : DTYPE_L, CLASS_S,0)};
                                 dleft.pointer = (char *)&left;
                                 dright.pointer = (char *)&right;
 				status = TdiLbound(pdat, &ddim, &dleft MDS_END_ARG);
@@ -220,7 +220,7 @@ struct TdiCatStruct		cats[2];
 			N_ELEMENTS(pdi, arr.m[dim]);
 		}
 		if (status & 1 && (arr.arsize *= arr.m[dim]))
-                   pin += stride[dim] * *(px[dim] = (int *)pdi->pointer);
+                   pin += stride[dim] * *(px[dim] = (s_descriptor_llength *)pdi->pointer);
 	}
 	if (!(status & 1)) goto badsub;
 	/********************************************
