@@ -30,13 +30,13 @@ TdiRefStandard(Tdi1Decompress)
 struct descriptor_xd	sig[4], uni[4], dat[4];
 struct TdiCatStruct		cats[5];
 int	cmode = -1, j, (*symbol)();
-int	bit = 0;
+descriptor_a_mult	bit = 0;
 
 	status = TdiGetArgs(opcode, narg, list, sig, uni, dat, cats);
 	if (status & 1) status = Tdi2Vector(narg-2, &uni[2], &dat[2], &cats[2]);
 	if (status & 1) {
 	struct descriptor_a *pa = (struct descriptor_a *)dat[2].pointer;
-	int	nitems;
+	descriptor_a_mult	nitems;
         if (pa->length <= 0)
         {
           switch (pa->dtype)
@@ -59,7 +59,7 @@ int	bit = 0;
             default: return TdiINVDTYDSC;
           }
         }
-        nitems = (int)pa->arsize / (int)pa->length;
+        nitems = pa->arsize / pa->length;
 
 		if (cats[1].in_dtype == DTYPE_MISSING) symbol = MdsXpand;
 		else status = TdiFindImageSymbol(dat[0].pointer, dat[1].pointer, &symbol);

@@ -97,12 +97,12 @@ STATIC_CONSTANT char FIELDSY = BITSY + BITSX;
 STATIC_CONSTANT int FIELDSX = 2;
 
 int       MdsCmprs(
-		              int *nitems_ptr,
+		              descriptor_a_mult *nitems_ptr,
 		              struct descriptor_a *items_dsc_ptr,
 		              struct descriptor_a *pack_dsc_ptr,
-		              int *bit_ptr)
+		              descriptor_a_mult *bit_ptr)
 {
-  int       nitems = *nitems_ptr;
+  descriptor_a_mult       nitems = *nitems_ptr;
   int       step = items_dsc_ptr->length;
   int       dtype = items_dsc_ptr->dtype;
   register PF px = (PF) items_dsc_ptr->pointer;
@@ -310,11 +310,11 @@ Do this in runs.
       return LibSTRTRU;
     header.n = X_AND_Y(xn - 1,yn);
     header.e = X_AND_Y(xe,ye - 1);
-    MdsPk((char *) &FIELDSY, &FIELDSX, (int *) ppack, (int *) &header, (int *) bit_ptr);
+    MdsPk((char *) &FIELDSY, &FIELDSX, (int *) ppack, (int *) &header, bit_ptr);
     yn_c = (char)yn;
     ye_c = (char)ye;
-    MdsPk(&yn_c, (int *) &xn, (int *) ppack, (int *) diff, (int *) bit_ptr);
-    MdsPk(&ye_c, (int *) &xe, (int *) ppack, (int *) exce, (int *) bit_ptr);
+    MdsPk(&yn_c, (int *) &xn, (int *) ppack, (int *) diff, bit_ptr);
+    MdsPk(&ye_c, (int *) &xe, (int *) ppack, (int *) exce, bit_ptr);
   }
   return 1;
 }
@@ -323,14 +323,14 @@ Do this in runs.
 	Expand compressed data.
 */
 int       MdsXpand(
-		              int *nitems_ptr,
+		              descriptor_a_mult *nitems_ptr,
 		              struct descriptor_a *pack_dsc_ptr,
 		              struct descriptor_a *items_dsc_ptr,
-		              int *bit_ptr)
+		              descriptor_a_mult *bit_ptr)
 {
-  int       nitems = *nitems_ptr;
+  descriptor_a_mult  nitems = *nitems_ptr;
   char     *ppack = memcpy(malloc(pack_dsc_ptr->arsize+4),pack_dsc_ptr->pointer,pack_dsc_ptr->arsize);
-  int       limit = pack_dsc_ptr->arsize * 8;
+  descriptor_a_mult       limit = pack_dsc_ptr->arsize * 8;
   int       step = items_dsc_ptr->length;
   int       dtype = items_dsc_ptr->dtype;
   register PF px = (PF) items_dsc_ptr->pointer;
@@ -367,7 +367,7 @@ Note the sign-extended unpacking.
     char nbits = (char)FIELDSY;
     if ((*bit_ptr + 2 * (BITSY + BITSX)) > limit)
       break;
-    MdsUnpk(&nbits, (int *) &FIELDSX, (int *) ppack, (int *) &header, (int *) bit_ptr);
+    MdsUnpk(&nbits, (int *) &FIELDSX, (int *) ppack, (int *) &header, bit_ptr);
     xhead = j = X_OF_INT(header.n) + 1;
     if (j > nitems)
       j = nitems;
@@ -379,13 +379,13 @@ Note the sign-extended unpacking.
       break;
     nitems -= j;
     nbits = (char)yn;
-    MdsUnpk(&nbits, (int *) &xn, (int *) ppack, (int *) diff, (int *) bit_ptr);
+    MdsUnpk(&nbits, (int *) &xn, (int *) ppack, (int *) diff, bit_ptr);
     if (xe)
     {
       *bit_ptr -= yn * (xhead - j);
       pe = exce;
       nbits = (char)ye;
-      MdsUnpk(&nbits, &xe, (int *) ppack, (int *) pe, (int *) bit_ptr);
+      MdsUnpk(&nbits, &xe, (int *) ppack, (int *) pe, bit_ptr);
       mark = -1 << (-yn - 1);
     }
 

@@ -41,27 +41,25 @@
 #define   NciV_NON_VMS                3
 #define   NciM_EXTENDED_NCI        0x10
 #define   NciV_EXTENDED_NCI           4
-#define   NciM_MEDIUM_DSC          0x20
-#define   NciV_MEDIUM_DSC             5
-#define   NciM_LARGE_DSC           0x40
-#define   NciV_LARGE_DSC              6    
+#define   NciM_BIG_RECORD          0x20
+#define   NciV_BIG_RECORD             5
 typedef struct nci
 {
   unsigned int  flags;
   unsigned char flags2;
-  unsigned char spare;
+  unsigned char length_hi;
   _int64        time_inserted;
   unsigned int  owner_identifier;
   unsigned char class;
   unsigned char dtype;
   unsigned int  length;
-  unsigned char spare2;
+  unsigned char spare;
   unsigned int  status;
   union
   {
     struct
     {
-      unsigned char file_level;
+      unsigned char record_length_hi;
       unsigned char file_version;
       unsigned char rfa[6];
       unsigned int record_length;
@@ -769,7 +767,7 @@ extern int TreeFindTag(char *tagnam, char *treename, int *tagidx);
 int _TreeFindTag(PINO_DATABASE *db, NODE *default_node, short treelen, char *tree, short taglen, char *tagnam, NODE **nodeptr, int *
 tagidx);
 extern int TreeCallHook(TreeshrHookType operation, TREE_INFO *info,int nid);
-extern int TreeGetDatafile(TREE_INFO *info_ptr, unsigned char *rfa, int *buffer_size, char *record, int *retsize,int *nodenum, unsigned char flags);
+extern int TreeGetDatafile(TREE_INFO *info_ptr, unsigned char *rfa, size_t *buffer_size, char *record, ssize_t *retsize,int *nodenum, unsigned char flags);
 extern int TreeEstablishRundownEvent(TREE_INFO *info);
 extern int TreeGetDsc(TREE_INFO *info,_int64 offset, int length, struct descriptor_xd *dsc);
 extern int TreeGetExtendedAttributes(TREE_INFO *info_ptr, _int64 offset, EXTENDED_ATTRIBUTES *att);
@@ -798,7 +796,7 @@ typedef int ssize_t;
 extern int MDS_IO_OPEN(char *filename, int options, mode_t mode);
 extern int MDS_IO_CLOSE(int fd);
 extern _int64 MDS_IO_LSEEK(int fd, _int64 offset, int whence);
-extern int MDS_IO_WRITE(int fd, void *buff, size_t count);
+extern ssize_t MDS_IO_WRITE(int fd, void *buff, size_t count);
 extern ssize_t MDS_IO_READ(int fd, void *buff, size_t count);
 extern int MDS_IO_LOCK(int fd, _int64 offset, int size, int mode, int *deleted);
 extern int MDS_IO_EXISTS(char *filename);

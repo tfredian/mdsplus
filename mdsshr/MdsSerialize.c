@@ -28,7 +28,7 @@ extern void MdsFixDscLength(struct descriptor *in);
                            (outp)[4] = ((char *)&in)[4]; (outp)[5] = ((char *)&in)[5]; \
                            (outp)[6] = ((char *)&in)[6]; (outp)[7] = ((char *)&in)[7]
 #endif
-#define set_aflags(flags,in)  *(flags) = (inp->aflags.binscale << 3)  | (inp->aflags.redim << 4) | (inp->aflags.column << 5) \
+#define set_aflags(flags)  *(flags) = (inp->aflags.binscale << 3)  | (inp->aflags.redim << 4) | (inp->aflags.column << 5) \
                                      | (inp->aflags.coeff << 6) | (inp->aflags.bounds << 7)
 #define offset(ptr)       *(unsigned int *)&ptr
 
@@ -671,7 +671,7 @@ STATIC_ROUTINE int copy_rec_dx( unsigned char *in_ptr, struct descriptor *out_ds
      case CLASS_CA:
      {
        /* This class is stored as 2-byte unused, 1-byte dtype, 1-byte class, 4-byte length, 1-byte scale, 1-byte digits, 1-byte aflags,
-	  1-byte dimct, 8-byte arsize, (optional 8-byte a0, one per dimct 8-byte multiplier (,optional one per dimct (8-byte lower bound, 8-byte upper bound))),data....
+	  1-byte dimct, 8-byte arsize, 1-byte pointer-flag, (optional 8-byte a0, one per dimct 8-byte multiplier (,optional one per dimct (8-byte lower bound, 8-byte upper bound))),data....
        */
         int dsc_size;
         int align_size;
@@ -680,7 +680,8 @@ STATIC_ROUTINE int copy_rec_dx( unsigned char *in_ptr, struct descriptor *out_ds
 	array_coeff *po = (array_coeff *) out_dsc_ptr;
 	struct descriptor **pdi = (struct descriptor **) pi->pointer;
 	struct descriptor **pdo = 0;
-	swap(descriptor_length,in_ptr+5,pi->length);
+        char pointer_flag;
+	swap(descriptor_length,in_ptr+4,pi->length);
         pi->dtype = in_ptr[2];
         FixLength(a_tmp);
         pi->class = CLASS_CA;
@@ -693,38 +694,41 @@ STATIC_ROUTINE int copy_rec_dx( unsigned char *in_ptr, struct descriptor *out_ds
 	pi->aflags.bounds = (in_ptr[10] & 0x80) != 0;
         pi->dimct = in_ptr[11];
 	swap(descriptor_a_arsize,in_ptr+12,pi->arsize);
-	bytes_in = 20
+        pointer_flag=in_ptr[20];
+	bytes_in = 21
 		+ (pi->aflags.coeff ? 8 + 8 * pi->dimct : 0)
 		+ (pi->aflags.bounds ? 8 * (pi->dimct * 2) : 0);
 	dsc_size = sizeof(struct descriptor_a)
 		+ (pi->aflags.coeff ? sizeof(char *) + sizeof(descriptor_a_mult) * pi->dimct : 0)
 		+ (pi->aflags.bounds ? sizeof(descriptor_a_bounds) * (pi->dimct * 2) : 0);
-        align_size = (pi->dtype == DTYPE_T) ? 1 : pi->length;
-	bytes_out = dsc_size + pi->arsize + align_size;
+	bytes_out = align(sizeof(struct descriptor_a)
+		+ (pi->aflags.coeff ? sizeof(char *) + sizeof(descriptor_a_mult) * pi->dimct : 0)
+		+ (pi->aflags.bounds ? sizeof(descriptor_a_bounds) * (pi->dimct * 2) : 0),sizeof(void *));
 	if (po) {
           memcpy(po,pi,sizeof(struct descriptor_a));
 	  if (pi->aflags.coeff) {
 	    long long a0_offset;
-	    swap(long long,in_ptr+20,a0_offset);
+	    swap(long long,in_ptr+21,a0_offset);
 	    po->a0 = (char *)0 + a0_offset;
 	    for (i=0;i<pi->dimct;i++) {
-              swap(descriptor_a_mult,in_ptr + 28 + 8 * i,po->m[i]);
+              swap(descriptor_a_mult,in_ptr + 29 + 8 * i,po->m[i]);
               if (pi->aflags.bounds) {
-                swap(descriptor_a_bounds,in_ptr + 28 + (pi->dimct + 2 * i) * 8, po->m[pi->dimct + 2 * i]);
-                swap(descriptor_a_bounds,in_ptr + 28 + (pi->dimct + 2 * i + 1) * 8, po->m[pi->dimct + 2 * i + 1]);
+                swap(descriptor_a_bounds,in_ptr + 29 + (pi->dimct + 2 * i) * 8, po->m[pi->dimct + 2 * i]);
+                swap(descriptor_a_bounds,in_ptr + 29 + (pi->dimct + 2 * i + 1) * 8, po->m[pi->dimct + 2 * i + 1]);
               }
             }
           }
-          po->pointer = po->arsize ? 
-              (char *)po + align( ((char *)po - (char *)0) + bytes_out, sizeof(void *)) - ((char *)po - (char *)0) : 0;
+          po->pointer = (po->arsize && pointer_flag) ? 
+	    (char *)po + align( ((char *)po - (char *)0) + bytes_out, sizeof(void *)) - ((char *)po - (char *)0) : 0;
 	}
 
       /***************************
       Null pointer for shape only.
       ***************************/
-	if (pi->arsize)
+	if (pointer_flag)
 	{
-          status = copy_rec_dx(in_ptr + bytes_in, po ? (struct descriptor *) ((char *) po + bytes_out) : 0, &size_out, &size_in);
+          //status = copy_rec_dx(in_ptr + bytes_in, po ? (struct descriptor *) ((char *) po + bytes_out) : 0, &size_out, &size_in);
+	  status = copy_rec_dx(in_ptr + bytes_in, po ? (struct descriptor *) po->pointer : 0, &size_out, &size_in);
 	  bytes_out += size_out;
           bytes_in += size_in;
 	}
@@ -773,7 +777,7 @@ int MdsSerializeDscIn(char *in, struct descriptor_xd *out_ptr)
   return status;
 }
 
-STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descriptor_llength *b_out, descriptor_llength *b_in) {
+STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descriptor_llength *b_out, descriptor_llength *b_in, descriptor_llength *length) {
   unsigned int status = 1,j,num_dsc;
   descriptor_llength
               bytes_out = 0,
@@ -787,6 +791,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
      case CLASS_D:
       {
 	unsigned char class = CLASS_S_SHORT;
+	*length = *length + in_ptr->length;
 #ifdef BIG_DESC
 	  if (in_ptr->length >= (descriptor_length)0x10000)
 	    class = CLASS_S;
@@ -824,6 +829,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
       {
 	struct descriptor_xs *inp = (struct descriptor_xs *)in_ptr;
 	unsigned char class = CLASS_XS_SHORT;
+	*length = *length + inp->l_length;
 #ifdef BIG_DESC
 	if (inp->l_length >= (descriptor_llength)0x100000000LL)
 	  class = CLASS_XS;
@@ -853,6 +859,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
 	unsigned char class = CLASS_R_SHORT;
         char *begin = out_ptr;
         char *dscptrs = NULL;
+        *length = *length + inp->length;
 #ifdef BIG_DESC
 	if (inp->ndesc >= (descriptor_ndesc)0x100 || inp->length >= (descriptor_length)0x10000)
 	  class = CLASS_R;
@@ -904,7 +911,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
         bytes_in = sizeof(struct descriptor_r) + (int)(inp->ndesc - 1) * sizeof(struct descriptor *) + inp->length;
         for (j = 0; j < inp->ndesc; j++) {
 	  if (inp->dscptrs[j]) {
-	    status = copy_dx_rec(inp->dscptrs[j], out_ptr, &size_out, &size_in);
+	    status = copy_dx_rec(inp->dscptrs[j], out_ptr, &size_out, &size_in, length);
             if (out_ptr) {
               int offset=(int)(out_ptr-begin);
 	      if (class == CLASS_R_SHORT) {
@@ -925,6 +932,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
       {
         array_coeff *inp = (array_coeff *)in_ptr;
 	unsigned char class = CLASS_A_SHORT;
+	*length = *length + inp->arsize;
 #ifdef BIG_DESC
 	if (inp->length >= 0x10000 || inp->arsize >= 0x100000000LL)
 	  class = CLASS_A;
@@ -943,7 +951,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
             LoadInt(dscsize,out_ptr+4);
 	    LoadChar(inp->scale,out_ptr+8);
 	    LoadChar(inp->digits,out_ptr+9);
-	    set_aflags(out_ptr+10,in);
+	    set_aflags(out_ptr+10);
 	    LoadChar(inp->dimct,out_ptr+11);
 	    LoadInt(inp->arsize,out_ptr+12);
 	    out_ptr += 16;
@@ -951,7 +959,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
 	    LoadInt(inp->length, out_ptr+4);
 	    LoadChar(inp->scale,out_ptr+8);
 	    LoadChar(inp->digits,out_ptr+9);
-	    set_aflags(out_ptr+10,in);
+	    set_aflags(out_ptr+10);
 	    LoadChar(inp->dimct,out_ptr+11);
 	    LoadQuad(inp->arsize,out_ptr+12);
 	    out_ptr += 20;
@@ -1049,7 +1057,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
 	    LoadInt(dscsize,out_ptr+4);
 	    LoadChar(inp->scale,out_ptr+8);
 	    LoadChar(inp->digits,out_ptr+9);
-	    set_aflags(out_ptr+10,in);
+	    set_aflags(out_ptr+10);
 	    LoadChar(inp->dimct,out_ptr+11);
 	    LoadInt(arsize,out_ptr+12);
 	    out_ptr += 16;
@@ -1059,7 +1067,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
 	    LoadInt(length, out_ptr+4);
 	    LoadChar(inp->scale,out_ptr+8);
 	    LoadChar(inp->digits,out_ptr+9);
-	    set_aflags(out_ptr+10,in);
+	    set_aflags(out_ptr+10);
 	    LoadChar(inp->dimct,out_ptr+11);
 	    LoadQuad(arsize,out_ptr+12);
 	    out_ptr += 20;
@@ -1121,7 +1129,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
 	for (j = 0; j < num_dsc; j++, bytes_in += sizeof(void *)) {
 	  struct descriptor *dptr=((struct descriptor **)in_ptr->pointer)[j];
           if (dptr) {
-            status = copy_dx_rec(dptr, out_ptr, &size_out, &size_in);
+            status = copy_dx_rec(dptr, out_ptr, &size_out, &size_in, length);
   	    if (out_ptr) {
 	      if (class == CLASS_APD_SHORT) {
 		int poffset = out_ptr - begin;
@@ -1143,6 +1151,8 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
       {
         array_coeff *inp = (array_coeff *)in_ptr;
 	unsigned char class = CLASS_CA_SHORT;
+	descriptor_llength dumlen;
+	*length = *length + inp->arsize;
 #ifdef BIG_DESC
 	if (inp->length >= 0x10000 || inp->arsize >= 0x100000000LL)
 	  class = CLASS_CA;
@@ -1166,22 +1176,24 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
             }
 	    LoadChar(inp->scale,out_ptr+8);
 	    LoadChar(inp->digits,out_ptr+9);
-	    set_aflags(out_ptr+10,in);
+	    set_aflags(out_ptr+10);
 	    LoadChar(inp->dimct,out_ptr+11);
 	    LoadInt(inp->arsize,out_ptr+12);
 	    out_ptr += 16;
 	  } else {
+            char pointer_flag=inp->pointer != 0;
 	    LoadInt(inp->length, out_ptr+4);
 	    LoadChar(inp->scale,out_ptr+8);
 	    LoadChar(inp->digits,out_ptr+9);
-	    set_aflags(out_ptr+10,in);
+	    set_aflags(out_ptr+10);
 	    LoadChar(inp->dimct,out_ptr+11);
 	    LoadQuad(inp->arsize,out_ptr+12);
-	    out_ptr += 20;
+            LoadChar(pointer_flag,out_ptr+20);
+	    out_ptr += 21;
 	  }
           if (inp->aflags.coeff) {
 	    if (class == CLASS_CA_SHORT) {
-	      int a0 = dscsize + inp->a0 - inp->pointer;
+	      int a0 = (char *)inp->a0 - (char *)0;
 	      LoadInt(a0,out_ptr);
 	      out_ptr += 4;
 	      for (j=0;j<inp->dimct;j++) {
@@ -1197,7 +1209,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
 		}
 	      }
 	    } else {
-	      long long a0 = inp->a0 - inp->pointer;
+	      long long a0 = (char *)inp->a0-(char *)0;
 	      LoadQuad(a0,out_ptr);
 	      out_ptr += 8;
 	      for (j=0;j<inp->dimct;j++) {
@@ -1220,7 +1232,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
 	    + (inp->aflags.coeff ? 4 + 4 * inp->dimct : 0)
 	    + (inp->aflags.bounds ? 4 * (inp->dimct * 2) : 0);
 	} else {
-	  bytes_out = 20
+	  bytes_out = 21
 	    + (inp->aflags.coeff ? 8 + 8 * inp->dimct : 0)
 	    + (inp->aflags.bounds ? 8 * (inp->dimct * 2) : 0);
 	}
@@ -1231,7 +1243,7 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
       Null pointer for shape only.
       ***************************/
 	if (inp->pointer) {
-	  status = copy_dx_rec((struct descriptor *)inp->pointer, out_ptr, &size_out, &size_in);
+	  status = copy_dx_rec((struct descriptor *)inp->pointer, out_ptr, &size_out, &size_in, &dumlen);
 	  bytes_out += size_out;
           bytes_in += size_in;
 	}
@@ -1247,13 +1259,13 @@ STATIC_ROUTINE int copy_dx_rec( struct descriptor *in_ptr,char *out_ptr,descript
   return status;
 }
 
-STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc_ptr, descriptor_llength *reclen)
+STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc_ptr, descriptor_llength *reclen, descriptor_llength *length)
 {
   descriptor_llength size_out;
   descriptor_llength size_in;
   int       status;
   STATIC_CONSTANT const unsigned char dsc_dtype = DTYPE_B;
-  status = copy_dx_rec((struct descriptor *)inp, 0, &size_out, &size_in);
+  status = copy_dx_rec((struct descriptor *)inp, 0, &size_out, &size_in, length);
   if (status & 1 && size_out)
   {
     descriptor_length nlen = 1;
@@ -1263,7 +1275,7 @@ STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc
     if (status & 1)
     {
 	  memset(out_dsc_ptr->pointer->pointer,0,size_out);
-      status = copy_dx_rec((struct descriptor *)inp, out_dsc_ptr->pointer->pointer, &size_out, &size_in);
+	  status = copy_dx_rec((struct descriptor *)inp, out_dsc_ptr->pointer->pointer, &size_out, &size_in, length);
 	}
   }
   else
@@ -1456,7 +1468,7 @@ int MdsSerializeDscOutZ(struct descriptor *in,
 	  tempxd = *out;
 	  out->l_length = 0;
 	  out->pointer = 0;
-	  Dsc2Rec(tempxd.pointer,out,&reclen);
+	  Dsc2Rec(tempxd.pointer,out,&reclen,&length);
 	  MdsFree1Dx(&tempxd, NULL);
 	}
       }
@@ -1471,7 +1483,7 @@ int MdsSerializeDscOutZ(struct descriptor *in,
     }
   }
   if (compressible_out) *compressible_out = compressible;
-  if (length_out) *length_out = reclen; /******************** fix this ****************/
+  if (length_out) *length_out = length;
   if (reclen_out && (data_in_altbuf != 1)) *reclen_out = reclen;
   if (dtype_out) *dtype_out = dtype;
   if (class_out) *class_out = class;

@@ -52,7 +52,7 @@ int TdiSubtractOctaword();
   struct descriptor_a *ina2 = (struct descriptor_a *)in2;\
   struct descriptor_a *outa = (struct descriptor_a *)out;\
   int scalars = 0;\
-  unsigned int nout;\
+  unsigned long nout;\
   switch (out->class)\
   {\
     case CLASS_S:\

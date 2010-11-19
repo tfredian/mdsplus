@@ -80,13 +80,10 @@ STATIC_ROUTINE  int       compress(
 		               _int64 delta,
 		               struct descriptor *pwork)
 {
-  int       j,
-              stat1,
-              status = 1;
-  int       bit = 0,
-              asize,
-              nitems,
-              (*symbol) ();
+  descriptor_a_mult       j,asize,nitems,bit=0;
+  int         stat1,
+    status = 1;
+  int      (*symbol) ();
   char     *pcmp,
              *plim;
   array_coef *pca0,
@@ -105,7 +102,7 @@ STATIC_ROUTINE  int       compress(
     {
      case CLASS_APD:
       pd1 = (struct descriptor *) pwork->pointer;
-      j = (long) ((struct descriptor_a *) pwork)->arsize / (long) pwork->length;
+      j = ((struct descriptor_a *) pwork)->arsize / pwork->length;
       for (; --j >= 0 && status & 1;)
 	if ((stat1 = compress(pcimage, pcentry, delta, pd1++)) != 1)
 	  status = stat1;
@@ -140,8 +137,8 @@ STATIC_ROUTINE  int       compress(
      case CLASS_A:
       porig = (struct descriptor_a *) ((char *) pwork + delta);
       asize = sizeof(struct descriptor_a) + 
-	      (porig->aflags.coeff ? sizeof(void *) + porig->dimct * sizeof(int) : 0) +
-	      (porig->aflags.bounds ? porig->dimct * 2 * sizeof(int) : 0);
+	      (porig->aflags.coeff ? sizeof(void *) + porig->dimct * sizeof(descriptor_a_mult) : 0) +
+	      (porig->aflags.bounds ? porig->dimct * 2 * sizeof(descriptor_a_bounds) : 0);
       align_size = (porig->dtype == DTYPE_T) ? 1 : porig->length;
       asize = align(asize,align_size);
   /**************************************************************
@@ -169,7 +166,7 @@ STATIC_ROUTINE  int       compress(
       pdat->pointer = pcmp;
       pdat->arsize = plim - pcmp;
 
-      nitems = (int) porig->arsize / (int) porig->length;
+      nitems = porig->arsize / porig->length;
       if (pcentry)
       {
 	dximage = EMPTY_D;
@@ -358,7 +355,7 @@ int       MdsDecompress(
   else
   {
     struct descriptor_a *pa = (struct descriptor_a *) prec->dscptrs[2];
-    int       nitems = (int) pa->arsize / (int) pa->length;
+    descriptor_a_mult       nitems = pa->arsize / pa->length;
     int      bit = 0;
     if (prec->dscptrs[1])
     {

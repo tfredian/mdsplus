@@ -202,12 +202,19 @@ int       _TreePutRecord(void *dbid, int nid, struct descriptor *descriptor_ptr,
             (compress_utility || (nci->flags & NciM_COMPRESS_ON_PUT)) && !(nci->flags & NciM_DO_NOT_COMPRESS),
             &compressible,&len,&reclen,&nci->dtype,&nci->class,
             (nci->flags & NciM_VERSIONS || extended) ? 0 : sizeof(nci->DATA_INFO.DATA_IN_RECORD.data),nci->DATA_INFO.DATA_IN_RECORD.data,&data_in_altbuf);
-          nci->DATA_INFO.DATA_LOCATION.record_length=(unsigned int)reclen;
-          nci->length = (unsigned int)len;
+	  nci->DATA_INFO.DATA_LOCATION.record_length_hi=(unsigned char)(((unsigned long long)reclen)>>32);
+	  nci->DATA_INFO.DATA_LOCATION.record_length=(unsigned int)((unsigned long long)reclen & 0xffffffffULL);
+	  nci->length_hi=(unsigned char)(((unsigned long long)len)>>32);
+	  nci->length = (unsigned int)((unsigned long long)len & 0xffffffffULL);
+/*	  printf("len=%lld, reclen=%lld, nlen=%lld, nlen_hi=%lld, nrlen=%lld, nrlen_hi=%lld\n",len,reclen,
+		 (unsigned long long)nci->length,(unsigned long long)nci->length_hi,(unsigned long long)nci->DATA_INFO.DATA_LOCATION.record_length,
+		 (unsigned long long)nci->DATA_INFO.DATA_LOCATION.record_length_hi);
+  */
           bitassign(TreeGetThreadStatic()->path_reference,nci->flags,NciM_PATH_REFERENCE);
           bitassign(TreeGetThreadStatic()->nid_reference,nci->flags,NciM_NID_REFERENCE);
           bitassign(compressible,nci->flags,NciM_COMPRESSIBLE);
           bitassign_c(data_in_altbuf,nci->flags2,NciM_DATA_IN_ATT_BLOCK);
+          bitassign_c(((((unsigned long long)reclen)>>32) > 0) ? 1 : 0,nci->flags2,NciM_BIG_RECORD);
         }
 	if ((status & 1) && nci->length && (!utility_update))
 	  status = CheckUsage(dblist, nid_ptr, nci);
@@ -411,8 +418,8 @@ int TreeOpenDatafileW(TREE_INFO *info, int *stv_ptr, int tmpfile)
 static int PutDatafile(TREE_INFO *info, int nodenum, NCI *nci_ptr, struct descriptor_xd *data_dsc_ptr, NCI *old_nci_ptr)
 {
   int       status = TreeNORMAL;
-  unsigned int       bytes_to_put = data_dsc_ptr->l_length > 0 ? nci_ptr->DATA_INFO.DATA_LOCATION.record_length : 0;
-  int       blen = bytes_to_put + (bytes_to_put + DATAF_C_MAX_RECORD_SIZE + 1)/(DATAF_C_MAX_RECORD_SIZE + 2)*sizeof(RECORD_HEADER);
+  descriptor_llength       bytes_to_put = data_dsc_ptr->l_length > 0 ? (unsigned long long)nci_ptr->DATA_INFO.DATA_LOCATION.record_length + ((unsigned long long)nci_ptr->DATA_INFO.DATA_LOCATION.record_length_hi << 32) : 0;
+  descriptor_llength       blen = bytes_to_put + (bytes_to_put + DATAF_C_MAX_RECORD_SIZE + 1)/(DATAF_C_MAX_RECORD_SIZE + 2)*sizeof(RECORD_HEADER);
   static    int nonvms_compatible=-1;
   char      *buffer = 0;
   char      *bptr;
@@ -451,7 +458,7 @@ static int PutDatafile(TREE_INFO *info, int nodenum, NCI *nci_ptr, struct descri
       status = TreeLockDatafile(info, 0, 0);
       locked=1;
       eof = MDS_IO_LSEEK(info->data_file->put,0,SEEK_END);
-      bytes_to_put = nci_ptr->DATA_INFO.DATA_LOCATION.record_length;
+      bytes_to_put = (unsigned long long)nci_ptr->DATA_INFO.DATA_LOCATION.record_length + ((unsigned long long)nci_ptr->DATA_INFO.DATA_LOCATION.record_length_hi << 32);
       while (bytes_to_put && (status & 1))
       {
         int bytes_this_time = min(DATAF_C_MAX_RECORD_SIZE + 2, bytes_to_put);

@@ -40,7 +40,7 @@ void TreeSerializeNciOut(NCI *in, char *out)
   memset(out,0,42);
   LoadInt(in->flags,ptr);                           ptr += 4;
   *ptr = in->flags2;                                ptr += 1;
-                                                    ptr += 1;
+  *ptr = in->length_hi;                             ptr += 1;
   LoadQuad(in->time_inserted,ptr);                  ptr += 8;
   LoadInt(in->owner_identifier,ptr);                ptr += 4;
   
@@ -61,7 +61,7 @@ void TreeSerializeNciOut(NCI *in, char *out)
   }
   else
   {
-    *ptr = in->DATA_INFO.DATA_LOCATION.file_level;        ptr += 1;
+    *ptr = in->DATA_INFO.DATA_LOCATION.record_length_hi;  ptr += 1;
     *ptr = in->DATA_INFO.DATA_LOCATION.file_version;      ptr += 1;
     memcpy(ptr, in->DATA_INFO.DATA_LOCATION.rfa, 6);      ptr += 6;
     LoadInt(in->DATA_INFO.DATA_LOCATION.record_length,ptr);
@@ -74,7 +74,7 @@ void TreeSerializeNciIn(char *in, NCI *out)
   unsigned char *ptr = in;
   out->flags = swapint(ptr);                                              ptr += 4;
   out->flags2 = *ptr;                                                     ptr += 1;
-                                                                          ptr += 1;
+  out->length_hi = *ptr;                                                  ptr += 1;
   out->time_inserted = swapquad(ptr);                                     ptr += 8;
   out->owner_identifier = swapint(ptr);                                   ptr += 4;
   out->class = NewClass(*ptr);                                            ptr += 1;
@@ -94,7 +94,7 @@ void TreeSerializeNciIn(char *in, NCI *out)
   }
   else
   {
-    out->DATA_INFO.DATA_LOCATION.file_level = *ptr;                       ptr += 1;
+    out->DATA_INFO.DATA_LOCATION.record_length_hi = *ptr;                       ptr += 1;
     out->DATA_INFO.DATA_LOCATION.file_version = *ptr;                     ptr += 1;
     memcpy(out->DATA_INFO.DATA_LOCATION.rfa,ptr,6);                       ptr += 6;
     out->DATA_INFO.DATA_LOCATION.record_length = swapint(ptr);

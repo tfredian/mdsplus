@@ -344,9 +344,10 @@ static int CvtRdscT(struct descriptor *in_dsc_ptr,int depth)
 static int CvtAdscT(struct descriptor_a *in_dsc_ptr,int depth)
    {
     char  *dstr;
-    int *bptr;
-    int *lbptr;
-    int *ubptr;
+    descriptor_a_bounds *bptr;
+    descriptor_a_bounds *lbptr;
+    descriptor_a_bounds *ubptr;
+    descriptor_a_mult *mptr;
     int dim;
 #define BOUNDS_LENGTH 32		/* formerly 16	*/
     char bchars[BOUNDS_LENGTH];
@@ -356,32 +357,24 @@ static int CvtAdscT(struct descriptor_a *in_dsc_ptr,int depth)
     str_dupl_char(&spaces,depth,' ');
     dstr = TclDtypeString(in_dsc_ptr->dtype);
     str_concat(&out_str,&spaces,dstr,"Array [ ",0);
-    if (in_dsc_ptr->aflags.bounds)
-       {
-        bptr = (int *) ((char *)in_dsc_ptr + sizeof(struct descriptor_a) +
-                sizeof(void *) + (in_dsc_ptr->dimct) * sizeof(int));
-        for (dim = 0; dim < in_dsc_ptr->dimct; dim++)
-           {
+    if (in_dsc_ptr->aflags.bounds) {
+        bptr = (descriptor_a_mult *) ((char *)in_dsc_ptr + sizeof(struct descriptor_a) +
+                sizeof(void *) + (in_dsc_ptr->dimct) * sizeof(descriptor_a_mult));
+        for (dim = 0; dim < in_dsc_ptr->dimct; dim++) {
             lbptr = bptr++;
             ubptr = bptr++;
-            sprintf(bchars,"%d:%d%s",*lbptr,*ubptr,
+            sprintf(bchars,"%lld:%lld%s",(long long)*lbptr,(long long)*ubptr,
                         (dim < in_dsc_ptr->dimct - 1) ? "," : "");
             str_append(&out_str,bchars);
-           }
-       }
-    else if (in_dsc_ptr->aflags.coeff)
-       {
-        bptr = (int *) ((char *)in_dsc_ptr + sizeof(struct descriptor_a) +
-                        sizeof(void *));
-        for (dim = 0; dim < in_dsc_ptr->dimct; dim++)
-           {
-            sprintf(bchars,"%d%s",*bptr++,
-                        (dim < in_dsc_ptr->dimct - 1) ? "," : "");
+        }
+    } else if (in_dsc_ptr->aflags.coeff) {
+        mptr = (descriptor_a_mult *) ((char *)in_dsc_ptr + sizeof(struct descriptor_a) + sizeof(void *));
+        for (dim = 0; dim < in_dsc_ptr->dimct; dim++) {
+            sprintf(bchars,"%lld%s",(unsigned long long)*mptr++, (dim < in_dsc_ptr->dimct - 1) ? "," : "");
             str_append(&out_str,bchars);
-           }
-       }
-    else
-       {
+        }
+    }
+    else {
         sprintf(bchars,"%lld",(unsigned long long)in_dsc_ptr->arsize / in_dsc_ptr->length);
         str_append(&out_str,bchars);
        }

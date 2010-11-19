@@ -52,7 +52,7 @@ STATIC_ROUTINE int SwapBytes(char *in_c)
 }
 #define getppack SwapBytes((char *)ppack)
 
-void      MdsPk(signed char *nbits_ptr, int *nitems_ptr, int pack[], int items[], int *bit_ptr)
+void      MdsPk(signed char *nbits_ptr, int *nitems_ptr, int pack[], int items[], descriptor_a_mult *bit_ptr)
 {
   int       nbits = *nbits_ptr;
   int       nitems = *nitems_ptr;
@@ -150,10 +150,10 @@ void      MdsPk(signed char *nbits_ptr, int *nitems_ptr, int pack[], int items[]
 
 
 /*-------------------------------------------------------------*/
-void      MdsUnpk(signed char *nbits_ptr, int *nitems_ptr, int pack[], int items[], int *bit_ptr)
+void      MdsUnpk(signed char *nbits_ptr, int *nitems_ptr, int pack[], int items[], descriptor_a_mult *bit_ptr)
 {
-  int       nbits = *nbits_ptr;
-  int       nitems = *nitems_ptr;
+  int     nbits = *nbits_ptr;
+  int     nitems = *nitems_ptr;
   int     *ppack = &pack[*bit_ptr >> 5];
   int     *pitems = &items[0];
   int       size = nbits >= 0 ? nbits : -nbits;

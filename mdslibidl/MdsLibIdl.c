@@ -102,7 +102,7 @@ static int ShortStrings(char *b)
   return ((b[t1_idx] != 0) && (b[t1_idx] != 1)) || (b[t2_idx] != 0);
 }
 
-static void *MakeDescr(int idx, int *argsize, void *bytes)
+static void *MakeDescr(int idx, descriptor_a_mult *argsize, void *bytes)
 {
   if (argsize[0] == 0)
   {
@@ -143,26 +143,26 @@ static void *MakeDescr(int idx, int *argsize, void *bytes)
       arrayArgs[idx].m[i]=argsize[i+1];
     switch (argsize[argsize[0]+1])
     {
-    case 1: arrayArgs[idx].length = 1; arrayArgs[idx].dtype = DTYPE_BU;  arrayArgs[idx].arsize = argsize[argsize[0]+2];     break;
-    case 2: arrayArgs[idx].length = 2; arrayArgs[idx].dtype = DTYPE_W;   arrayArgs[idx].arsize = argsize[argsize[0]+2] * 2; break;
-    case 3: arrayArgs[idx].length = 4; arrayArgs[idx].dtype = DTYPE_L;   arrayArgs[idx].arsize = argsize[argsize[0]+2] * 4; break;
-    case 4: arrayArgs[idx].length = 4; arrayArgs[idx].dtype = DTYPE_FS;  arrayArgs[idx].arsize = argsize[argsize[0]+2] * 4; break;
-    case 5: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_FT;  arrayArgs[idx].arsize = argsize[argsize[0]+2] * 8; break;
-    case 6: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_FSC; arrayArgs[idx].arsize = argsize[argsize[0]+2] * 8; break;
+    case 1: arrayArgs[idx].length = 1; arrayArgs[idx].dtype = DTYPE_BU;  arrayArgs[idx].arsize = (descriptor_a_arsize)argsize[argsize[0]+2];     break;
+    case 2: arrayArgs[idx].length = 2; arrayArgs[idx].dtype = DTYPE_W;   arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 2; break;
+    case 3: arrayArgs[idx].length = 4; arrayArgs[idx].dtype = DTYPE_L;   arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 4; break;
+    case 4: arrayArgs[idx].length = 4; arrayArgs[idx].dtype = DTYPE_FS;  arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 4; break;
+    case 5: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_FT;  arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 8; break;
+    case 6: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_FSC; arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 8; break;
     case 7: 
       {
         if (ShortStrings(bytes))
 	{
   	IDL_STRING *str;
         int num = 1;
-        unsigned short maxlen;
+        descriptor_length maxlen;
 	arrayArgs[idx].dtype = DTYPE_T;
         for (i=0;i<arrayArgs[idx].dimct;i++)
           num = num * arrayArgs[idx].m[i];
         for (i=0,str = (IDL_STRING *)bytes,maxlen=0;i<num;i++,str++)
           if (str->slen > maxlen) maxlen = str->slen;
         arrayArgs[idx].length = maxlen;
-        arrayArgs[idx].arsize = maxlen * num;
+        arrayArgs[idx].arsize = ((descriptor_a_arsize)maxlen) * num;
         if (arrayArgs[idx].arsize > 0)
 	{
           char *ptr;
@@ -184,14 +184,14 @@ static void *MakeDescr(int idx, int *argsize, void *bytes)
 	{
   	IDL_STRING_L *str;
         int num = 1;
-        unsigned short maxlen;
+        descriptor_length maxlen;
 	arrayArgs[idx].dtype = DTYPE_T;
         for (i=0;i<arrayArgs[idx].dimct;i++)
           num = num * arrayArgs[idx].m[i];
         for (i=0,str = (IDL_STRING_L *)bytes,maxlen=0;i<num;i++,str++)
           if (str->slen > maxlen) maxlen = str->slen;
         arrayArgs[idx].length = maxlen;
-        arrayArgs[idx].arsize = maxlen * num;
+        arrayArgs[idx].arsize = ((descriptor_a_arsize)maxlen) * num;
         if (arrayArgs[idx].arsize > 0)
 	{
           char *ptr;
@@ -211,11 +211,11 @@ static void *MakeDescr(int idx, int *argsize, void *bytes)
         }
       }
       break;
-    case 9: arrayArgs[idx].length = 16; arrayArgs[idx].dtype = DTYPE_FTC; arrayArgs[idx].arsize = argsize[argsize[0]+2] * 16; break;
-    case 12: arrayArgs[idx].length = 2; arrayArgs[idx].dtype = DTYPE_WU;  arrayArgs[idx].arsize = argsize[argsize[0]+2] * 2; break;
-    case 13: arrayArgs[idx].length = 4; arrayArgs[idx].dtype = DTYPE_LU;  arrayArgs[idx].arsize = argsize[argsize[0]+2] * 4; break;
-    case 14: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_Q;   arrayArgs[idx].arsize = argsize[argsize[0]+2] * 8; break;
-    case 15: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_QU;  arrayArgs[idx].arsize = argsize[argsize[0]+2] * 8; break;
+    case 9: arrayArgs[idx].length = 16; arrayArgs[idx].dtype = DTYPE_FTC; arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 16; break;
+    case 12: arrayArgs[idx].length = 2; arrayArgs[idx].dtype = DTYPE_WU;  arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 2; break;
+    case 13: arrayArgs[idx].length = 4; arrayArgs[idx].dtype = DTYPE_LU;  arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 4; break;
+    case 14: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_Q;   arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 8; break;
+    case 15: arrayArgs[idx].length = 8; arrayArgs[idx].dtype = DTYPE_QU;  arrayArgs[idx].arsize = ((descriptor_a_arsize)argsize[argsize[0]+2]) * 8; break;
     default: return 0;
     }
     return (void *)&arrayArgs[idx];
@@ -238,7 +238,7 @@ int IdlMdsValue(int argc, void **argv)
   arglist[argidx++] = (void *)&expression;
   for (i=3;i < argc; i += 2)
   {
-    arglist[argidx++] = (void *)MakeDescr(argidx - 2,(int *)argv[i],argv[i+1]);
+    arglist[argidx++] = (void *)MakeDescr(argidx - 2,(descriptor_a_mult *)argv[i],argv[i+1]);
   }
   arglist[argidx++] = (void *)&tmp;
   arglist[argidx++] = MdsEND_ARG;
@@ -392,7 +392,7 @@ int IdlMdsPut(int argc, void **argv)
     arglist[argidx++] = (void *)&expression;
     for (i=2;i < argc; i += 2)
     {
-      arglist[argidx++] = (void *)MakeDescr(argidx - 2,(int *)argv[i],argv[i+1]);
+      arglist[argidx++] = (void *)MakeDescr(argidx - 2,(descriptor_a_mult *)argv[i],argv[i+1]);
     }
     arglist[argidx++] = (void *)&tmp;
     arglist[argidx++] = MdsEND_ARG;

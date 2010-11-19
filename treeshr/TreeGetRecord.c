@@ -56,7 +56,7 @@ int _TreeGetRecord(void *dbid, int nid_in, struct descriptor_xd *dsc)
   NCI nci;
   TREE_INFO *info;
   int       nidx;
-  int       retsize;
+  ssize_t       retsize;
   int       nodenum;
 #ifdef BIG_DESC
   EMPTYXD(tmp_dsc);
@@ -89,7 +89,8 @@ int _TreeGetRecord(void *dbid, int nid_in, struct descriptor_xd *dsc)
       status = TreeGetNciW(info, nidx, &nci,0);
       if (status & 1)
       {
-	if (nci.length)
+        descriptor_llength len=(descriptor_llength)nci.length + ((nci.flags2 & NciM_BIG_RECORD) ? (((descriptor_llength)nci.length_hi)<<32) : 0);
+	if (len)
 	{
 	  status = TreeCallHook(GetData,info,nid_in);
 	  if (status & !(status & 1))
@@ -143,7 +144,7 @@ int _TreeGetRecord(void *dbid, int nid_in, struct descriptor_xd *dsc)
 		   }
 		 else
 		   {
-		     int length = nci.DATA_INFO.DATA_LOCATION.record_length;
+		     size_t length = (size_t)nci.DATA_INFO.DATA_LOCATION.record_length + ((nci.flags2 & NciM_BIG_RECORD) ? (((size_t)nci.DATA_INFO.DATA_LOCATION.record_length_hi)<<32) : 0);
 		     if (length > 0)
 		       {
 			 char *data = malloc(length);
@@ -260,7 +261,7 @@ static int MakeNidsLocal(struct descriptor *dsc_ptr, unsigned char tree)
       break;
 
      case CLASS_CA:
-      status = MakeNidsLocal((struct descriptor *) dsc_ptr->pointer, tree);
+      status = 1;
       break;
 
      case CLASS_APD:
@@ -303,10 +304,10 @@ DATA_FILE *TreeGetVmDatafile()
   return datafile_ptr;
 }
 
-int TreeGetDatafile(TREE_INFO *info, unsigned char *rfa_in, int *buffer_size, char *record, int *retsize,int *nodenum,unsigned char flags)
+int TreeGetDatafile(TREE_INFO *info, unsigned char *rfa_in, size_t *buffer_size, char *record, ssize_t *retsize,int *nodenum,unsigned char flags)
 {
   int status = 1;
-  int buffer_space = *buffer_size;
+  size_t buffer_space = *buffer_size;
   int       first = 1;
   unsigned char rfa[6];
   char *bptr = (char *)record;
@@ -363,10 +364,10 @@ int TreeGetDatafile(TREE_INFO *info, unsigned char *rfa_in, int *buffer_size, ch
     }
     else
     {
-      int       blen = *buffer_size + (*buffer_size + DATAF_C_MAX_RECORD_SIZE + 1)/(DATAF_C_MAX_RECORD_SIZE + 2)*sizeof(RECORD_HEADER);
+      size_t       blen = *buffer_size + (*buffer_size + DATAF_C_MAX_RECORD_SIZE + 1)/(DATAF_C_MAX_RECORD_SIZE + 2)*sizeof(RECORD_HEADER);
       char     *buffer = (char *)malloc(blen);
       char     *bptr_in;
-      unsigned int      bytes_remaining;
+      size_t      bytes_remaining;
       unsigned int      partlen = (blen % (DATAF_C_MAX_RECORD_SIZE + 2 + sizeof(RECORD_HEADER)));
       _int64 rfa_l = RfaToSeek(rfa);
       int deleted=1;

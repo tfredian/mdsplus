@@ -271,7 +271,7 @@ static int doFull(int nid,unsigned char nodeUsage,int version)
   static DYNAMIC_DESCRIPTOR(dsc_outline);
   static char  fmtStates[] = "      Status: %s,parent is %s, usage %s%s%s%s";
   static char  fmtTime[] = "      Data inserted: %s    Owner: %s";
-  static char  fmtDescriptor[] = "      Dtype: %-20s  Class: %-18s  Length: %d bytes";
+  static char  fmtDescriptor[] = "      Dtype: %-20s  Class: %-18s  Length: %lld bytes";
   static char  fmtConglom1[] = "      Model element: %d";
   int   k;
   char *p;
@@ -295,7 +295,7 @@ static int doFull(int nid,unsigned char nodeUsage,int version)
   static unsigned int   owner;
   static char class;
   static char dtype;
-  static int   dataLen;
+  static unsigned long long dataLen;
   static unsigned short conglomerate_elt;
   static vers;
   static NCI_ITM full_list[] = {
@@ -305,7 +305,7 @@ static int doFull(int nid,unsigned char nodeUsage,int version)
     ,{4,NciOWNER_ID,&owner,0}
     ,{1,NciCLASS,&class,0}
     ,{1,NciDTYPE,&dtype,0}
-    ,{4,NciLENGTH,&dataLen,0}
+    ,{8,NciLENGTH,&dataLen,0}
     ,{2,NciCONGLOMERATE_ELT,&conglomerate_elt,0}
     ,{0,NciEND_OF_LIST,0,0}
   };

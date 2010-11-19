@@ -148,7 +148,7 @@ function MdsValue,expression,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,
       args = n_params() - 1
       for i=1,args do begin
         arg = 'arg'+strtrim(i,2)
-        cmd = cmd + ',size('+arg+'),'+arg
+        cmd = cmd + ',long64(size('+arg+')),'+arg
       endfor
       cmd = cmd + ')'
       msg = ''

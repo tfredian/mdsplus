@@ -1281,39 +1281,54 @@ _int64 MDS_IO_LSEEK(int fd, _int64 offset, int whence)
   }
 }
 
-STATIC_ROUTINE int io_write_remote(int fd, void *buff, size_t count)
+STATIC_ROUTINE ssize_t io_write_remote(int fd, void *buff, size_t count)
 {
-  ssize_t ret = 0;
-  int info[] = {0,0};
+  ssize_t bytes_sent = -1;
+  unsigned int info[] = {0,0};
   int sock = FDS[fd-1].socket;
-  int status;
+  int status = 1;
+  size_t remaining = count;
   LockMdsShrMutex(&IOMutex,&IOMutex_initialized);
   info[0]=count;
   info[1]=FDS[fd-1].fd;
-  status = SendArg(sock,MDS_IO_WRITE_K,0,0,0,sizeof(info)/sizeof(int),info,buff);
-  if (status & 1)
-  {
-    char dtype;
-    short length;
-    char ndims;
-    int dims[7];
-    int nbytes;
-    void *dptr;
-    void *msg = 0;
-    if ((GetAnswerInfoTS(sock, &dtype, &length, &ndims, dims, &nbytes, &dptr, &msg) & 1) && (nbytes == sizeof(int)))
-      ret = (ssize_t)*(int *)dptr;
-    if (msg)
-      free(msg);
+  while ((status & 1) && (remaining > 0)) {
+    unsigned int bytes_this_time = (remaining > (2<<31)) ? (2<<31) : remaining;
+    info[0]=bytes_this_time;
+    status = SendArg(sock,MDS_IO_WRITE_K,0,0,0,sizeof(info)/sizeof(int),info,((char *)buff)+(count - remaining));
+    if (status & 1)
+    {
+      char dtype;
+      short length;
+      char ndims;
+      int dims[7];
+      int nbytes;
+      void *dptr;
+      void *msg = 0;
+      if (((status = GetAnswerInfoTS(sock, &dtype, &length, &ndims, dims, &nbytes, &dptr, &msg)) & 1) && (nbytes == sizeof(int))) {
+        nbytes = (ssize_t)*(int *)dptr;
+        if (nbytes > 0) {
+          remaining -= nbytes;
+          bytes_sent += nbytes;
+        }
+        else {
+          bytes_sent = nbytes;
+          remaining = 0;
+        }
+      }
+      if (msg)
+        free(msg);
+    }  
+    else
+      RemoteAccessDisconnect(sock,1);
   }
-  else
-    RemoteAccessDisconnect(sock,1);
   UnlockMdsShrMutex(&IOMutex);
-  return ret;
+  return bytes_sent;
 }
 
-int MDS_IO_WRITE(int fd, void *buff, size_t count)
+ssize_t MDS_IO_WRITE(int fd, void *buff, size_t count)
 {
-  int ans = -1;
+  ssize_t ans = -1;
+  ssize_t bytes_this_time,total=0;
   if (count == 0) return 0;
   LOCKFDS
   if (fd > 0 && fd <= ALLOCATED_FDS && FDS[fd-1].in_use)
@@ -1328,7 +1343,14 @@ int MDS_IO_WRITE(int fd, void *buff, size_t count)
 #ifdef USE_PERF
 	TreePerfWrite(count);
 #endif
-	ans = write(FDS[fd-1].fd,buff,count);
+        while (total < count) {
+	  bytes_this_time = write(FDS[fd-1].fd,((char*)buff)+total,count-total);
+          if (bytes_this_time <= 0)
+            break;
+          total=total+bytes_this_time;
+        }
+        if (total == count)
+          ans = total;
       } else
 	ans = io_write_remote(fd,buff,count);
   }
@@ -1342,30 +1364,34 @@ STATIC_ROUTINE ssize_t io_read_remote(int fd, void *buff, size_t count)
   int ret_i;
   int info[] = {0,0,0};
   int sock = FDS[fd-1].socket;
-  int status;
+  int status=1;
   LockMdsShrMutex(&IOMutex,&IOMutex_initialized);
   info[1]=FDS[fd-1].fd;
-  info[2]=count;
-  status = SendArg(sock,MDS_IO_READ_K,0,0,0,sizeof(info)/sizeof(int),info,0);
-  if (status & 1)
-  {
-    char dtype;
-    short length;
-    char ndims;
-    int dims[7];
-    void *dptr;
-    void *msg = 0;
-    if (GetAnswerInfoTS(sock, &dtype, &length, &ndims, dims, &ret_i, &dptr, &msg) & 1)
-    {
-      ret = (ssize_t)ret_i;
-      if (ret)
-        memcpy(buff,dptr, ret);
-    }
-    if (msg)
-      free(msg);
+  size_t remaining = count;
+  while ((status & 1) && (remaining > 0)) {
+    unsigned int bytes_this_time = remaining > (2 << 31) ? (2 << 21) : remaining;
+    info[2]=bytes_this_time;
+    status = SendArg(sock,MDS_IO_READ_K,0,0,0,sizeof(info)/sizeof(int),info,0);
+    if (status & 1) {
+      char dtype;
+      short length;
+      char ndims;
+      int dims[7];
+      void *dptr;
+      void *msg = 0;
+      if ((status = GetAnswerInfoTS(sock, &dtype, &length, &ndims, dims, &ret_i, &dptr, &msg)) & 1) {
+        ret = (ssize_t)ret_i;
+        if (ret >  0) {
+          memcpy(((char *)buff)+(count - remaining),dptr, ret);
+          remaining -= ret;
+        }
+      }
+      if (msg)
+        free(msg);
+    }  
+    else
+      RemoteAccessDisconnect(sock,1);
   }
-  else
-    RemoteAccessDisconnect(sock,1);
   UnlockMdsShrMutex(&IOMutex);
   return ret;
 }
@@ -1373,14 +1399,15 @@ STATIC_ROUTINE ssize_t io_read_remote(int fd, void *buff, size_t count)
 STATIC_ROUTINE ssize_t io_read_x_remote(int fd, _int64 offset, void *buff, size_t count, int *deleted)
 {
   ssize_t ret = -1;
-  int info[] = {0,0,0,0,0};
+  unsigned int info[] = {0,0,0,0,0};
   int sock = FDS[fd-1].socket;
   int status;
+  unsigned int bytes_this_time=(count > (2<<31)) ? (2<<31) : count;
   LockMdsShrMutex(&IOMutex,&IOMutex_initialized);
   info[1]=FDS[fd-1].fd;
-  info[4]=count;
+  info[4]=bytes_this_time;
   *(_int64 *)(&info[2]) = offset;
-  info[5]=count;
+  info[5]=bytes_this_time;
 #ifdef _big_endian
   status = info[2];
   info[2]=info[3];
@@ -1400,11 +1427,15 @@ STATIC_ROUTINE ssize_t io_read_x_remote(int fd, _int64 offset, void *buff, size_
       if (deleted )
 	*deleted = sts == 3;
       ret = (ssize_t)ret_i;
-      if (ret)
+      if (ret > 0)
 	memcpy(buff,dptr, (size_t)ret);
     }
     if (msg)
       free(msg);
+    if (ret > 0 && ret < count) {
+      ssize_t bytes = io_read_remote(fd, (void *)(((char *)buff)+ret), count - ret);
+      ret = (bytes > 0) ? ret + bytes : bytes;
+    }
   }
   else
     RemoteAccessDisconnect(sock,1);
@@ -1415,6 +1446,7 @@ STATIC_ROUTINE ssize_t io_read_x_remote(int fd, _int64 offset, void *buff, size_
 ssize_t MDS_IO_READ(int fd, void *buff, size_t count)
 {
   ssize_t ans = -1;
+  ssize_t bytes_this_time,total=0;
   if (count == 0) return 0;
   LOCKFDS
   if (fd > 0 && fd <= ALLOCATED_FDS && FDS[fd-1].in_use)
@@ -1429,7 +1461,14 @@ ssize_t MDS_IO_READ(int fd, void *buff, size_t count)
 #ifdef USE_PERF
       TreePerfRead(count);
 #endif
-      ans = read(FDS[fd-1].fd,buff,count);
+      while (total < count) {
+        bytes_this_time = read(FDS[fd-1].fd,((char *)buff)+total,count-total);
+        if (bytes_this_time <= 0)
+          break;
+        total=total+bytes_this_time;
+      }
+      if (total == count)
+        ans = total;
     } else
       ans = io_read_remote(fd,buff,count);
   }
@@ -1447,6 +1486,7 @@ ssize_t MDS_IO_READ(int fd, void *buff, size_t count)
 ssize_t MDS_IO_READ_X(int fd, _int64 offset, void *buff, size_t count, int *deleted)
 {
   ssize_t ans = -1;
+  ssize_t bytes_this_time,total=0;
   if (count == 0) return 0;
   LOCKFDS
   if (fd > 0 && fd <= ALLOCATED_FDS && FDS[fd-1].in_use) {
@@ -1461,7 +1501,14 @@ ssize_t MDS_IO_READ_X(int fd, _int64 offset, void *buff, size_t count, int *dele
       LockMdsShrMutex(&IOMutex,&IOMutex_initialized);
       MDS_IO_LOCK(fd, offset, count, MDS_IO_LOCK_RD, deleted);
       MDS_IO_LSEEK(fd, offset, SEEK_SET);
-      ans = MDS_IO_READ(fd, buff, count);
+      while (total < count) {
+        bytes_this_time = MDS_IO_READ(fd, buff, count);
+        if (bytes_this_time <= 0)
+          break;
+        total = total + bytes_this_time;
+      }
+      if (total == count)
+        ans = total;
       MDS_IO_LOCK(fd, offset, count, MDS_IO_LOCK_NONE, deleted);
       UnlockMdsShrMutex(&IOMutex);
     }

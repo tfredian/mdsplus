@@ -164,7 +164,7 @@ struct TdiCatStruct		cats[4];
                 delta.dtype = dtype;
                 delta.pointer = new[2] ? dat[2].pointer->pointer : 0;
 		for (j = nseg, pl = (int *)nelem.pointer->pointer; --j >= 0;) {
-			x_dsc.arsize = *pl * len;
+			x_dsc.arsize = ((descriptor_a_arsize)*pl) * len;
 			if (status & 1) status = Tdi3Ramp(&x_dsc);
 			if (new[2] && status & 1) status = Tdi3Multiply(&x_dsc, &delta, &x_dsc);
 			if (status & 1) status = Tdi3Add(&x_dsc, &begin, &x_dsc);
