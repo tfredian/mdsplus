@@ -1292,7 +1292,7 @@ STATIC_ROUTINE ssize_t io_write_remote(int fd, void *buff, size_t count)
   info[0]=count;
   info[1]=FDS[fd-1].fd;
   while ((status & 1) && (remaining > 0)) {
-    unsigned int bytes_this_time = (remaining > (2<<31)) ? (2<<31) : remaining;
+    unsigned int bytes_this_time = (remaining > (2ULL<<31)) ? (2ULL<<31) : remaining;
     info[0]=bytes_this_time;
     status = SendArg(sock,MDS_IO_WRITE_K,0,0,0,sizeof(info)/sizeof(int),info,((char *)buff)+(count - remaining));
     if (status & 1)
@@ -1369,7 +1369,7 @@ STATIC_ROUTINE ssize_t io_read_remote(int fd, void *buff, size_t count)
   info[1]=FDS[fd-1].fd;
   size_t remaining = count;
   while ((status & 1) && (remaining > 0)) {
-    unsigned int bytes_this_time = remaining > (2 << 31) ? (2 << 21) : remaining;
+    unsigned int bytes_this_time = remaining > (2ULL << 31) ? (2ULL << 21) : remaining;
     info[2]=bytes_this_time;
     status = SendArg(sock,MDS_IO_READ_K,0,0,0,sizeof(info)/sizeof(int),info,0);
     if (status & 1) {
@@ -1402,7 +1402,7 @@ STATIC_ROUTINE ssize_t io_read_x_remote(int fd, _int64 offset, void *buff, size_
   unsigned int info[] = {0,0,0,0,0};
   int sock = FDS[fd-1].socket;
   int status;
-  unsigned int bytes_this_time=(count > (2<<31)) ? (2<<31) : count;
+  unsigned int bytes_this_time=(count > (2ULL<<31)) ? (2ULL<<31) : count;
   LockMdsShrMutex(&IOMutex,&IOMutex_initialized);
   info[1]=FDS[fd-1].fd;
   info[4]=bytes_this_time;

@@ -165,7 +165,7 @@ char *_TreeFindTagWild(void *dbid, char *wild, int *nidout, void **ctx_inout)
       *****************************************/
 	  for (; !done && ((*ctx)->next_tag < (*ctx)->this_tree_info->header->tags);)
 	  {
-            unsigned short len;
+            descriptor_length len;
   	    static struct descriptor_s s_tag_dsc = {DESCRIPTOR_HEAD_INI( sizeof(TAG_NAME), DTYPE_T, CLASS_S, 0)};
 	    static struct descriptor_d tag_dsc = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
             s_tag_dsc.pointer = 
@@ -193,7 +193,7 @@ char *_TreeFindTagWild(void *dbid, char *wild, int *nidout, void **ctx_inout)
       {
         static struct descriptor_s s_tag_name = {DESCRIPTOR_HEAD_INI(sizeof(TAG_NAME), DTYPE_T, CLASS_S, 0)};
         static struct descriptor_s tag_name =  {DESCRIPTOR_HEAD_INI(sizeof(TAG_NAME), DTYPE_T, CLASS_S, tagname)};
-        unsigned short len;
+        descriptor_length len;
         s_tag_name.pointer = 
            (char *) (*ctx)->this_tree_info->tag_info[swapint((char *)&(*ctx)->this_tree_info->tags[(*ctx)->next_tag])].name;
         StrTrim(&tag_name, &s_tag_name,&len);
@@ -246,9 +246,9 @@ static TAG_SEARCH *NewTagSearch(char *tagnam_ptr)
   TAG_SEARCH *ctx = (TAG_SEARCH *) malloc(sizeof(TAG_SEARCH));
   static struct descriptor_d empty = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_D, 0)};
   struct descriptor tag_dsc = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, 0)};
-  unsigned short tree_len;
+  descriptor_length tree_len;
   char *cptr;
-  static unsigned short one = 1;
+  static descriptor_length one = 1;
   tag_dsc.length = strlen(tagnam_ptr);
   tag_dsc.pointer = tagnam_ptr;
   ctx->search_tag = empty;

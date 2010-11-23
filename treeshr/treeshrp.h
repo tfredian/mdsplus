@@ -228,13 +228,14 @@ address to a NID:
      {\
      TREE_INFO *node_to_nid__info;\
      nid->tree = 0;\
+     nid->node = 0;\
      for (node_to_nid__info = pino->tree_info; node_to_nid__info != NULL;) \
        if ( (node_in >= node_to_nid__info->node) && \
             (node_in <= (node_to_nid__info->node + \
              node_to_nid__info->header->nodes))) \
        { \
          nid->node = node_in - node_to_nid__info->node; \
-         node_to_nid__info = 0; \
+         break; \
        } \
        else \
        { \
