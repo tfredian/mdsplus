@@ -356,7 +356,7 @@ int       MdsDecompress(
   {
     struct descriptor_a *pa = (struct descriptor_a *) prec->dscptrs[2];
     descriptor_a_mult       nitems = pa->arsize / pa->length;
-    int      bit = 0;
+    descriptor_a_mult      bit = 0;
     if (prec->dscptrs[1])
     {
       status = LibFindImageSymbol(prec->dscptrs[0], prec->dscptrs[1], &symbol);

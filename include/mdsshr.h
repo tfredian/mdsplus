@@ -25,7 +25,7 @@ EXPORT extern MdsCOMPRESSIBLE;
 #endif
 #include <mdsdescrip.h>
 #include <mdstypes.h>
-EXPORT extern int MdsCmprs(int *nitems, struct descriptor_a *items, struct descriptor_a *pack, int *bit);
+EXPORT extern int MdsCmprs(descriptor_a_mult *nitems, struct descriptor_a *items, struct descriptor_a *pack, descriptor_a_mult *bit);
 EXPORT extern int MdsCompress(struct descriptor *cimage, struct descriptor *centry, struct descriptor *in, struct descriptor_xd *out);
 EXPORT extern int MdsCopyDxXd(struct descriptor *in, struct descriptor_xd *out);
 EXPORT extern int MdsCopyDxXdZ(struct descriptor *in, struct descriptor_xd *out, void **zone, int (*fixup_nid) (), void *fixup_nid_arg,
@@ -39,7 +39,7 @@ EXPORT extern int MdsGetCurrentShotId(char *experiment);
 EXPORT extern char *MdsGetMsg(int sts);
 EXPORT extern int MdsFree1Dx(struct descriptor_xd *dsc, void **zone);
 EXPORT extern int MdsMsg(int sts, char fmt[], ...);
-EXPORT extern void MdsPk(char *nbits, int *nitems, int pack[], int items[], int *bit);
+EXPORT extern void MdsPk(char *nbits, int *nitems, int pack[], int items[], descriptor_a_mult *bit);
 EXPORT extern int  MdsSetCurrentShotId(char *experiment,int shot);
 EXPORT extern int MdsSerializeDscIn(char *in, struct descriptor_xd *out);
 EXPORT extern int MdsSerializeDscOutZ(struct descriptor *in,struct descriptor_xd *out,
@@ -48,8 +48,8 @@ EXPORT extern int MdsSerializeDscOutZ(struct descriptor *in,struct descriptor_xd
     descriptor_llength *length, descriptor_llength *reclen,  unsigned char *dtype,
     unsigned char *class, int  altbuflen, void *altbuf, int *data_in_altbuf);
 EXPORT extern int MdsSerializeDscOut(struct descriptor *in,struct descriptor_xd *out);
-EXPORT extern void MdsUnpk(char *nbits, int *nitems, int pack[], int items[], int *bit);
-EXPORT extern int MdsXpand(int *nitems, struct descriptor_a *pack, struct descriptor_a *items, int *bit);
+EXPORT extern void MdsUnpk(char *nbits, int *nitems, int pack[], int items[], descriptor_a_mult *bit);
+EXPORT extern int MdsXpand(descriptor_a_mult *nitems, struct descriptor_a *pack, struct descriptor_a *items, descriptor_a_mult *bit);
 EXPORT extern int MDSEventAst(char *eventnam, void (*astadr)(void *,int,char *), void *astprm, int *eventid);
 EXPORT extern int MDSEventCan(int eventid);
 EXPORT extern int MDSEvent(char *evname, int num_bytes, char *data);
@@ -70,7 +70,7 @@ EXPORT extern void MdsFloatToTime(double floatTime, _int64u *outTime);
 EXPORT extern void MdsFloatToDelta(double floatTime, _int64u *outTime);
 EXPORT extern void MdsTimeToFloat(_int64u inTime, float *outFloat);
 EXPORT extern int MdsPutEnv(char *cmd);
-
+EXPORT extern char *MdsBufferAddressPy(char *p, unsigned long long offset);
 #ifdef HAVE_WINDOWS_H
 typedef int pthread_key_t;
 typedef void *pthread_t;

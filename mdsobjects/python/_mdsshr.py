@@ -20,6 +20,13 @@ def _load_library(name):
     raise Exception,"Error finding library: "+name
 
 MdsShr=_load_library('MdsShr')
+
+try:
+    dum=MdsShr.MdsBigDescriptors
+    MdsBigDescriptors=True
+except:
+    MdsBigDescriptors=False
+    
 __MdsGetMsg=MdsShr.MdsGetMsg
 __MdsGetMsg.argtypes=[_C.c_int]
 __MdsGetMsg.restype=_C.c_char_p
@@ -29,6 +36,9 @@ __MDSWfeventTimed=MdsShr.MDSWfeventTimed
 __MDSWfeventTimed.argtypes=[_C.c_char_p,_C.c_int,_C.c_void_p,_C.POINTER(_C.c_int),_C.c_int]
 __MDSEvent=MdsShr.MDSEvent
 __MDSEvent.argtypes=[_C.c_char_p,_C.c_int,_C.c_void_p]
+MdsBufferAddressPy=MdsShr.MdsBufferAddressPy
+MdsBufferAddressPy.argtypes=[_C.c_void_p,_C.c_uint64]
+MdsBufferAddressPy.restype=_C.c_void_p
 
 class MdsException(Exception):
     pass

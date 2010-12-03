@@ -1275,6 +1275,7 @@ STATIC_ROUTINE int Dsc2Rec(struct descriptor *inp, struct descriptor_xd *out_dsc
     if (status & 1)
     {
 	  memset(out_dsc_ptr->pointer->pointer,0,size_out);
+	  *length=0;
 	  status = copy_dx_rec((struct descriptor *)inp, out_dsc_ptr->pointer->pointer, &size_out, &size_in, length);
 	}
   }

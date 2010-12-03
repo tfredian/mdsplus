@@ -30,9 +30,13 @@ STATIC_CONSTANT char *cvsrev = "@(#)$RCSfile$ $Revision$ $Date$";
 #define compression_threshold 128
 #define _MOVC3(a,b,c) memcpy(c,b,a)
 
+
 void MdsFixDscLength(struct descriptor *in);
 
 STATIC_CONSTANT void *MdsVM_ZONE = 0;
+#ifdef BIG_DESC
+const int MdsBigDescriptors=1;
+#endif
 
 int  MdsGet1Dx(descriptor_llength *length_ptr, unsigned char *dtype_ptr, struct descriptor_xd *dsc_ptr, void **zone)
 {
@@ -880,5 +884,10 @@ int MdsFixDescriptorIn(struct descriptor *inptr, struct descriptor_xd *outptr) {
   } else
     return 0;
 }
+
+char *MdsBufferAddressPy(char *p, unsigned long long offset) {
+  return p+offset;
+}
+
   
 

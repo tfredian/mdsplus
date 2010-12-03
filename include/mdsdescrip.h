@@ -63,14 +63,14 @@
 #define DTYPE_DICTIONARY 216
 
 #ifdef BIG_DESC
-typedef unsigned long descriptor_length;
-typedef signed long s_descriptor_length;
+typedef unsigned int descriptor_length;
+typedef signed   int s_descriptor_length;
 typedef unsigned long long descriptor_llength;
-typedef signed long long s_descriptor_llength;
+typedef signed   long long s_descriptor_llength;
 typedef unsigned long long descriptor_a_arsize;
 typedef unsigned long long descriptor_a_mult;
 typedef long long descriptor_a_bounds;
-typedef unsigned long descriptor_ndesc;
+typedef unsigned int descriptor_ndesc;
 #else
 typedef unsigned short descriptor_length;
 typedef short s_descriptor_length;
