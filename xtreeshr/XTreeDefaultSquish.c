@@ -49,9 +49,9 @@ EXPORT int XTreeDefaultSquish(struct descriptor_a *signalsApd, struct descriptor
 	int i, j, status, lastDimension;
 	int outShape[64];
 	char *shapeExpr = "SHAPE(DATA($1))";
-	struct descriptor shapeExprD = {strlen(shapeExpr), DTYPE_T, CLASS_S, shapeExpr};
+	struct descriptor shapeExprD = {DESCRIPTOR_HEAD_INI(strlen(shapeExpr), DTYPE_T, CLASS_S, shapeExpr)};
 	char setRangeExpr[512]; //Safe dimension, to avoid useless mallocs
-	struct descriptor setRangeExprD = {0, DTYPE_T, CLASS_S, setRangeExpr};
+	struct descriptor setRangeExprD = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, setRangeExpr)};
 	DESCRIPTOR_SIGNAL(outSignalD, 64, 0, 0);
 	DESCRIPTOR_A(outDimD, 0, 0, 0, 0);
 	DESCRIPTOR_A(outDataD, 0, 0, 0, 0);
@@ -115,8 +115,8 @@ EXPORT int XTreeDefaultSquish(struct descriptor_a *signalsApd, struct descriptor
 	{
 		for(j = 0; j < maxNumShapes - 1; j++)
 		{
-			if(((int *)((struct descriptor_a *)shapesXd[i].pointer)->pointer)[j] != 
-					((int *)((struct descriptor_a *)shapesXd[0].pointer)->pointer)[j])
+			if(((descriptor_a_mult *)((struct descriptor_a *)shapesXd[i].pointer)->pointer)[j] != 
+					((descriptor_a_mult *)((struct descriptor_a *)shapesXd[0].pointer)->pointer)[j])
 				status = InvalidShapeInSegments;
 		}
 	}
@@ -133,7 +133,7 @@ EXPORT int XTreeDefaultSquish(struct descriptor_a *signalsApd, struct descriptor
 //Shapes Ok, build definitive shapes array for this signal;
 	arrayD = (struct descriptor_a *)shapesXd[0].pointer;
 	for(i = 0; i < minNumShapes; i++)
-		outShape[i] = ((int *)arrayD->pointer)[i];
+		outShape[i] = ((descriptor_a_mult *)arrayD->pointer)[i];
 
 	lastDimension = 0;
 	for(i = 0; i < numSignals; i++)
@@ -141,7 +141,7 @@ EXPORT int XTreeDefaultSquish(struct descriptor_a *signalsApd, struct descriptor
 		arrayD = (struct descriptor_a *)shapesXd[i].pointer;
 		numShapes = arrayD->arsize / arrayD->length;
 		if(numShapes == maxNumShapes)
-			lastDimension += ((int *)arrayD->pointer)[numShapes - 1];
+			lastDimension += ((descriptor_a_mult *)arrayD->pointer)[numShapes - 1];
 		else
 			lastDimension++;
 	}

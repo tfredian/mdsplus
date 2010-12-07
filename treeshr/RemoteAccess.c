@@ -1487,6 +1487,7 @@ ssize_t MDS_IO_READ_X(int fd, _int64 offset, void *buff, size_t count, int *dele
 {
   ssize_t ans = -1;
   ssize_t bytes_this_time,total=0;
+  *deleted=0;
   if (count == 0) return 0;
   LOCKFDS
   if (fd > 0 && fd <= ALLOCATED_FDS && FDS[fd-1].in_use) {

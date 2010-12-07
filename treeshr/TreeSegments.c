@@ -23,6 +23,13 @@ static int GetSegmentIndex(TREE_INFO *info_ptr, _int64 offset, SEGMENT_INDEX *id
 static int GetNamedAttributesIndex(TREE_INFO *info_ptr, _int64 offset, NAMED_ATTRIBUTES_INDEX *index);
 static int __TreeBeginSegment(void *dbid, int nid, struct descriptor *start, struct descriptor *end, 
 			      struct descriptor *dimension,struct descriptor_a *initialValue, int idx, int rows_filled);
+
+static int *intDims(A_COEFF_TYPE *a) {
+  int *dims=malloc(sizeof(int)*8),i;
+  for (i=0;i<a->dimct;i++)
+    dims[i]=(int)a->m[i];
+  return dims;
+}
 int _TreeBeginSegment(void *dbid, int nid, struct descriptor *start, struct descriptor *end,
 		      struct descriptor *dimension,struct descriptor_a *initialValue, int idx) {
   return __TreeBeginSegment(dbid,nid,start,end,dimension,initialValue,idx,0);
@@ -58,6 +65,7 @@ static int __TreeBeginSegment(void *dbid, int nid, struct descriptor *start, str
   static int saved_uic = 0;
   int       shot_open;
   NODE      *node_ptr;
+  int       *dims=0;
   A_COEFF_TYPE *a_coeff = (A_COEFF_TYPE *)initialValue;
   struct descriptor *dsc;
   //  compress_utility = utility_update == 2;
@@ -147,10 +155,14 @@ static int __TreeBeginSegment(void *dbid, int nid, struct descriptor *start, str
       segment_header.idx = -1;
       update_attributes=1;
     } else if (initialValue->dtype != segment_header.dtype || initialValue->dimct != segment_header.dimct ||
-	       (initialValue->dimct > 1 && memcmp(segment_header.dims,a_coeff->m,(initialValue->dimct-1)*sizeof(int)) != 0)) {
+	       (initialValue->dimct > 1 && memcmp(segment_header.dims,dims=intDims(a_coeff),(initialValue->dimct-1)*sizeof(int)) != 0)) {
+      if (dims) free(dims);
+      dims=0;
       TreeUnLockNci(info_ptr,0,nidx);
       return TreeFAILURE;
     }
+    if (dims) free(dims);
+    dims=0;
     /*** See if the node currently has an segment_index record. If not, make an empty segment index and
 	 flag that a new one needs to be written.
     ***/
@@ -189,7 +201,9 @@ old array is same size.
     if (initialValue->dimct == 1)
       segment_header.dims[0]=initialValue->arsize/initialValue->length;
     else {
-      memcpy(segment_header.dims,a_coeff->m,initialValue->dimct*sizeof(int));
+      int i;
+      for (i=0;i<initialValue->dimct;i++)
+	segment_header.dims[i]=a_coeff->m[i];
     }
     //    rows_filled=(rows_filled < 0) ? 0 : 
     //  ((rows_filled > segment_header.dims[initialValue->dimct]) ? segment_header.dims[initialValue->dimct] : rows_filled);
@@ -412,6 +426,7 @@ int _TreePutSegment(void *dbid, int nid, int startIdx, struct descriptor_a *data
   static int saved_uic = 0;
   int       shot_open;
   NODE      *node_ptr;
+  int *dims=0;
   DESCRIPTOR_A(data_a, 0, 0, 0, 0);
   A_COEFF_TYPE *a_coeff;
   //  compress_utility = utility_update == 2;
@@ -497,10 +512,14 @@ int _TreePutSegment(void *dbid, int nid, int startIdx, struct descriptor_a *data
       TreeUnLockNci(info_ptr,0,nidx);
       return TreeFAILURE;
     } else if (data->dtype != segment_header.dtype || (data->dimct != segment_header.dimct && data->dimct != segment_header.dimct-1) ||
-	       (data->dimct > 1 && memcmp(segment_header.dims,a_coeff->m,(data->dimct-1)*sizeof(int)) != 0)) {
+	       (data->dimct > 1 && memcmp(segment_header.dims,dims=intDims(a_coeff),(data->dimct-1)*sizeof(int)) != 0)) {
+      if (dims) free(dims);
+      dims=0;
       TreeUnLockNci(info_ptr,0,nidx);
       return TreeFAILURE;
     }
+    if (dims) free(dims);
+    dims=0;
     if (startIdx == -1) {
       startIdx=segment_header.next_row;
     } else if (startIdx < -1 || startIdx > segment_header.dims[segment_header.dimct-1]) {
@@ -677,7 +696,8 @@ int _TreeGetSegment(void *dbid, int nid, int idx, struct descriptor_xd *segment,
           ans.dtype=segment_header.dtype;
           ans.length=segment_header.length;
           ans.dimct=segment_header.dimct;
-          memcpy(ans.m,segment_header.dims,sizeof(segment_header.dims));
+	  for (i=0;i<ans.dimct;i++)
+	    ans.m[i]=(int)segment_header.dims[i];
           ans.m[segment_header.dimct-1]=sinfo->rows;
           ans.arsize=ans.length;
           for (i=0;i<ans.dimct; i++) ans.arsize *= ans.m[i];
@@ -977,9 +997,9 @@ int _TreeSetXNci(void *dbid, int nid, char *xnciname, struct descriptor *value) 
 	  local_nci.flags2 &= ~NciM_DATA_IN_ATT_BLOCK;
 	} else {
 	  EMPTYXD(xd);
-	  int retsize;
+	  ssize_t retsize;
 	  int nodenum;
-	  int length = local_nci.DATA_INFO.DATA_LOCATION.record_length;
+	  size_t length = local_nci.DATA_INFO.DATA_LOCATION.record_length;
 	  if (length > 0)
 	  {
 	    char *data = malloc(length);
@@ -1677,6 +1697,7 @@ static int __TreeBeginTimestampedSegment(void *dbid, int nid, _int64 *timestamps
      int add_length=0;
      int previous_length=-1;
      int d;
+     int *dims=0;
      SEGMENT_HEADER segment_header;
      SEGMENT_INDEX segment_index;
      SEGMENT_INFO *sinfo;
@@ -1729,10 +1750,14 @@ static int __TreeBeginTimestampedSegment(void *dbid, int nid, _int64 *timestamps
        segment_header.idx = -1;
        update_attributes=1;
      } else if (initialValue->dtype != segment_header.dtype || initialValue->dimct != segment_header.dimct ||
-		(initialValue->dimct > 1 && memcmp(segment_header.dims,a_coeff->m,(initialValue->dimct-1)*sizeof(int)) != 0)) {
+		(initialValue->dimct > 1 && memcmp(segment_header.dims,dims=intDims(a_coeff),(initialValue->dimct-1)*sizeof(int)) != 0)) {
+       if (dims) free(dims);
+       dims=0;
        TreeUnLockNci(info_ptr,0,nidx);
        return TreeFAILURE;
      }
+     if (dims) free(dims);
+     dims=0;
      /*** See if the node currently has an segment_index record. If not, make an empty segment index and
 	  flag that a new one needs to be written.
      ***/
@@ -1772,7 +1797,9 @@ old array is same size.
      if (initialValue->dimct == 1)
        segment_header.dims[0]=initialValue->arsize/initialValue->length;
      else {
-       memcpy(segment_header.dims,a_coeff->m,initialValue->dimct*sizeof(int));
+       int i;
+       for (i=0;i<initialValue->dimct; i++)
+	 segment_header.dims[i]=(int)a_coeff->m[i];
      }
      /*****
 	  If not the first segment, see if we can reuse the previous segment storage space and compress the previous segment.
@@ -1931,6 +1958,7 @@ old array is same size.
        _int64    saved_viewdate;
        EXTENDED_ATTRIBUTES attributes;
        int i;
+       int *dims=0;
        int startIdx;
        SEGMENT_HEADER segment_header;
        status = TreeCallHook(PutData,info_ptr,nid);
@@ -1964,11 +1992,15 @@ old array is same size.
 	 status = TreeINVDTYPE;
        } else if (a_coeff->dimct == 1 && !((a_coeff->dimct == segment_header.dimct) || (a_coeff->dimct == segment_header.dimct-1))) {
 	 status = TreeINVSHAPE;
-       } else if (a_coeff->dimct > 1 && memcmp(segment_header.dims,a_coeff->m,(segment_header.dimct-1)*sizeof(int)) != 0) {
+       } else if (a_coeff->dimct > 1 && memcmp(segment_header.dims,dims=intDims(a_coeff),(segment_header.dimct-1)*sizeof(int)) != 0) {
+	 if (dims) free(dims);
+         dims=0;
 	 status = TreeINVSHAPE;
        } else if (a_coeff->dimct == 1 && a_coeff->arsize/a_coeff->length != 1 && (unsigned int)segment_header.dims[0] != a_coeff->arsize/a_coeff->length) {
 	 status = TreeINVSHAPE;
        }
+       if (dims) free(dims);
+       dims=0;
        if (!(status & 1)) {
 	 TreeUnLockNci(info_ptr,0,nidx);
 	 return status;

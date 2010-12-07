@@ -52,7 +52,7 @@ static void printDecompiled(struct descriptor *inD)
 //of a given, fixed amount of time, starting from a given time in the past
 //The closest point is selected as representative for a given time
 static void resample(_int64 start, _int64 end, _int64 delta, _int64 *inTimebase, int inTimebaseSamples, 
-					int numDims, int *dims, char *inData, int dataSize, char dataType, int mode, char *outData, _int64 *outDim, int *retSamples)
+					int numDims, descriptor_a_mult *dims, char *inData, int dataSize, char dataType, int mode, char *outData, _int64 *outDim, int *retSamples)
 {
 	int i, timebaseIdx, outIdx, itemSize, outSamples, startIdx, timebaseSamples;
 	_int64 refTime, delta1, delta2;
@@ -334,7 +334,7 @@ static int rangeResample(struct descriptor *startD, struct descriptor *endD, str
 	_int64 start64, end64, delta64, rangeStart64, rangeEnd64, rangeDelta64, currTime64, inTime64;
 	Array_coeff_type *dataD = (Array_coeff_type *)dataD_in;
 	char *signalExpr = "MAKE_SIGNAL($1,,MAKE_RANGE(MAX($2, $3), MIN($4, $5), $6))";
-	struct descriptor signalExprD = {strlen(signalExpr), DTYPE_T, CLASS_S, signalExpr};
+	struct descriptor signalExprD = {DESCRIPTOR_HEAD_INI(strlen(signalExpr), DTYPE_T, CLASS_S, signalExpr)};
 
 	char *prevDataPtr, *nextDataPtr;
 	double currSample, prevSample, nextSample;
@@ -581,14 +581,14 @@ static int XTreeDefaultResampleMode(struct descriptor_signal *inSignalD, struct 
 						 struct descriptor *deltaD, char mode, struct descriptor_xd *outSignalXd)
 {
 	char resampleExpr[64];
-	struct descriptor resampleExprD = {0, DTYPE_T, CLASS_S, resampleExpr};
+	struct descriptor resampleExprD = {DESCRIPTOR_HEAD_INI(0, DTYPE_T, CLASS_S, resampleExpr)};
 	struct descriptor_a *arrayD;
 	char *shapeExpr = "SHAPE(DATA($1))";
-	struct descriptor shapeExprD = {strlen(shapeExpr), DTYPE_T, CLASS_S, shapeExpr};
+	struct descriptor shapeExprD = {DESCRIPTOR_HEAD_INI(strlen(shapeExpr), DTYPE_T, CLASS_S, shapeExpr)};
 
 	_int64u start64, end64, delta64, *timebase64, *outDim;
 	float *timebaseFloat;
-	int *dims;
+	descriptor_a_mult *dims;
 	int numDims;
 	int numTimebaseSamples;
 	int outSamples, itemSize;
@@ -674,7 +674,7 @@ static int XTreeDefaultResampleMode(struct descriptor_signal *inSignalD, struct 
 	}
 	arrayD = (struct descriptor_a *)shapeXd.pointer;
 	numDims = arrayD->arsize/arrayD->length;
-	dims = (int *)arrayD->pointer;
+	dims = (descriptor_a_mult *)arrayD->pointer;
 	itemSize = dataD->length;
 	for(i = 0; i < numDims-1; i++)
 		itemSize *= dims[i];
