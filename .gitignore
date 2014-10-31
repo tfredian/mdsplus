@@ -5,7 +5,10 @@ config.status
 Makefile.inc
 stamp-h1
 config.h
-rpm
+rpm/envsyms  
+rpm/Makefile
+rpm/post_install_script
+envsyms
 
 # Compiled Object files
 *.slo
