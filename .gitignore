@@ -1,5 +1,7 @@
 Makefile
-
+.deps
+config.log
+config.status
 # Compiled Object files
 *.slo
 *.lo
