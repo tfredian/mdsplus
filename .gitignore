@@ -2,6 +2,11 @@ Makefile
 .deps
 config.log
 config.status
+Makefile.inc
+stamp-h1
+config.h
+rpm
+
 # Compiled Object files
 *.slo
 *.lo
