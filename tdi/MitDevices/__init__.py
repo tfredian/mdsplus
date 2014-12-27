@@ -10,6 +10,7 @@ MitDevices
 
 """
 from Dt200WriteMaster import Dt200WriteMaster
+from a3248      import A3248
 from acq132     import ACQ132
 from acq196     import ACQ196
 from acq196ao   import ACQ196AO
