@@ -67,3 +67,4 @@ camshr/cts_commands.c
 
 *~
 *.pyc
+*.egg-info
