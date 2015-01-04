@@ -64,3 +64,6 @@ camshr/cts_commands.c
 *.exe
 *.out
 *.app
+
+*~
+*.pyc

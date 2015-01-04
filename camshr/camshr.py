@@ -138,25 +138,28 @@ class CamShr:
             status = self.CAMXandQ(self.iosb)
         return status
 
-    def CamQStopw(self, name, a, f, num, data, width=16, iosb=None):
+    def CamQstopw(self, a, f, num, width=16, iosb=None):
         import ctypes as ct
-        if not self.CAMQStopw:
-            self.CAMQStopw=self.camshr.CamQStopw
-            self.CAMQStopw.argtypes=[ct.c_char_p, ct.c_int, t.c_int, ct.c_int, ct.c_void_p, ct.c_int, ct.c_ulonglong]
-        status = self.CAMQStopw(name, a, f, num, data, width, self.iosb)
+        if not self.CAMQstopw:
+            self.CAMQstopw=self.camshr.CamQstopw
+            self.CAMQstopw.argtypes=[ct.c_char_p, ct.c_int, ct.c_int, ct.c_int, ct.POINTER(ct.c_ushort), ct.c_int, ct.c_ulonglong]
+        data = (ct.c_ushort*num)()
+        d = ct.cast(data, ct.POINTER(ct.c_ushort))
+        status = self.CAMQstopw(self.name, a, f, num, d, width, self.iosb)
         if iosb:
             iosb = self.iosb
-        return status
+        return status, data
 
-    def CamQrepw(self, name, a, f, num, data, width=16, iosb=None):
+    def CamQrepw(self, name, a, f, num, width=16, iosb=None):
         import ctypes as ct
         if not self.CAMQrepw:
             self.CAMQrepw=self.camshr.CamQrepw
             self.CAMQrepw.argtypes=[ct.c_char_p, ct.c_int, t.c_int, ct.c_int, ct.c_void_p, ct.c_int, ct.c_ulonglong]
+        data = c_int*num
         status = self.CAMQrepw(name, a, f, num, data, width, self.iosb)
         if iosb:
             iosb = self.iosb
-        return status
+        return status, data
 
 #
 # * Dummy entry points for unimplemented routines
