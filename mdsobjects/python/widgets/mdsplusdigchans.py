@@ -4,6 +4,7 @@ import sys
 
 from mdspluswidget import MDSplusWidget
 from mdspluserrormsg import MDSplusErrorMsg
+from mdsplusnidoptionwidget import MDSplusNidOptionWidget
 from MDSplus import TreeNode,Data
 
 try:
@@ -22,6 +23,9 @@ class props(object):
         'startIdxNidOffset' : (gobject.TYPE_INT, 'startIdxNidOffset','nid offset to digitizer channel startIdx node',0,1000,2,gobject.PARAM_READWRITE),
         'endIdxNidOffset' : (gobject.TYPE_INT, 'endIdxNidOffset','nid offset to digitizer channel endIdx node',0,1000,3,gobject.PARAM_READWRITE),
         'incNidOffset' : (gobject.TYPE_INT, 'incNidOffset','nid offset to digitizer channel increment node',-1,1000,-1,gobject.PARAM_READWRITE),
+        'gainNidOffset' : (gobject.TYPE_INT, 'gainNidOffset','nid offset to digitizer channel gain',-1,1000,-1,gobject.PARAM_READWRITE),
+	'gainItems' : (gobject.TYPE_STRING, 'values','menu choices','',gobject.PARAM_READWRITE),
+	'gainValues' : (gobject.TYPE_STRING, 'values','Value expressions','',gobject.PARAM_READWRITE),
         }
 
 
@@ -52,6 +56,8 @@ class MDSplusDigChansWidget(props,MDSplusWidget,ScrolledWindow):
                 self.resetPart(channel,'endIdx')
                 if self.incNidOffset > -1:
                     self.resetPart(channel,'inc')
+                elif self.gainNidOffset > -1:
+                    self.resetPart(channel,'gain')
                 try:
                     channel['path'].set_label(str(channel['dataNode'].minpath))
                 except Exception:
@@ -112,6 +118,8 @@ class MDSplusDigChansWidget(props,MDSplusWidget,ScrolledWindow):
         self.table.attach(Label("EndIdx"),3,4,0,1,EXPAND|FILL,0,10,0)
         if self.incNidOffset > -1:
             self.table.attach(Label("Increment"),4,5,0,1,EXPAND|FILL,0,10,0)
+        elif self.gainNidOffset > -1:
+            self.table.attach(Label("Gain"),4,5,0,1,EXPAND|FILL,0,10,0)
         self.table.attach(Label("Path"),columns-1,columns,0,1,0,0,10,0)
         self.channels=list()
         for chan in range(self.numChannels):
@@ -128,6 +136,14 @@ class MDSplusDigChansWidget(props,MDSplusWidget,ScrolledWindow):
             if self.incNidOffset > -1:
                 channel['inc']=Entry()
                 self.table.attach(channel['inc'],4,5,chan+1,chan+2,EXPAND|FILL,0,10,0)
+            elif self.gainNidOffset > -1:
+                channel['gain']=MDSplusNidOptionMenu()
+                if self.gainItems :
+                    channel['gain'].items = self.gainItems
+                if self.gainValues :
+                    channel['gain'].values = self.gainValues
+
+                self.table.attach(Label("Increment"),4,5,0,1,EXPAND|FILL,0,10,0)
             channel['path']=Label('                   ')
             self.table.attach(channel['path'],columns-1,columns,chan+1,chan+2,0,0,10,0)
         self.show_all()
@@ -140,6 +156,8 @@ class MDSplusDigChansWidget(props,MDSplusWidget,ScrolledWindow):
                 channel['endIdxNode']=TreeNode(chanNidOffset+self.endIdxNidOffset,self.node.tree)
                 if self.incNidOffset > -1:
                     channel['incNode']=TreeNode(chanNidOffset+self.incNidOffset,self.node.tree)
+                if self.gainNidOffset > -1:
+                    channel['gainNode']=TreeNode(chanNidOffset+self.gainNidOffset,self.node.tree)
 
     def __init__(self):
         ScrolledWindow.__init__(self)
@@ -150,6 +168,7 @@ class MDSplusDigChansWidget(props,MDSplusWidget,ScrolledWindow):
         self.startIdxNidOffset=2
         self.endIdxNidOffset=3
         self.incNidOffset=-1
+        self.gainNidOffset=-1
         self.table=Table(homogeneous=False)
         self.table.set_row_spacings(0)
         self.add_with_viewport(self.table)
@@ -179,6 +198,15 @@ if guibuilder:
             elif prop == 'incNidOffset':
                 widget.incNidOffset=value
                 widget.setupChannels()
+            elif prop == 'gainNidOffset':
+                widget.gainNidOffset=value
+                widget.setupChannels()
+            elif prop == 'gainItems':
+                widget.gainItems=value
+                widget.setupChannels()
+            elif prop == 'gainValues':
+                widget.gainValues=value
+                widget.setupChannels
             elif prop == 'dataNidOffset':
                 widget.dataNidOffset=value
             elif prop == 'nodesPerChannel':
