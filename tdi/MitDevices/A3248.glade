@@ -1,7 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.2.2 on Tue Aug  9 16:55:55 2011 by jas@cmodws44.psfc.mit.edu-->
+<?xml version="1.0"?>
 <glade-interface>
+  <!-- interface-requires gtk+ 2.6 -->
+  <!-- interface-requires MDSplus.widgets 0.0 -->
+  <!-- interface-requires MDSplus.widgets 0.0 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="a3248">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">AEON 3248 Setup</property>
@@ -9,14 +11,13 @@
       <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+        <property name="orientation">vertical</property>
         <child>
           <widget class="GtkTable" id="table1">
             <property name="visible">True</property>
-            <property name="events"/>
-            <property name="n_rows">13</property>
+            <property name="events"></property>
+            <property name="n_rows">8</property>
             <property name="n_columns">2</property>
-
-          
             <child>
               <widget class="GtkLabel" id="label6">
                 <property name="visible">True</property>
@@ -24,10 +25,10 @@
                 <property name="label" translatable="yes">Trigger:</property>
               </widget>
               <packing>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -37,10 +38,10 @@
                 <property name="label" translatable="yes">Clock Code:</property>
               </widget>
               <packing>
-                <property name="top_attach">7</property>
-                <property name="bottom_attach">8</property>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -50,10 +51,10 @@
                 <property name="label" translatable="yes">Pre-trigger Samples:</property>
               </widget>
               <packing>
-                <property name="top_attach">9</property>
-                <property name="bottom_attach">10</property>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -63,10 +64,10 @@
                 <property name="label" translatable="yes">Gain:</property>
               </widget>
               <packing>
-                <property name="top_attach">10</property>
-                <property name="bottom_attach">11</property>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="top_attach">6</property>
+                <property name="bottom_attach">7</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -76,22 +77,23 @@
                 <property name="label" translatable="yes">Offset:</property>
               </widget>
               <packing>
-                <property name="top_attach">11</property>
-                <property name="bottom_attach">12</property>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="top_attach">7</property>
+                <property name="bottom_attach">8</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
-            </child>            <child>
+            </child>
+            <child>
               <widget class="GtkLabel" id="lab12">
                 <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="label" translatable="yes">Clock Source:</property>
               </widget>
               <packing>
-                <property name="top_attach">8</property>
-                <property name="bottom_attach">9</property>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -103,8 +105,8 @@
               <packing>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -129,7 +131,7 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="y_options"/>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -139,8 +141,8 @@
                 <property name="label" translatable="yes">Comment:</property>
               </widget>
               <packing>
-                <property name="x_options"/>
-                <property name="y_options"/>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -151,16 +153,16 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
-                <property name="x_options"/>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
+                <property name="x_options"></property>
               </packing>
             </child>
             <child>
-            <widget class="MDSplusNidOptionWidget" id=":clock_code">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="items" translatable="yes">10   MHz
+              <widget class="MDSplusNidOptionWidget" id=":clock_code">
+                <property name="visible">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="items" translatable="yes">10   MHz
 6.67 MHz
 5    MHz
 4    MHz
@@ -176,7 +178,7 @@ External Clock
 286  KHz
 250  KHz
 External Clock</property>
-            <property name="values" translatable="yes">0
+                <property name="values" translatable="yes">0
 1
 2
 3
@@ -192,48 +194,35 @@ External Clock</property>
 13
 14
 15</property>
-            </widget>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-                <property name="top_attach">7</property>
-                <property name="bottom_attach">8</property>
-                <property name="x_options"/>
-              </packing>
-            </child>
-            <child>
-              <widget class="MDSplusExprFieldWidget" id=":trig_src">
-                <property name="visible">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">3</property>
                 <property name="bottom_attach">4</property>
-                <property name="x_options"/>
+                <property name="x_options"></property>
               </packing>
             </child>
             <child>
-            <widget class="MDSplusNidOptionWidget" id=":gain">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="items" translatable="yes">1
+              <widget class="MDSplusNidOptionWidget" id=":gain">
+                <property name="visible">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="items" translatable="yes">1
 2
 4
 8</property>
-            <property name="values" translatable="yes">1
+                <property name="values" translatable="yes">1
 2
 4
 8
 </property>
-            </widget>
+              </widget>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">10</property>
-                <property name="bottom_attach">11</property>
-                <property name="x_options"/>
+                <property name="top_attach">6</property>
+                <property name="bottom_attach">7</property>
+                <property name="x_options"></property>
               </packing>
             </child>
             <child>
@@ -245,9 +234,9 @@ External Clock</property>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">8</property>
-                <property name="bottom_attach">9</property>
-                <property name="x_options"/>
+                <property name="top_attach">4</property>
+                <property name="bottom_attach">5</property>
+                <property name="x_options"></property>
               </packing>
             </child>
             <child>
@@ -259,9 +248,9 @@ External Clock</property>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">9</property>
-                <property name="bottom_attach">10</property>
-                <property name="x_options"/>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
+                <property name="x_options"></property>
               </packing>
             </child>
             <child>
@@ -273,44 +262,35 @@ External Clock</property>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">11</property>
-                <property name="bottom_attach">12</property>
-                <property name="x_options"/>
+                <property name="top_attach">7</property>
+                <property name="bottom_attach">8</property>
+                <property name="x_options"></property>
               </packing>
             </child>
           </widget>
           <packing>
             <property name="expand">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox1">
+          <widget class="MDSplusDigChansWidget" id=":input_1">
             <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <child>
-              <widget class="MDSplusDigChansWidget" id=":input_1">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="events">GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
-                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                <property name="startIdxNidOffset">1</property>
-                <property name="numChannels">4</property>
-                <property name="nodesPerChannel">3</property>
-                <property name="dataNidOffset">0</property>
-                <property name="endIdxNidOffset">2</property>
-              </widget>
-              <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
+            <property name="can_focus">True</property>
+            <property name="events">GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+            <property name="hscrollbar_policy">never</property>
+            <property name="vscrollbar_policy">automatic</property>
+            <property name="dataNidOffset">0</property>
+            <property name="endIdxNidOffset">2</property>
+            <property name="numChannels">4</property>
+            <property name="startIdxNidOffset">1</property>
           </widget>
           <packing>
             <property name="position">1</property>
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox1">
+          <widget class="GtkHBox" id="hbox2">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <child>
@@ -322,6 +302,7 @@ External Clock</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
