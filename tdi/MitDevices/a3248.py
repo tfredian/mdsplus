@@ -62,7 +62,7 @@ class A3248(MDSplus.Device):
 #  defined in includes/mitdevices_msg.h
 #  - FIX THESE !!
     DEV_BAD_GAIN = 0x277C8022
-    DEV_BAD_OFFSET = 277C8052
+    DEV_BAD_OFFSET = 0x277C8052
     DEV_NOT_TRIGGERED = 0x277c8062
 #
     debug=None
