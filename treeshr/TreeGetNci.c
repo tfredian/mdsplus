@@ -1,7 +1,4 @@
 #include "treeshrp.h"		/* must be first or off_t wrong */
-#if defined(_WIN32)
-#include <io.h>
-#endif
 #include <fcntl.h>
 #include <treeshr.h>
 #include <ncidef.h>

@@ -32,15 +32,7 @@
 +-----------------------------------------------------------------------------*/
 #include "treeshrp.h"		/* must be first or off_t wrong */
 #include <STATICdef.h>
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#endif
-#else
-#include <pthread.h>
-#endif
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>

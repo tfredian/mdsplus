@@ -15,14 +15,9 @@
 #include <alloca.h>
 #endif
 
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#else
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/types.h>
-#endif
 #include <usagedef.h>
 #include <ncidef.h>
 #include <errno.h>

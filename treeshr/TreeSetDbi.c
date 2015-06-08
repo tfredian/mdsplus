@@ -29,10 +29,6 @@
 
 +-----------------------------------------------------------------------------*/
 #include <config.h>
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#endif
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>

@@ -9,18 +9,7 @@
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-/*#define write _write
-#define lseek _lseeki64
-#define open _open
-#define close _close
-#define read _read
-*/
-#else
 #include <unistd.h>
-#endif
 #include <STATICdef.h>
 #include <time.h>
 #include <fcntl.h>
