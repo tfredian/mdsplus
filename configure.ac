@@ -199,7 +199,7 @@ AS_CASE([$with_ks2115],
                 AC_MSG_WARN([Format:   --with-ks2115=ks2115-installation-dir])
                 AC_MSG_WARN([Example:  --with-ks2115=/usr/local/lib])
                 AS_EXIT],
-        [KSLIB="-L${with_ks2115} -lks2115lib"
+        [KSLIB="-L${with_ks2115} -lks2115"
          KSINCLUDE="-I${with_ks2115}"
          KSCAMSHR="kscamshr"
          AC_DEFINE(KS2115,[],["Define if you want to build KS2115 version of CamShr"])])

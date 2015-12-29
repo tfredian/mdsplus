@@ -7636,7 +7636,7 @@ $as_echo "$as_me: WARNING: Format:   --with-ks2115=ks2115-installation-dir" >&2;
 $as_echo "$as_me: WARNING: Example:  --with-ks2115=/usr/local/lib" >&2;}
                 as_fn_exit $? ;; #(
   *) :
-    KSLIB="-L${with_ks2115} -lks2115lib"
+    KSLIB="-L${with_ks2115} -lks2115"
          KSINCLUDE="-I${with_ks2115}"
          KSCAMSHR="kscamshr"
 
