@@ -185,6 +185,26 @@ AS_CASE([$with_gsi],
                     AC_MSG_WARN([Note do not include pthr in the flavor as it is automatically added.])
                     AS_EXIT])])
 
+AC_MSG_CHECKING([for ks2115])
+AC_ARG_WITH([ks2115],
+            [AS_HELP_STRING([--with-ks2115=ks2115-installation-dir],
+                            [Build KSCamShr - ks2115 support])],
+            [],
+            [AS_VAR_SET([with_ks2115], [no])])
+AS_CASE([$with_ks2115],
+        [no], [KSCAMSHR=""],
+        [yes], [AC_MSG_WARN([YOU NEED TO PROVIDE THE LOCATION OF THE unixIO subdirectory of your ks2115 installation])
+                AC_MSG_WARN([when using the --with-ks2115 option])
+                AC_MSG_WARN([])
+                AC_MSG_WARN([Format:   --with-ks2115=ks2115-installation-dir])
+                AC_MSG_WARN([Example:  --with-ks2115=/usr/local/lib])
+                AS_EXIT],
+        [KSLIB="-L${with_ks2115} -lks2115lib"
+         KSINCLUDE="-I${with_ks2115}"
+         KSCAMSHR="kscamshr"
+         AC_DEFINE(KS2115,[],["Define if you want to build KS2115 version of CamShr"])])
+AC_MSG_RESULT([$with_ks2115])
+
 AC_MSG_CHECKING([for an srb installation])
 AC_ARG_WITH([srb],
             [AS_HELP_STRING([--with-srb=srb-install-dir],
@@ -1115,6 +1135,9 @@ AC_SUBST(JAVACFLAGS)
 AC_SUBST(JDK_CFLAGS)
 AC_SUBST(JDK_DIR)
 AC_SUBST(JDK_LIVECONNECT)
+AC_SUBST(KSCAMSHR)
+AC_SUBST(KSLIB)
+AC_SUBST(KSINCLUDE)
 AC_SUBST(LD)
 AC_SUBST(LDSHARE)
 AC_SUBST(LDARC)
@@ -1300,4 +1323,12 @@ then
   AC_MSG_WARN()
   AC_MSG_WARN()
 fi
-
+if test "$LV" = ""
+then
+  AC_MSG_WARN()
+  AC_MSG_WARN()
+  AC_MSG_WARN("Labview include files were not found.)
+  AC_MSG_WARN("The labview MDSobjects will not be built")
+  AC_MSG_WARN()
+  AC_MSG_WARN()
+fi

@@ -683,6 +683,9 @@ LD_LDSHARE
 LDARC
 LDSHARE
 LD
+KSINCLUDE
+KSLIB
+KSCAMSHR
 JDK_LIVECONNECT
 JDK_DIR
 JDK_CFLAGS
@@ -933,6 +936,7 @@ with_jdk
 with_java_target
 with_java_bootclasspath
 with_gsi
+with_ks2115
 with_srb
 with_labview
 enable_gcc_profiling
@@ -1646,6 +1650,8 @@ Optional Packages:
                           /usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/jre/lib/rt.jar)
   --with-gsi=globus-location:flavor
                           Use globus gsi for mdsip communications
+  --with-ks2115=ks2115-installation-dir
+                          Build KSCamShr - ks2115 support
   --with-srb=srb-install-dir
                           Enable srb capabilities
   --with-labview=labview-top-dir
@@ -7348,8 +7354,6 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_c_compiler_version" >&5
 $as_echo "$ax_cv_c_compiler_version" >&6; }
 
-
-echo "enable_san=$enable_san  GCC=$GCC ax_cv_c_compiler_version = $ax_cv_c_compiler_version"
 if test "$enable_san" = "yes" -a "$GCC" = yes; then
 
 
@@ -7387,7 +7391,6 @@ x$ax_compare_version_B" | sed 's/^ *//' | sort -r | sed "s/x${ax_compare_version
     else enable_san="no"
   fi
 
-   echo "enable_san after version=$enable_san"
    if test "$enable_san" = "yes"; then
        CFLAGS="$CFLAGS -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
    fi
@@ -7606,6 +7609,42 @@ $as_echo "$as_me: WARNING: Note do not include pthr in the flavor as it is autom
                     as_fn_exit $?
 fi ;;
 esac
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ks2115" >&5
+$as_echo_n "checking for ks2115... " >&6; }
+
+# Check whether --with-ks2115 was given.
+if test "${with_ks2115+set}" = set; then :
+  withval=$with_ks2115;
+else
+  with_ks2115=no
+fi
+
+case $with_ks2115 in #(
+  no) :
+    KSCAMSHR="" ;; #(
+  yes) :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: YOU NEED TO PROVIDE THE LOCATION OF THE unixIO subdirectory of your ks2115 installation" >&5
+$as_echo "$as_me: WARNING: YOU NEED TO PROVIDE THE LOCATION OF THE unixIO subdirectory of your ks2115 installation" >&2;}
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: when using the --with-ks2115 option" >&5
+$as_echo "$as_me: WARNING: when using the --with-ks2115 option" >&2;}
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: " >&5
+$as_echo "$as_me: WARNING: " >&2;}
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Format:   --with-ks2115=ks2115-installation-dir" >&5
+$as_echo "$as_me: WARNING: Format:   --with-ks2115=ks2115-installation-dir" >&2;}
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Example:  --with-ks2115=/usr/local/lib" >&5
+$as_echo "$as_me: WARNING: Example:  --with-ks2115=/usr/local/lib" >&2;}
+                as_fn_exit $? ;; #(
+  *) :
+    KSLIB="-L${with_ks2115} -lks2115lib"
+         KSINCLUDE="-I${with_ks2115}"
+         KSCAMSHR="kscamshr"
+
+$as_echo "#define KS2115 /**/" >>confdefs.h
+ ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_ks2115" >&5
+$as_echo "$with_ks2115" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for an srb installation" >&5
 $as_echo_n "checking for an srb installation... " >&6; }
@@ -14208,6 +14247,9 @@ esac
 
 
 
+
+
+
 ac_config_headers="$ac_config_headers include/config.h"
 
 
@@ -15920,4 +15962,18 @@ $as_echo "$as_me: WARNING: " >&2;}
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: " >&5
 $as_echo "$as_me: WARNING: " >&2;}
 fi
-
+if test "$LV" = ""
+then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: " >&5
+$as_echo "$as_me: WARNING: " >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: " >&5
+$as_echo "$as_me: WARNING: " >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"Labview include files were not found." >&5
+$as_echo "$as_me: WARNING: \"Labview include files were not found." >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"The labview MDSobjects will not be built\"" >&5
+$as_echo "$as_me: WARNING: \"The labview MDSobjects will not be built\"" >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: " >&5
+$as_echo "$as_me: WARNING: " >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: " >&5
+$as_echo "$as_me: WARNING: " >&2;}
+fi
