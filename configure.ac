@@ -1219,6 +1219,7 @@ AC_OUTPUT(Makefile.inc
           javascope/docs/Makefile
           javatraverser/Makefile
           javadevices/Makefile
+          kscamshr/Makefile
           LabView/Makefile
           manpages/Makefile
           macosx/Makefile
