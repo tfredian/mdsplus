@@ -74,6 +74,7 @@ EXPORT int TreeFindTag(const char *tagnam, const char *treename, int *tagidx)
 #define compare(node)      Compare(node->name,12,search->string,search->len)
 #define compare_wild(node) CompareWild(node->name,12,search->string,search->len)
 #define FirstChild(node) (member_of(node) ? member_of(node) : child_of(db, node))
+#define NewFirstChildOfParent(node) (parent_of(db, node) ? FirstChild(parent_of(db, node)) : FirstChild(node))
 #define FirstChildOfParent(node) (parent_of(db, node) ? child_of(db, parent_of(db, node)) : child_of(db, node))
 #define SiblingOf(node) (brother_of(db, node) ? brother_of(db, node) : ((parent_of(db, node) && IsMember(db, node)) ? child_of(db, parent_of(db, node)) : 0))
 #define match_usage \
@@ -306,22 +307,40 @@ STATIC_ROUTINE int TreeSearch(PINO_DATABASE * db, SEARCH_CONTEXT * ctx, int idx,
   case SON_MEMBER_BROTHER_TYPE:
     {
       if (search->node == 0) {
-	if ((search + 1)->type == EOL)
-	  node = FirstChild(node);
-	search->stack = 0;
-      } else if (SiblingOf(node))
-	node = SiblingOf(node);
-      else if (search->stack) {
-	node = Pop(search);
-	node = FirstChild(node);
-      } else
-	node = 0;
-      if (node) {
-	if (FirstChild(node))
-	  Push(search, node);
+        if (FirstChild(node)) {
+          search->stop = node;
+          node = FirstChild(node);
+        }
+      } else if (SiblingOf(node)) {
+        node = SiblingOf(node); 
+      } else {
+        int looking_for_child = 1;
+        node = NewFirstChildOfParent(node);
+        while (node && (node != search->stop)) {
+          if (looking_for_child) {
+            if (FirstChild(node)) {
+              node = FirstChild(node);
+              break;
+            }else if (SiblingOf(node))
+              node = SiblingOf(node);
+            else {
+              looking_for_child = 0;
+              node = parent_of(db, node);
+            }
+          } else {
+            if (SiblingOf(node)) {
+              looking_for_child = 1;
+              node = SiblingOf(node);
+            } else
+              node = parent_of(db, node);
+          }
+        }
+        if (node == search->stop)
+          node = 0;
       }
       break;
     }
+
   default:
     break;
   }
