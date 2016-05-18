@@ -3672,6 +3672,13 @@ fi
 
 
 
+if ${srcdir}/conf/update_submodules; then :
+  $as_echo "Submodules succesfully updated"
+else
+  $as_echo "Error updating submodules"
+fi
+
+
   subdirs_SAVE=$subdirs
   subdirs=conf/kconfig
 
@@ -3866,10 +3873,12 @@ esac
 
 
 
+
  $as_echo "CONFIG_EXAMPLE_ENABLE_VAR ----> $CONFIG_EXAMPLE_ENABLE_VAR"
 
 
  $as_echo "CONFIG_EXAMPLE_STRENTRY ----> $CONFIG_EXAMPLE_STRENTRY"
+
 
 if test "x$CONFIG_ENABLE_DOCKER" = xy; then :
 

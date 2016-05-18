@@ -11,16 +11,26 @@ AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([1.15 foreign subdir-objects])
 AM_MAINTAINER_MODE
 
+
+dnl update submodules at first ... (must be cleaned out)
+AS_IF([${srcdir}/conf/update_submodules],
+      [AS_ECHO(["Submodules succesfully updated"])],
+      [AS_ECHO(["Error updating submodules"])])
+
 dnl AX_KCONFIG /////////////////////////////////////////////////////////////////
 dnl see: m4/ax_enable_kconfig.m4
 AX_KCONFIG([conf/kconfig])
 
+
+dnl /// Kconfig import example ...
  AC_SUBST([CONFIG_EXAMPLE_ENABLE_VAR])
  AS_ECHO("CONFIG_EXAMPLE_ENABLE_VAR ----> $CONFIG_EXAMPLE_ENABLE_VAR")
 
  AC_SUBST([CONFIG_EXAMPLE_STRENTRY])
  AS_ECHO("CONFIG_EXAMPLE_STRENTRY ----> $CONFIG_EXAMPLE_STRENTRY")
 
+
+dnl /// Kconfig docker variables import example ...
 AS_VAR_IF([CONFIG_ENABLE_DOCKER],[y],[
            AS_VAR_SET_IF([CONFIG_DOCKER_CONTAINER], 
               [AS_VAR_SET([DOCKER_CONTAINER],[${CONFIG_DOCKER_CONTAINER}])] )
