@@ -1,0 +1,14 @@
+#
+# For a description of the syntax of this configuration file,
+# see Documentation/kbuild/kconfig-language.txt.
+#
+mainmenu "Mdsplus building Configuration"
+
+config EXAMPLE_ENABLE_VAR
+	bool "Set a example enable variable"
+
+config EXAMPLE_STRENTRY
+	string "get value for EXAMPLE_STRENTRY"
+
+
+#source "prova/Kconfig"

@@ -95,6 +95,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_java_home.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
 	$(top_srcdir)/m4/ax_compiler_version.m4 \
+	$(top_srcdir)/m4/ax_enable_kconfig.m4 \
 	$(top_srcdir)/m4/m4_ac_search_readline.m4 \
 	$(top_srcdir)/m4/m4_am_path_xml2.m4 \
 	$(top_srcdir)/m4/m4_ax_check_enable_debug.m4 \
@@ -184,6 +185,8 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CFLAG_VISIBILITY = @CFLAG_VISIBILITY@
 CLOCK_GETTIME_LIB = @CLOCK_GETTIME_LIB@
+CONFIG_EXAMPLE_ENABLE_VAR = @CONFIG_EXAMPLE_ENABLE_VAR@
+CONFIG_EXAMPLE_STRENTRY = @CONFIG_EXAMPLE_STRENTRY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@

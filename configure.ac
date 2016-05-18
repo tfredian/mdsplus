@@ -13,6 +13,17 @@ AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([1.15 foreign subdir-objects])
 AM_MAINTAINER_MODE
 
+dnl AX_KCONFIG /////////////////////////////////////////////////////////////////
+dnl see: m4/ax_enable_kconfig.m4
+AX_KCONFIG([conf/kconfig])
+
+AC_SUBST([CONFIG_EXAMPLE_ENABLE_VAR])
+AS_ECHO("CONFIG_EXAMPLE_ENABLE_VAR ----> $CONFIG_EXAMPLE_ENABLE_VAR")
+
+AC_SUBST([CONFIG_EXAMPLE_STRENTRY])
+AS_ECHO("CONFIG_EXAMPLE_STRENTRY ----> $CONFIG_EXAMPLE_STRENTRY")
+
+exit 0;
 
 dnl AS_IS_RELEASE //////////////////////////////////////////////////////////////
 dnl see: http://www.gnu.org/software/autoconf-archive/ax_is_release.html
@@ -32,7 +43,7 @@ AX_IS_RELEASE([always])
 
 dnl AX_CHECK_ENABLE_DEBUG //////////////////////////////////////////////////////
 dnl see: www.gnu.org/software/autoconf-archive/ax_check_enable_debug.html
-dnl
+dnl 
 dnl Check for the presence of an --enable-debug option to configure, with the 
 dnl specified default value used when the option is not present. Return the 
 dnl value in the variable $ax_enable_debug.
@@ -40,11 +51,12 @@ dnl Specifying "yes" adds "-g -O0" to the compilation flags for all languages.
 dnl Specifying "info" adds "-g" to the compilation flags. Specifying "profile" 
 dnl adds "-g -pg" to the compilation flags, and "-pg" to the linker flags. 
 dnl Otherwise, nothing is added.
-dnl
+dnl 
 dnl AX_CHECK_ENABLE_DEBUG([enable by default=yes/info/profile/no], 
 dnl   [ENABLE DEBUG VARIABLES ...], [DISABLE DEBUG VARIABLES NDEBUG ...], 
 dnl   [IS-RELEASE],[DEFAULT_RELEASE_FLAGS])
 AX_CHECK_ENABLE_DEBUG([no],,,,[-g -O2])
+
 
 
 # Checks for programs.

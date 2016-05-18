@@ -1,3 +1,6 @@
 [submodule "3rd-party-apis"]
 	path = 3rd-party-apis
 	url = https://github.com/MDSplus/3rd-party-apis.git
+[submodule "conf/kconfig"]
+	path = conf/kconfig
+	url = https://github.com/AndreaRigoni/kbuild-autoconf.git
