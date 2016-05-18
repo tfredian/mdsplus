@@ -5,8 +5,6 @@ AC_INIT([MDSplus], [6.0a], [mdsplus@lists.psfc.mit.edu])
 AC_CONFIG_AUX_DIR([conf])
 AC_CONFIG_SRCDIR([include/mdsdescrip.h])
 
-dnl docker helpers
-DK_SET_DOCKER_BUILD
 
 AC_CANONICAL_TARGET
 
@@ -17,13 +15,24 @@ dnl AX_KCONFIG /////////////////////////////////////////////////////////////////
 dnl see: m4/ax_enable_kconfig.m4
 AX_KCONFIG([conf/kconfig])
 
-AC_SUBST([CONFIG_EXAMPLE_ENABLE_VAR])
-AS_ECHO("CONFIG_EXAMPLE_ENABLE_VAR ----> $CONFIG_EXAMPLE_ENABLE_VAR")
+ AC_SUBST([CONFIG_EXAMPLE_ENABLE_VAR])
+ AS_ECHO("CONFIG_EXAMPLE_ENABLE_VAR ----> $CONFIG_EXAMPLE_ENABLE_VAR")
 
-AC_SUBST([CONFIG_EXAMPLE_STRENTRY])
-AS_ECHO("CONFIG_EXAMPLE_STRENTRY ----> $CONFIG_EXAMPLE_STRENTRY")
+ AC_SUBST([CONFIG_EXAMPLE_STRENTRY])
+ AS_ECHO("CONFIG_EXAMPLE_STRENTRY ----> $CONFIG_EXAMPLE_STRENTRY")
 
-exit 0;
+AS_VAR_IF([CONFIG_ENABLE_DOCKER],[y],[
+           AS_VAR_SET_IF([CONFIG_DOCKER_CONTAINER], 
+              [AS_VAR_SET([DOCKER_CONTAINER],[${CONFIG_DOCKER_CONTAINER}])] )
+           AS_VAR_SET_IF([CONFIG_DOCKER_IMAGE], 
+              [AS_VAR_SET([DOCKER_IMAGE],[${CONFIG_DOCKER_IMAGE}])] )
+           AS_VAR_SET_IF([CONFIG_DOCKER_URL], 
+              [AS_VAR_SET([DOCKER_URL],[${CONFIG_DOCKER_URL}])])
+          ])
+
+dnl docker helpers
+DK_SET_DOCKER_BUILD
+
 
 dnl AS_IS_RELEASE //////////////////////////////////////////////////////////////
 dnl see: http://www.gnu.org/software/autoconf-archive/ax_is_release.html

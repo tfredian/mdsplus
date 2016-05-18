@@ -61,12 +61,14 @@ pop_IFS
 ])
 
 
+dnl VERY BAD CODED .. FIX !!!!
 AC_DEFUN([DK_GET_CONFIGURE_ARGS_WITHOUT_DOCKER],[
 DK_GET_CONFIGURE_ARGS([_args])
 push_IFS(["'"])
  for x in ${_args}; do    
     AS_IF([test "$x" == " "],[:],
-          AS_IF([test "$x" != "${x%--with-docker-*}"],[:],
+          AS_IF([test "$x" != "${x%--with-docker-*}" \
+                  -o "$x" != "${x%--enable-kconfig*}"],[:],
           AS_VAR_SET([$1],["$$1 $x"])))
  done 
 pop_IFS
