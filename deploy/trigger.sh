@@ -357,7 +357,7 @@ EOF
 		let RELEASEV=$RELEASEV+1
 		;;
 	    *)
-		GREEN $RED
+		GREEN $COLOR
 		cat <<EOF >&2
 =========================================================
 
