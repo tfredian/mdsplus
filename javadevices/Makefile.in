@@ -631,6 +631,7 @@ AWG2021Setup.java\
 RFXWAVESETUPSetup.java\
 RFX_PROTECTIONSSetup.java\
 FLIRSC65XSetup.java\
+BASLERACASetup.java\
 NI6368AISetup.java\
 ACQIPPSETUPSetup.java\
 DIO2_ENCDECSetup.java\
@@ -638,7 +639,8 @@ MARTE_DEVICESetup.java \
 RFXVICONTROLSetup.java \
 REDPYTADCSetup.java \
 JRG_ADC32ASetup.java \
-A3248Setup.java
+A3248Setup.java \
+MARTE_DUTY_CYCLESetup.java
 
 java_DATA = jDevices.jar
 @USE_JARS_DIR_FALSE@java_JAVA = $(SOURCES)

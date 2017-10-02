@@ -33,6 +33,7 @@ fun public MdsDevices() {
     'SPIDER_SM', 'RfxDevices',
     'FAKECAMERA', 'RfxDevices',
     'FLIRSC65X', 'RfxDevices',
+    'BASLERACA', 'RfxDevices',
     'NI6368AI', 'RfxDevices',
     'RFX_PROTECTIONS', 'RfxDevices',
     'DIO2_ENCDEC', 'RfxDevices',
@@ -45,6 +46,8 @@ fun public MdsDevices() {
     'ACQ425', 'W7xDevices',
     'ACQ480', 'W7xDevices',
     'BNC845', 'W7xDevices',
-    'QC9200', 'W7xDevices'
+    'QC9200', 'W7xDevices',
+    'CRIO_FAU', 'RfxDevices',
+    'SPIDER_TIMING', 'RfxDevices'
   ]);
 }

@@ -839,11 +839,15 @@ usleep(3000);
 
 int FLIR_SC65X::setMeasurementRange(int measRange)
 {
-	if(measRange<0 or measRange>2)
+
+         // with new FLIR CAMERAS range is 0-5 instead of 0-2
+	if(measRange<0 or measRange>5)
 	{
-	  printLastError("Error: measRange in setMeasurementRange must be 0,1,2!!!\n", 0);
+	  printLastError("Error: measRange in setMeasurementRange must be in range 0-5!!!\n", 0);
 	  return ERROR;
 	}
+
+        printf("Try setting MeasurementRange to %d. REMEMBER to select the correct focal lenght!");
 
     PvGenParameterArray *lDeviceParams = lDevice->GetParameters();
 	PvGenInteger *currCase = dynamic_cast<PvGenInteger *>( lDeviceParams->Get( "CurrentCase" ) );
@@ -923,7 +927,7 @@ int FLIR_SC65X::setFocusAbsPosition(int focusPos)
     int newFocPos = focusPos;
 
     this->lResult = lfocusPos->SetValue( newFocPos );  //set is not fine as read!!! maybe motor is not a step by step one.
-    if ( !this->lResult.IsOK() ) {printLastError("Error getting Focus Absolute Position\n(%s)\n", lResult.GetDescription().GetAscii() ); return ERROR;}
+    if ( !this->lResult.IsOK() ) {printLastError("Error setting Focus Absolute Position\n(%s)\n", lResult.GetDescription().GetAscii() ); return ERROR;}
 
     return SUCCESS;
 }
@@ -1381,22 +1385,22 @@ int FLIR_SC65X::setStreamingMode( IRFMT_ENUM irFormat, int streamingEnabled,  bo
 		switch(irFormat)
 		{
 			case radiometric:
-				this->lowLim = lowLim;
-				this->highLim = highLim;
+				this->lowLim = lowLim * 10;   //20170918: streaming is already converted in temperature. Radiometric frames are never send.
+				this->highLim = highLim * 10;
           		        minLim= 0;            
-          		        maxLim= 32767; 
+          		        maxLim= 62000-27315; //32767; 
 				break;
 			case linear100mK:
 				this->lowLim = lowLim * 10;
 				this->highLim = highLim * 10;
           		        minLim= 0;            
-          		        maxLim= 62000-27315;  //346.85°C
+          		        maxLim= 62000-27315;  //3468.5°C 
 				break;
 			case linear10mK:
 				this->lowLim = lowLim * 100;
 				this->highLim = highLim * 100;
           		        minLim= 0;            
-          		        maxLim= 62000-27315; //3468.5°C
+          		        maxLim= 62000-27315; //346.85°C
 				break;
 		}
    }
@@ -1609,11 +1613,9 @@ int FLIR_SC65X::startFramesAcquisition()
 	  }//else Internal trigger source
         }//if(storeEnabled)
 
-
         if ( irFrameFormat != radiometric )         
-        	frameConv((unsigned short *)frameBuffer, width, height);  //convert kelvin in Celsius
-
-
+             frameConv((unsigned short *)frameBuffer, width, height);  //convert kelvin in Celsius
+           
 	//frameStatus -> status=1 complete # status=2 incomplete # status=3 timeout # status=4 triggered frame + complete
 	if( (frameStatus != 3 ) && ( storeEnabled == 1 && startStoreTrg == 1 ) && ( acqSkipFrameNumber <= 0 || (frameTriggerCounter % (acqSkipFrameNumber + 1) ) == 0 ) )
 	{
@@ -1634,7 +1636,7 @@ int FLIR_SC65X::startFramesAcquisition()
 	{
            if( tcpStreamHandle == -1) 
 	   {
-            	rstatus = camOpenTcpConnectionNew(streamingServer, streamingPort, &tcpStreamHandle, width, height);
+            	rstatus = camOpenTcpConnection(streamingServer, streamingPort, &tcpStreamHandle, width, height, CSU_PIX_FMT_GRAY16);
             	if( rstatus !=-1 )
                 {
             	  printf( "Connected to FFMPEG on %s : %d\n", streamingServer, streamingPort);
@@ -1645,19 +1647,16 @@ int FLIR_SC65X::startFramesAcquisition()
 		  streamingEnabled = 0;
 		}
 	    }
-
-	    if ( (streamingSkipFrameNumber - 1 <= 0) || (frameCounter % ( streamingSkipFrameNumber - 1)) == 0 )
+	    //if ( (streamingSkipFrameNumber - 1 <= 0) || (frameCounter % ( streamingSkipFrameNumber - 1)) == 0 )  //20170327 - ORIGINAL
+            else if((this->frameRate<10) || (frameCounter % int(this->frameRate/10.0))==0)  //send frame @ 10Hz. Reduce CPU usage when radiometric conversion must be performed.
 	    {
-                bool testVLCsyncProblem=0;
-                if ((frameCounter % 10)==0)
+                if( irFrameFormat == radiometric ) 
                 {
-                  testVLCsyncProblem=autoAdjustLimit;
+                  flirRadiometricConv(frameBuffer, width, height, metaData);   //radiometric conversion in Celsius using metadata
                 }
-                else
-                {
-                  testVLCsyncProblem=0;
-                }
-		camStreamingFrame( tcpStreamHandle, frameBuffer, metaData, width, height, 14, irFrameFormat, testVLCsyncProblem, &lowLim, &highLim, minLim, maxLim, this->deviceName, streamingList);
+ 	       // camStreamingFrame( tcpStreamHandle, frameBuffer, metaData, width, height, 14, irFrameFormat, autoAdjustLimit, &lowLim, &highLim, minLim, maxLim, this->deviceName, streamingList);
+//printf("frame counter: %d\n",frameCounter);
+	        camStreamingFrame( tcpStreamHandle, frameBuffer, width, height, CSU_PIX_FMT_GRAY16, irFrameFormat, autoAdjustLimit, &lowLim, &highLim, minLim, maxLim, this->deviceName, streamingList);
 	    }             
 	} // if( streamingEnabled )
 
