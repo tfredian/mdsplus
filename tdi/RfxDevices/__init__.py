@@ -85,5 +85,6 @@ _mimport('SIS3820')
 _mimport('SPIDER')
 _mimport('SPIDER_SM')
 _mimport('ZELOS2150GV')
+_mimport('PV_WAVE_SETUP')
 #print('RfxDevices loaded.')
 

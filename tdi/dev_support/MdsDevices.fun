@@ -36,6 +36,7 @@ fun public MdsDevices() {
     'BASLERACA', 'RfxDevices',
     'NI6368AI', 'RfxDevices',
     'RFX_PROTECTIONS', 'RfxDevices',
+    'RFXWAVESETUP', 'RfxDevices',
     'DIO2_ENCDEC', 'RfxDevices',
     'MARTE_DEVICE', 'RfxDevices',
     'MARTE_NE', 'RfxDevices',
@@ -47,6 +48,7 @@ fun public MdsDevices() {
     'ACQ480', 'W7xDevices',
     'BNC845', 'W7xDevices',
     'QC9200', 'W7xDevices',
+    'PV_WAVE_SETUP', 'RfxDevices',
     'CRIO_FAU', 'RfxDevices',
     'SPIDER_TIMING', 'RfxDevices'
   ]);
