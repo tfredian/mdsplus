@@ -36,6 +36,7 @@ public class MdsDataProvider
     static final long RESAMPLE_TRESHOLD = 1000000000;
     static final int MAX_PIXELS = 20000;
     
+    private int MDSplus_Dtype;
     
     class SegmentedFrameData
         implements FrameData
@@ -229,9 +230,12 @@ public class MdsDataProvider
                 DataInputStream d = new DataInputStream(b);
 
                 pixel_size = d.readInt();
+                int mds_data_type = d.readInt();
                 int width = d.readInt();
                 int height = d.readInt();
+                int img_size = height * width;
                 int n_frame = d.readInt();
+                Vector f_time = new Vector();
 
                 dim = new Dimension(width, height);
                 if (in_x == null || in_x.length() == 0)
@@ -248,21 +252,36 @@ public class MdsDataProvider
                     all_times = MdsDataProvider.this.GetWaveData(in_x).getData(MAX_PIXELS).y;
                 }
                 
-                header_size = 16 + 4 * n_frame;
+                // Header byte size { pixelSize, unsiged-flag,  
+                // width, height, num_frame, timeFrame[num_frame]; 
+                header_size = 20 + 4 * n_frame;
 
                 switch (pixel_size)
                 {
                     case 8:
-                        mode = BITMAP_IMAGE_8;
+                        mode =  mds_data_type == Descriptor.DTYPE_UBYTE ? BITMAP_IMAGE_U8 : BITMAP_IMAGE_8;
                         break;
                     case 16:
-                        mode = BITMAP_IMAGE_16;
+                        mode =  mds_data_type == Descriptor.DTYPE_USHORT ? BITMAP_IMAGE_U16 : BITMAP_IMAGE_16;
                         break;
-                    case 32:
+                    case 32:                        
                         mode = BITMAP_IMAGE_32;
+                        switch (mds_data_type)
+                        {
+                            case Descriptor.DTYPE_LONG: 
+                                mode = BITMAP_IMAGE_32;
+                                break;
+                            case Descriptor.DTYPE_ULONG: 
+                                mode = BITMAP_IMAGE_U32;
+                                break;
+                            case Descriptor.DTYPE_FLOAT: 
+                                mode = BITMAP_IMAGE_F32;
+                                break;    
+                        }
                         break;
                 }
             }
+            /*
             else
             {
                 String mframe_error = ErrorString();
@@ -286,8 +305,12 @@ public class MdsDataProvider
                         error = error + "\n" + ErrorString();
 
                     throw (new IOException(error));
+                 
                 }
-            }
+           }
+            */
+            if (buf == null || all_times == null)
+                throw (new IOException());                
 
             for (i = 0; i < all_times.length; i++)
             {
@@ -349,7 +372,9 @@ public class MdsDataProvider
             byte[] b_img = null;
 
             if (mode == BITMAP_IMAGE_8 || mode == BITMAP_IMAGE_16 ||
-                mode == BITMAP_IMAGE_32)
+                mode == BITMAP_IMAGE_U8 || mode == BITMAP_IMAGE_U16 ||
+                mode == BITMAP_IMAGE_32 || mode == BITMAP_IMAGE_U32 || 
+                mode == BITMAP_IMAGE_F32 )
             {
                 if (buf == null)
                     throw (new IOException("Frames not loaded"));
@@ -1301,16 +1326,21 @@ public class MdsDataProvider
         }
 
         ByteArrayOutputStream b = new ByteArrayOutputStream();
-        try (DataOutputStream d = new DataOutputStream(b)) {
-            d.writeInt(pixel_size);
-            d.writeInt(shape[0]);
-            d.writeInt(shape[1]);
-            d.writeInt(num_time);
-            for (int i = 0; i < num_time; i++)
-                d.writeFloat(time[i]);
-            d.write(img_buf);
-            return b.toByteArray();
-	}
+        DataOutputStream d = new DataOutputStream(b);
+
+        d.writeInt(pixel_size);
+        //MDSplus pixel data type
+        d.writeInt( MDSplus_Dtype );
+        d.writeInt(shape[0]);
+        d.writeInt(shape[1]);
+        d.writeInt(num_time);
+
+        for (int i = 0; i < num_time; i++)
+            d.writeFloat(time[i]);
+
+        d.write(img_buf);
+        return  b.toByteArray();
+
     }
 
     public synchronized float[] GetFrameTimes(String in_frame)
@@ -1372,7 +1402,7 @@ public class MdsDataProvider
             desc = mds.MdsValue(in);
         else
             desc = mds.MdsValue(in, args);
-        switch (desc.dtype)
+        switch ( (this.MDSplus_Dtype = desc.dtype) )
         {
             case Descriptor.DTYPE_FLOAT:
                 for (int i = 0; i < desc.float_data.length; i++)
@@ -1385,6 +1415,7 @@ public class MdsDataProvider
                     dos.writeShort(desc.short_data[i]);
                 out_byte = dosb.toByteArray();
                 return out_byte;
+            case Descriptor.DTYPE_ULONG:
             case Descriptor.DTYPE_LONG:
                 for (int i = 0; i < desc.int_data.length; i++)
                     dos.writeInt(desc.int_data[i]);
@@ -1670,8 +1701,15 @@ public class MdsDataProvider
             case Descriptor.DTYPE_DOUBLE:
                 out = new RealArray(desc.double_data);
                 break;
-            case Descriptor.DTYPE_LONG:
             case Descriptor.DTYPE_USHORT:
+            {
+                float[] outF = new float[desc.short_data.length];
+                for (int i = 0; i < desc.short_data.length; i++)
+                    outF[i] = (float) ( (0xffff) & (int)desc.short_data[i]);
+                out = new RealArray(outF);
+            }
+            break;
+            case Descriptor.DTYPE_LONG:
             {
                 float[] outF = new float[desc.int_data.length];
                 for (int i = 0; i < desc.int_data.length; i++)

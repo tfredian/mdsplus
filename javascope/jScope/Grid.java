@@ -50,8 +50,14 @@ public class Grid
         y_values = new double[50];
         this.xmax = xmax;
 
+	//System.out.println("xmax "+ xmax);
+	//System.out.println("ymax "+ ymax);
+	//System.out.println("xmin "+ xmin);
+	//System.out.println("ymin "+ ymin);
+
         x_dim = BuildGrid(x_values, IS_X, xmax, ymax, xmin, ymin, xlog, ylog);
         y_dim = BuildGrid(y_values, IS_Y, xmax, ymax, xmin, ymin, xlog, ylog);
+
     }
 
     void SetReversed(boolean reversed)
@@ -391,6 +397,7 @@ public class Grid
             for (i = 0; i < y_dim; i++)
             {
                 dim = wm.YPixel(y_values[i], d);
+		//System.out.println("i" + i + " wm.YPixel " + wm.YPixel(y_values[i], d) );		
                 switch (mode)
                 {
                     case IS_DOTTED:
@@ -421,6 +428,7 @@ public class Grid
                         for (j = 1; j <= num_y_steps; j++)
                         {
                             curr_dim = wm.YPixel(y_values[i] + j * curr_step, d);
+
                             if (curr_dim <= d.height - label_height)
                             {
                                 g.drawLine(label_width + 3, curr_dim,

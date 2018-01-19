@@ -16,6 +16,7 @@ using namespace MDSplus;
 
 extern "C" void pxi6259_create_ai_conf_ptr(void **confPtr);
 extern "C" void pxi6259_free_ai_conf_ptr(void *conf);
+extern "C" void pxi6259_ai_polynomial_scaler(int16_t *raw, float *scaled, uint32_t num_samples, float *coeff, int n_coeff, int gain);
 
 extern "C" void xseries_create_ai_conf_ptr(void **confPtr, unsigned int pre_trig_smp, unsigned int post_trig_smp, char multi_trigger);
 extern "C" void xseries_free_ai_conf_ptr(void *conf);
@@ -41,7 +42,7 @@ void pxi6259_create_ai_conf_ptr(void **confPtr)
 {
     pxi6259_ai_conf_t *conf = (pxi6259_ai_conf_t *)malloc(sizeof(pxi6259_ai_conf_t));
     *conf = pxi6259_create_ai_conf();
-    printf( "==== aiExportStartTrigSig %d\n", conf->aiExportStartTrigSig);
+    //printf( "==== aiExportStartTrigSig %d\n", conf->aiExportStartTrigSig);
 
     *confPtr = (void *) conf;
 }
@@ -578,13 +579,19 @@ int readAndSaveAllChannels(int nChan, void *chanFdPtr, int bufSize, int segmentS
     return 1;
 }   
 
-extern "C" int  pxi6259_getCalibrationParams(int chanfd, int range, float *coeff);
-int pxi6259_getCalibrationParams(int chanfd, int range, float *coeffVal)
+extern "C" int  pxi6259_getCalibrationParams(int chanfd, int range, float *coeff, int *coeff_num);
+int pxi6259_getCalibrationParams(int chanfd, int range, float *coeffVal, int *coeff_num)
 {
     ai_scaling_coefficients_t ai_coefs;
     int32_t i, j;
     int retval;
 
+
+    retval = pxi6259_get_ai_coefficient(chanfd, &ai_coefs);
+    if (retval) return retval;
+
+
+/*
     retval = ioctl(chanfd, PXI6259_IOC_GET_AI_SCALING_COEF, &ai_coefs);
     if (retval) return retval;
 
@@ -600,23 +607,42 @@ int pxi6259_getCalibrationParams(int chanfd, int range, float *coeffVal)
 
     printf("interval.gain   %e\n", ai_coefs.interval.gain.f);
     printf("interval.offset %e\n", ai_coefs.interval.offset.f);
-
-
-/*
-    for (i = 0; i < NUM_AI_SCALING_COEFFICIENTS; ++i) {
-    	coeffVal[i] = ai_coefs.cal_info.modes[0].coefficients[i].f
-    			* ai_coefs.cal_info.intervals[range].gain.f;
-	    if (i == 0) {
-		    coeffVal[i] += ai_coefs.cal_info.intervals[range].offset.f;
-	    }
-	}
 */
+	for (i=0; i <= ai_coefs.order; i++)
+	{
+		coeffVal[i] = (ai_coefs.mode.value[i].f * ai_coefs.interval.gain.f);
+		if (i == 0) {
+		        coeffVal[i] = ai_coefs.value[i].f + ai_coefs.interval.offset.f;
+		}
+	}
+	*coeff_num = ai_coefs.order+1;
 
 /*
     for (j = NUM_AI_SCALING_COEFFICIENTS - 1; j >= 0; j--) 
          printf("Coeff[%d] : %e\n",  j, coeffVal[j] );
 */
 }
+
+/* Gain divider lookup table */
+static float gain_divider[] = {1.0, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0}; //1: 10V, 2 :5V, 3: 2V, 4:1V, 5, 500mv, 6, 200mv, 7 :100mv 
+
+void pxi6259_ai_polynomial_scaler(int16_t *raw, float *scaled, uint32_t num_samples, float *coeff, int order, int gain)
+{
+        int32_t i, j;
+        float rawf;
+
+        for (i = 0; i < num_samples; i++) {
+                rawf = (float)raw[i];
+                scaled[i] = coeff[order];
+
+                for (j = order-1 ; j >= 0 ; j--) {
+                    scaled[i] *= rawf;
+                    scaled[i] += coeff[j];
+                }
+                scaled[i] /= gain_divider[gain];
+        }
+}
+
 
 int pxi6259_readAndSaveAllChannels_OLD(int nChan, void *chanFdPtr, int bufSize, int segmentSize, int numSamples, void *dataNidPtr, int clockNid, void *treePtr, void *saveListPtr, void *stopAcq)
 { 
@@ -1040,7 +1066,7 @@ int xseriesReadAndSaveAllChannels(int nChan, void *chanFdPtr, int bufSize, int s
 
 int pxi6259_readAndSaveAllChannels(int nChan, void *chanFdPtr, int bufSize, int segmentSize, int sampleToSkip, int numSamples, void *dataNidPtr, int clockNid, float timeIdx0, float period, void *treePtr, void *saveListPtr, void *stopAcq)
 { 
-    char saveConv = 1;
+    char saveConv = 0; // Acquisition format flags 0 raw data 1 convrted dta
     int  skipping  = 0;
 
     int sampleToRead   = 0;

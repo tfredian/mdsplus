@@ -16,8 +16,6 @@ public class ColorMap
   float vG[];
   float vB[];
 
-  float min;
-  float max;
   int numColors = 0;
   Color colors[];
   String name = "unnamed";
@@ -28,7 +26,10 @@ public class ColorMap
 
   int bitShift = 0;
   boolean bitClip = false;  
+  private float min = Short.MIN_VALUE;
+  private float max = Short.MAX_VALUE;
 
+  
   ColorMap()
   {
       this.name = "Green scale";

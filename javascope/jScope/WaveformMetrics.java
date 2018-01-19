@@ -370,21 +370,30 @@ public class WaveformMetrics
 
         if (x_log || y_log)
         {
-            double xmax_nolog = Math.pow(10, xmax);
-            double xmin_nolog = Math.pow(10, xmin);
+            //double xmax_nolog = Math.pow(10, xmax);
+            //double xmin_nolog = Math.pow(10, xmin);
+            double xmax_curr;
+            double xmin_curr;
+
+            xmax_curr = x_log ? Math.pow(10, xmax) : xmax;
+            xmin_curr = x_log ? Math.pow(10, xmin) : xmin;
+
 
             double first_y, last_y;
-            for (i = 0; i < sig.getNumPoints() && sig.getX(i) < xmin_nolog; i++)
+            for (i = 0; i < sig.getNumPoints() && sig.getX(i) < xmin_curr; i++)
                 ;
             if (i > 0)
                 i--;
             min_y = max_y = sig.getY(i);
             j = i + 1;
+
             start_x = XPixel(sig.getX(i), d);
 
-            first_y = last_y = sig.getY(i);
             while (j < end_point) //sig.getNumPoints()  && sig.x_double[j] < xmax_nolog)
             {
+
+            	first_y = last_y = sig.getY(i);
+
                 for (j = i + 1; j < sig.getNumPoints() &&
                      (pol_idx >= sig.getNumNaNs() || j != sig.getNaNs()[pol_idx]) &&
                      (curr_x = XPixel(sig.getX(j), d)) == start_x; j++)
@@ -421,7 +430,7 @@ public class WaveformMetrics
                     ypoints[curr_num_points] = YPixel(max_y, d);
                     curr_num_points++;
                 }
-                if (j == sig.getNumPoints() || j == end_point || Double.isNaN(sig.getY(j))) // || sig.x_double[j] >= xmax_nolog)
+                if (j == sig.getNumPoints() || j >= end_point || Double.isNaN(sig.getY(j))) // || sig.x_double[j] >= xmax_nolog)
                 {
                     curr_polygon = new Polygon(xpoints, ypoints,
                                                curr_num_points);
@@ -439,7 +448,7 @@ public class WaveformMetrics
                     start_x = XPixel(sig.getX(j), d);
                     max_y = min_y = sig.getY(j);
                     i = j;
-                    if (sig.getX(j) > xmax)
+                    if (sig.getX(j) > xmax_curr)
                         end_point = j + 1;
                 }
             }

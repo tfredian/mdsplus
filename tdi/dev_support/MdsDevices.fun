@@ -48,6 +48,8 @@ fun public MdsDevices() {
     'BNC845', 'W7xDevices',
     'QC9200', 'W7xDevices',
     'CRIO_FAU', 'RfxDevices',
+    'PV_WAVE_SETUP', 'RfxDevices',
+    'SPIDER_SETUP', 'RfxDevices',
     'SPIDER_TIMING', 'RfxDevices'
   ]);
 }

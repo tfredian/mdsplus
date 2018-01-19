@@ -1,4 +1,4 @@
-from MDSplus import mdsExceptions, Device, Data, Range, Dimension, Window, Int32, Float32, Float64
+from MDSplus import mdsExceptions, Device, Data, Range, Dimension, Window, Int32, Float32, Float64, Float32Array
 from threading import Thread
 from ctypes import CDLL, byref, c_int, c_void_p, c_byte, c_float, c_char_p
 import os
@@ -15,14 +15,16 @@ class NI6259AI(Device):
         {'path':':BUF_SIZE', 'type':'numeric', 'value':1000},
         {'path':':SEG_LENGTH', 'type':'numeric', 'value':10000},
         {'path':':CLOCK_SOURCE', 'type':'numeric'}]
+
     for i in range(0,32):
         parts.append({'path':'.CHANNEL_%d'%(i+1), 'type':'structure'})
         parts.append({'path':'.CHANNEL_%d:STATE'%(i+1), 'type':'text', 'value':'ENABLED'})
         parts.append({'path':'.CHANNEL_%d:POLARITY'%(i+1), 'type':'text', 'value':'BIPOLAR'})
         parts.append({'path':'.CHANNEL_%d:RANGE'%(i+1), 'type':'text', 'value':'10V'})
         parts.append({'path':'.CHANNEL_%d:DATA'%(i+1), 'type':'signal', 'options':('no_write_model', 'no_compress_on_put')  })
-    del(i)
+
     parts.append({'path':':END_IDX', 'type':'numeric'})
+
     parts.append({'path':':INIT_ACTION','type':'action',
         'valueExpr':"Action(Dispatch('CPCI_SERVER','PULSE_PREPARATION',50,None),Method(None,'init',head))",
         'options':('no_write_shot',)})
@@ -41,6 +43,15 @@ class NI6259AI(Device):
     parts.append({'path':':USE_TIME', 'type':'text', 'value':'YES'})
     parts.append({'path':':START_TIME', 'type':'numeric','value':0})
     parts.append({'path':':END_TIME', 'type':'numeric','value':1})
+
+
+    for i in range(0,32):
+        parts.append({'path':'.CHANNEL_%d:DATA_RAW'%(i+1), 'type':'signal', 'options':('no_write_model', 'no_compress_on_put')  })
+        parts.append({'path':'.CHANNEL_%d:CALIB_PARAM'%(i+1), 'type':'numeric', 'options':('no_write_model')  })
+    del(i)
+
+    parts.append({'path':':CONV_CLK', 'type':'numeric','value':20})
+    parts.append({'path':':SERIAL_NUM', 'type':'numeric'})
 
 
 #File descriptor
@@ -88,6 +99,8 @@ class NI6259AI(Device):
     inputModeDict = {'RSE':AI_CHANNEL_TYPE_RSE, 'NRSE':AI_CHANNEL_TYPE_NRSE, 'DIFFERENTIAL':AI_CHANNEL_TYPE_DIFFERENTIAL}
     enableDict = {'ENABLED':True , 'DISABLED':False}
     gainDict = {'10V':c_byte(1), '5V':c_byte(2),'2V':c_byte(3), '1V':c_byte(4),'500mV':c_byte(5),'200mV':c_byte(6),'100mV':c_byte(7)}
+    gainValueDict = {'10V':10., '5V':5.,'2V':2., '1V':1.,'500mV':0.5,'200mV':0.2,'100mV':0.1}
+
     polarityDict = {'UNIPOLAR':AI_POLARITY_UNIPOLAR, 'BIPOLAR':AI_POLARITY_BIPOLAR}
     diffChanMap = [0,1,2,3,4,5,6,7,16,17,18,19,20,21,22,23]
     nonDiffChanMap = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]
@@ -114,15 +127,29 @@ class NI6259AI(Device):
             except:
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Missing Board Id' )
                 raise mdsExceptions.TclFAILED_ESSENTIAL
+
+            try:
+               devName = '/dev/pxi6259.'+str(boardId);
+               dfd = os.open(devName, os.O_RDWR);
+               serialNum = c_int(0)
+               if NI6259AI.niLib.pxi6259_get_board_serial_number(dfd, byref(serialNum)) == 0 : 
+                  self.serial_num.putData(serialNum)
+               os.close(dfd)
+            except:
+               pass
+
             try:
                 fileName = '/dev/pxi6259.'+str(boardId)+'.ai';
                 self.fd = os.open(fileName, os.O_RDWR);
-            except:
-                Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot open device '+ fileName)
+            except Exception as e:
+                print(e)
+                Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot open device '+ fileName + ' :' + e)
                 raise mdsExceptions.TclFAILED_ESSENTIAL
+
+
         """
         try:
-            if( niLib.pxi6259_reset_ai(self.fd) ):
+            if( NI6259AI.niLib.pxi6259_reset_ai(self.fd) ):
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot reset device '+ fileName)
                 raise mdsExceptions.TclFAILED_ESSENTIAL
         except:
@@ -193,7 +220,6 @@ class NI6259AI(Device):
             coeff_array = c_float*4
             coeff = coeff_array();
 
-
             #NI6259AI.niInterfaceLib.getStopAcqFlag(byref(self.stopAcq));
 
             for chan in range(len(self.chanMap)):
@@ -203,23 +229,25 @@ class NI6259AI(Device):
                     currFd = os.open('/dev/pxi6259.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]]), os.O_RDWR | os.O_NONBLOCK)
                     chanFd.append(currFd)
 
-                    chanNid.append( getattr(self.device, 'channel_%d_data'%(self.chanMap[chan]+1)).getNid() )
+                    chanNid.append( getattr(self.device, 'channel_%d_data_raw'%(self.chanMap[chan]+1)).getNid() )
                     #print "chanFd "+'channel_%d_data'%(self.chanMap[chan]+1), chanFd[chan], " chanNid ", chanNid[chan]
 
-
                     gain = getattr(self.device, 'channel_%d_range'%(self.chanMap[chan]+1)).data()
-                    self.device.gainDict[gain]
+                    gain_code = self.device.gainDict[gain]
 
-                    #status = NI6259AI.niInterfaceLib.pxi6259_getCalibrationParams(currFd, gain_code, coeff)
-                    status = 0
+		    n_coeff = c_int(0)
+                    status = NI6259AI.niInterfaceLib.pxi6259_getCalibrationParams(currFd, gain_code, coeff, byref(n_coeff) )
+
                     if( status < 0 ):
-                        Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot read calibration values for Channel %d. Default value assumed ( offset= 0.0, gain = range/65536'%(str(self.chanMap[chan])) )
+                        Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot read calibration values for Channel %d. Default value assumed ( offset= 0.0, gain = range/65536'%((self.chanMap[chan])) )
+                        gainValue = self.device.gainValueDict[gain]
                         coeff[0] = coeff[2] = coeff[3] = 0
-                        coeff[1] = c_float( gain / 65536. )
+                        coeff[1] = c_float( gainValue / 65536. )
+		    
+                    getattr(self.device, 'channel_%d_calib_param'%(self.chanMap[chan]+1)).putData(Float32Array(coeff))
 
-                    #print "coeff ", coeff
-
-                except:
+                except Exception as e:
+                    print(e)
                     Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot open Channel '+ str(self.chanMap[chan]))
                     return
 
@@ -312,18 +340,24 @@ class NI6259AI(Device):
         else:
             numChannels = 32
 
+#Channel configuration
         activeChan = 0;
         for chan in range(0, numChannels):
                     
             #Empy the node which will contain  the segmented data   
-            getattr(self, 'channel_%d_data'%(chan+1)).deleteData()
+            getattr(self, 'channel_%d_data_raw'%(chan+1)).deleteData()
 
-            getattr(self, 'channel_%d_data'%(chan+1)).setCompressOnPut(False)
+            getattr(self, 'channel_%d_data_raw'%(chan+1)).setCompressOnPut(False)
             try:
                 enabled = self.enableDict[getattr(self, 'channel_%d_state'%(chan+1)).data()]
                 polarity = self.polarityDict[getattr(self, 'channel_%d_polarity'%(chan+1)).data()]
                 gain = self.gainDict[getattr(self, 'channel_%d_range'%(chan+1)).data()]
-            except:
+ 
+                data = Data.compile("NIpxi6259analogInputScaled(build_path($), build_path($), $ )", getattr(self, 'channel_%d_data_raw'%(chan+1)).getPath(),  getattr(self, 'channel_%d_calib_param'%(chan+1)).getPath(), gain )
+                data.setUnits("Volts")
+                getattr(self, 'channel_%d_data'%(chan+1)).putData(data)
+            except Exception as e:
+                print e
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Invalid Configuration for channel '+str(chan + 1))
                 raise mdsExceptions.TclFAILED_ESSENTIAL
             if(enabled):
@@ -336,7 +370,7 @@ class NI6259AI(Device):
                 if(status != 0):
                     Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot add channel '+str(currChan + 1))
                     raise mdsExceptions.TclFAILED_ESSENTIAL
-                print('PXI 6259 CHAN '+ str(currChan+1) + ' CONFIGURED')
+                #print('PXI 6259 CHAN '+ str(currChan+1) + ' CONFIGURED')
                 activeChan = activeChan + 1
         #endfor
 
@@ -357,7 +391,7 @@ class NI6259AI(Device):
 #trigger mode
         try:
             trigMode = self.trig_mode.data()
-            print(trigMode)
+            print('PXI 6259 Trigger mode: ', trigMode)
             if(trigMode == 'EXTERNAL_PFI1' or  trigMode == 'EXTERNAL_RTSI1' or trigMode == 'EXT_PFI1_R_RTSI1'):
                 #print "AI_START_SELECT ", self.AI_START_SELECT
                 #print "aiConf ", aiConf
@@ -482,7 +516,12 @@ class NI6259AI(Device):
                     Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot configure device clock')
                     raise mdsExceptions.TclFAILED_ESSENTIAL
 
-            status = NI6259AI.niLib.pxi6259_set_ai_convert_clk(aiConf, c_int(20), c_int(3), self.AI_CONVERT_SELECT_SI2TC, self.AI_CONVERT_POLARITY_RISING_EDGE)
+            convClk = self.conv_clk.data()
+            if ( activeChan == 1 and convClk == 20 ) :
+                convClk = 16  
+
+
+            status = NI6259AI.niLib.pxi6259_set_ai_convert_clk(aiConf, c_int(convClk), c_int(3), self.AI_CONVERT_SELECT_SI2TC, self.AI_CONVERT_POLARITY_RISING_EDGE)
             if(status != 0):
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot Set Convert Clock')
                 raise mdsExceptions.TclFAILED_ESSENTIAL

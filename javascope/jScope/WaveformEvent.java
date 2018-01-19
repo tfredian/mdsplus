@@ -126,6 +126,8 @@ public class WaveformEvent
         this.name = name;
         this.pixels_x = pixels_x;
         this.pixels_y = pixels_y;
+        this.pixels_signal = pixels_signal;
+        this.frames_time = frames_time;
         this.start_pixel_x = start_pixel_x;
         this.start_pixel_y = start_pixel_y;
     }
@@ -145,6 +147,8 @@ public class WaveformEvent
         this.name = name;
         this.values_x = values_x;
         this.values_y = values_y;
+        this.values_signal = values_signal;
+        this.frames_time = frames_time;
         this.start_pixel_x = start_pixel_x;
         this.start_pixel_y = start_pixel_y;
     }
@@ -210,7 +214,7 @@ public class WaveformEvent
             return dateFormat.format(date).toString();
 
         }
-        return dateFormat.format(date);
+        return dateFormat.format(date).toString();
     }
     public String toString()
     {
@@ -240,6 +244,9 @@ public class WaveformEvent
                     Date date1 = new Date();
                     date1.setTime((long)delta_x);
                     */
+                    point_x = jScopeFacade.convertFromSpecificTime((long)point_x);
+                    delta_x = jScopeFacade.convertFromSpecificDeltaTime((long)delta_x);
+                    
                     s = SetStrSize("[" +  getFormattedDate( dateValue + (long)point_x , "d-MMM-yyyy HH:mm:ss.SSS" ) + //format.format(date).toString() +
                                     ", "
                                     + Waveform.ConvertToString(point_y, false) +
@@ -289,6 +296,7 @@ public class WaveformEvent
                                 date.setTime(dateValue + (long)time_value);
                                  * 
                                  */
+								time_value = jScopeFacade.convertFromSpecificTime((long)time_value);
                                 xt_string = ", T = " + getFormattedDate( /*dateValue*/ + (long)time_value , "d-MMM-yyyy HH:mm:ss.SSS" );// format.format(date).toString();
                                 showXasDate = false;
                             }
@@ -311,6 +319,7 @@ public class WaveformEvent
                             date.setTime(dateValue + (long)point_x);
                             //x_string = format.format(date).toString();
                              */
+                            point_x = jScopeFacade.convertFromSpecificTime((long)point_x);
                             x_string = getFormattedDate( /*dateValue*/ + (long)point_x , "d-MMM-yyyy HH:mm:ss.SSS" );
                             string_size = 45;
                         }
@@ -326,8 +335,9 @@ public class WaveformEvent
                                            "]", string_size + 40);
                     }
                     else
-                    if (frame_type == FrameData.BITMAP_IMAGE_32 ||
-                        frame_type == FrameData.BITMAP_IMAGE_16)
+                    if (frame_type == FrameData.BITMAP_IMAGE_32 || frame_type == FrameData.BITMAP_IMAGE_U32 ||
+                        frame_type == FrameData.BITMAP_IMAGE_16 || frame_type == FrameData.BITMAP_IMAGE_U16 ||
+                        frame_type == FrameData.BITMAP_IMAGE_F32)
                     {
                         s = SetStrSize("[" + ( (int) point_x) + ", "
                                        + ( (int) point_y) + " : "

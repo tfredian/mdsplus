@@ -1385,7 +1385,10 @@ public class Waveform
                                frames.getPixel(frames.GetFrameIdx(), p.x, p.y),
                                0);
 
-        if (frame_type == FrameData.BITMAP_IMAGE_32 || frame_type == FrameData.BITMAP_IMAGE_16 || frame_type == FrameData.BITMAP_IMAGE_8 ) {
+        if (frame_type == FrameData.BITMAP_IMAGE_32 || frame_type == FrameData.BITMAP_IMAGE_16 ||
+            frame_type == FrameData.BITMAP_IMAGE_U32 || frame_type == FrameData.BITMAP_IMAGE_U16 || 
+            frame_type == FrameData.BITMAP_IMAGE_8 || frame_type == FrameData.BITMAP_IMAGE_U8 ||
+            frame_type == FrameData.BITMAP_IMAGE_F32 ) {
           we.setPointValue(frames.getPointValue(frames.GetFrameIdx(), p.x, p.y));
         }
         we.setFrameType(frame_type);
@@ -1446,8 +1449,9 @@ public class Waveform
       Point p = frames.getFramePoint(new Point(end_x, end_y), d);
       int frame_type = frames.getFrameType();
 
-      if (frame_type == FrameData.BITMAP_IMAGE_32 ||
-          frame_type == FrameData.BITMAP_IMAGE_16 ) {
+      if (frame_type == FrameData.BITMAP_IMAGE_32 || frame_type == FrameData.BITMAP_IMAGE_U32 ||
+          frame_type == FrameData.BITMAP_IMAGE_16 || frame_type == FrameData.BITMAP_IMAGE_16 ||
+          frame_type == FrameData.BITMAP_IMAGE_F32 ) {
         we = new WaveformEvent(this,
                                p.x, p.y, (float)(Math.round(frames.GetFrameTime() * 10000) / 10000.) ,
                                frames.getName(),
@@ -1950,8 +1954,10 @@ public class Waveform
     img = frames.GetFrame(frame_idx, d);
 
     if (img == null) {
-      wave_error = " No frame at time " + curr_point;//frames.GetTime(frame_idx);
-      return false;
+        wave_error = frames.getError();
+        if( wave_error == null || wave_error.length() == 0)
+            wave_error = " No frame at time " + curr_point;//frames.GetTime(frame_idx);
+        return false;
     }
 
     Dimension dim = frames.getFrameSize(frame_idx, getWaveSize());
@@ -2718,44 +2724,54 @@ protected void drawMarkers(Graphics g, Vector segments, int marker, int step,
     }
   }
 
-  public void setColorMap(ColorMap cm)
-  {
-      this.colorMap = cm;
-      if(frames != null)
-          frames.setColorMap(cm);
-      not_drawn = true;
-      repaint();
-  }
+    public void setColorMap(ColorMap cm)
+    {
+        this.colorMap = cm;
+        if(frames != null)
+            frames.setColorMap(cm);
+        not_drawn = true;
+        repaint();
+    }
 
-  public void setFrameBitShift(int bitShift, boolean bitClip)
-  {
-      if(frames != null)
-      {
-          frames.shiftImagePixel(bitShift, bitClip);
-          not_drawn = true;
-          repaint();
-      }
-  }
+    public void setFrameBitShift(int bitShift, boolean bitClip)
+    {
+        if(frames != null)
+        {
+            ((Frames)frames).shiftImagePixel(bitShift, bitClip);
+            not_drawn = true;
+            repaint();
+        }
+    }
 
-  public ColorMap getColorMap()
-  {
-      return frames.getColorMap();
-  }
+    public void setFrameMinMax(float min, float max)
+    {
+       if(frames != null)
+       {
+           frames.setMinMax(min, max);
+           not_drawn = true;
+           repaint();
+       }
+    }
 
-  public void applyColorModel(ColorMap cm)
-  {
-     if(cm == null) return;
-     if(frames != null)
-     {
-         frames.applyColorModel(cm);
-     }
-     else
-     {
-         this.colorMap = cm;
-     }
-     not_drawn = true;
-     repaint();
-  }
+    public ColorMap getColorMap()
+    {
+        return frames.getColorMap();
+    }
+
+    public void applyColorModel(ColorMap cm)
+    {
+       if(cm == null) return;
+       if(frames != null)
+       {
+           frames.applyColorModel(cm);
+       }
+       else
+       {
+           this.colorMap = cm;
+       }
+       not_drawn = true;
+       repaint();
+    }
 
   public synchronized void addWaveformListener(WaveformListener l) {
     if (l == null) {

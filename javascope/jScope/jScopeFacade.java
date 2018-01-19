@@ -170,9 +170,19 @@ public class jScopeFacade
     //static final long EPICS_BASE = 631148400000L;
     static final long EPICS_BASE = 631152000000L;
 
-
     static int getTimeMode() {return timeMode; }
 
+    static long convertFromSpecificDeltaTime(long deltaTime)
+    {
+        if (timeMode == VMS_TIME)
+                return deltaTime / 10000L;
+        else if(timeMode == EPICS_TIME)
+        {
+            return deltaTime/1000000L;
+        }
+        else 
+            return deltaTime;
+    }
 
     static long convertFromSpecificTime(long inTime)
     {
