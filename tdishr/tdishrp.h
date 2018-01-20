@@ -19,8 +19,6 @@ int TdiGetRecord(int nid, struct descriptor_xd *out);
 int TdiGetShape(int narg, struct descriptor_xd dat[1], unsigned short length, unsigned char dtype,
 		int *cmode_ptr, struct descriptor_xd *out_ptr);
 int TdiHash(int len, char *pstring);
-int _TdiIntrinsic(void *dbid, int opcode, int narg, struct descriptor *list[],
-		  struct descriptor_xd *out_ptr);
 int TdiMasterData(int nsig, struct descriptor_xd sig[1], struct descriptor_xd uni[1],
 		  int *cmode_ptr, struct descriptor_xd *out_ptr);
 int Tdi3Multiply(struct descriptor *in1, struct descriptor *in2, struct descriptor *out);
@@ -29,6 +27,4 @@ int TdiSubtractQuadword(unsigned int *a, unsigned int *b, unsigned int *ans);
 int TdiUnary(struct descriptor *in_ptr, struct descriptor *out_ptr, unsigned int *out_count);
 void UseNativeFloat(struct TdiCatStruct *cat);
 void TdiResetGetRecord();
-int TdiExtPython(struct descriptor *modname_d,
-		 int nargs, struct descriptor **args, struct descriptor_xd *out_ptr);
 #endif

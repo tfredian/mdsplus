@@ -1,3 +1,28 @@
+#
+# Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice, this
+# list of conditions and the following disclaimer in the documentation and/or
+# other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
 def _mimport(name, level=1):
     try:
         return __import__(name, globals(), level=level)
@@ -29,10 +54,6 @@ class Compound(_dat.Data):
             if k in self.fields:
                 self.setDescAt(self._fields[k],v)
 
-    def _setCtx(self,ctx):
-        self.ctx = ctx
-        return self
-
     def _str_bad_ref(self):
         return '%s(%s)'%(self.__class__.__name__,','.join([str(d) for d in self.getDescs()]))
 
@@ -44,6 +65,19 @@ class Compound(_dat.Data):
                 self.setDescAt(i,ans.deref)
         return self
 
+    @property
+    def tree(self):
+        for arg in self._args:
+            if isinstance(arg,_dat.Data):
+                tree=arg.tree
+                if tree is not None:
+                    return tree
+        return None
+    @tree.setter
+    def tree(self,tree):
+        for arg in self._args:
+            if isinstance(arg,_dat.Data):
+                arg._setTree(tree)
 
     def __hasBadTreeReferences__(self,tree):
         for arg in self._args:
@@ -52,12 +86,11 @@ class Compound(_dat.Data):
         return False
 
     def __fixTreeReferences__(self,tree):
-        from copy import deepcopy
-        ans = deepcopy(self)
-        for arg in ans._args:
-            if isinstance(arg,_dat.Data) and arg.__hasBadTreeReferences__(tree):
-                arg.__fixTreeReferences__(tree)
-        return ans
+        for idx in range(len(self._args)):
+          arg=self._args[idx]
+          if isinstance(arg,_dat.Data) and arg.__hasBadTreeReferences__(tree):
+              self._args[idx]=arg.__fixTreeReferences__(tree)
+        return self
 
     def __getattr__(self,name):
         if name == '_fields':
@@ -165,16 +198,19 @@ class Compound(_dat.Data):
             dunits=WithUnits(None,value._units).descriptor
             dunits.dscptrs[0]=dsc.ptr_
             dunits.array[0]  =dsc
+            dunits.tree=value.tree
             dsc = dunits
         if value._error is not None:
             derror=WithError(None,value._error).descriptor
             derror.dscptrs[0]=dsc.ptr_
             derror.array[0]  =dsc
+            derror.tree=value.tree
             dsc = derror
         if value._help is not None or value._validation is not None:
             dparam=Parameter(None,value._help,value._validation).descriptor
             dparam.dscptrs[0]=dsc.ptr_
             dparam.array[0]  =dsc
+            dparam.tree=value.tree
             dsc = dparam
         return dsc
 
@@ -195,7 +231,7 @@ class Compound(_dat.Data):
 
     @classmethod
     def fromDescriptor(cls,d):
-        args = [_dsc.pointerToObject(d.dscptrs[i]) for i in _ver.xrange(d.ndesc)]
+        args = [_dsc.pointerToObject(d.dscptrs[i],d.tree) for i in _ver.xrange(d.ndesc)]
         ans=cls(*args)
         if d.length>0:
             if d.length == 1:
@@ -205,7 +241,7 @@ class Compound(_dat.Data):
             else:
                 opcptr=_C.cast(d.pointer,_C.POINTER(_C.c_uint32))
             ans.opcode = opcptr.contents.value
-        return ans
+        return ans._setTree(d.tree)
 
 class Action(Compound):
     """
@@ -303,7 +339,7 @@ class Function(Compound):
     @classmethod
     def fromDescriptor(cls,d):
         opc  = _C.cast(d.pointer,_C.POINTER(_C.c_uint16)).contents.value
-        args = [_dsc.pointerToObject(d.dscptrs[i]) for i in _ver.xrange(d.ndesc)]
+        args = [_dsc.pointerToObject(d.dscptrs[i],d.tree) for i in _ver.xrange(d.ndesc)]
         return cls.opcodeToClass[opc](*args)
 
     def __init__(self,*args):
@@ -431,16 +467,16 @@ _dsc.addDtypeToClass(Window)
 class Opaque(Compound):
     """An Opaque object containing a binary uint8 array and a string identifying the type.
     """
-    fields=('data','otype')
+    fields=('value','otype')
     dtype_id=217
 
 
     @property
-    def data(self):
+    def value(self):
         "Data portion of Opaque object"
         return self.getDescAt(0)
-    @data.setter
-    def data(self,value):
+    @value.setter
+    def value(self,value):
         self.setDescAt(0,value)
 
     @property
@@ -451,8 +487,11 @@ class Opaque(Compound):
     def getImage(self):
         try: from PIL import Image
         except:       import Image
-        from StringIO import StringIO
-        return Image.open(StringIO(self.data.data().tostring()))
+        if _ver.ispy3:
+            from io import BytesIO as io
+        else:
+            from StringIO import StringIO as io
+        return Image.open(io(self.value.data().tostring()))
 
     @classmethod
     def fromFile(cls,filename,typestring=None):

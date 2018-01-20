@@ -3,6 +3,7 @@ package jScope;
 /* $Id$ */
 import jScope.ContourSignal;
 import java.awt.Color;
+import java.awt.geom.Point2D;
 import java.text.*;
 
 import java.util.*;
@@ -289,15 +290,15 @@ public class Signal implements WaveDataListener
     private long xMinLong, xMaxLong;
     ContourSignal cs;
     private double contourLevels[];
-    Vector<Vector> contourSignals = new Vector<Vector>();
-    Vector<Float> contourLevelValues = new Vector<Float>();
+    Vector<Vector> contourSignals = new Vector<>();
+    Vector<Double> contourLevelValues = new Vector<>();
 
     final int NOT_FREEZED = 0, FREEZED_BLOCK = 1, FREEZED_SCROLL = 2;
     int freezeMode = NOT_FREEZED;
     double freezedXMin, freezedXMax;
     
-    Vector<XYData> pendingUpdatesV = new Vector<XYData>();
-    Vector<SignalListener> signalListeners = new Vector<SignalListener>();
+    Vector<XYData> pendingUpdatesV = new Vector<>();
+    Vector<SignalListener> signalListeners = new Vector<>();
 /** Private caches of the signal (only for 1D Signals)
  * 
  */
@@ -1030,10 +1031,8 @@ public class Signal implements WaveDataListener
         return y2D; 
     }
 
-    
-    Vector<Vector>getContourSignals() { return contourSignals; }
-    Vector<Float> getContourLevelValues() { return contourLevelValues;}
-
+    Vector<Vector> getContourSignals() { return contourSignals; }
+    Vector<Double> getContourLevelValues() { return contourLevelValues;}
 
     public boolean isFullLoad()
     {
@@ -1504,20 +1503,18 @@ public class Signal implements WaveDataListener
       }
     }
 
-    public Vector addContourLevel(double level)
+    public Vector<Vector<Point2D.Double>> addContourLevel(double level)
     {
-      Vector v;
-
       if (cs == null)
       {
         cs = new ContourSignal(this);
       }
 
-      v = cs.contour(level);
+      Vector<Vector<Point2D.Double>> v = cs.contour(level);
       if (v.size() != 0)
       {
         contourSignals.addElement(v);
-        contourLevelValues.addElement(new Float(level));
+        contourLevelValues.addElement(new Double(level));
       }
       return v;
     }
@@ -1866,8 +1863,8 @@ public class Signal implements WaveDataListener
      */
     public void ResetXScale()
     {
-        xmax = saved_xmax;
-        xmin = saved_xmin;
+        xmax = freezedXMax = curr_xmax = saved_xmax;
+        xmin = freezedXMin = curr_xmin = saved_xmin;
     }
 
     /**
@@ -1884,8 +1881,8 @@ public class Signal implements WaveDataListener
      */
     public void ResetScales()
     {
-        xmax = saved_xmax;
-        xmin = saved_xmin;
+        xmax = freezedXMax = curr_xmax = saved_xmax;
+        xmin = freezedXMin = curr_xmin = saved_xmin;
         ymax = saved_ymax;
         ymin = saved_ymin;
         unfreeze();
@@ -1896,7 +1893,7 @@ public class Signal implements WaveDataListener
      */
     public void AutoscaleX()
     {
-        if (type == this.TYPE_2D  && (mode2D == Signal.MODE_IMAGE || mode2D == Signal.MODE_CONTOUR))
+        if (type == TYPE_2D  && (mode2D == Signal.MODE_IMAGE || mode2D == Signal.MODE_CONTOUR))
         {
             xmax = this.x2D_max;
             xmin = this.x2D_min;
@@ -1904,7 +1901,7 @@ public class Signal implements WaveDataListener
         }
 
         double currX[];
-        if(type == this.TYPE_2D && (mode2D == MODE_XZ || mode2D == MODE_YZ))
+        if(type == TYPE_2D && (mode2D == MODE_XZ || mode2D == MODE_YZ))
             currX = sliceX;
         else
             currX = x;
@@ -1926,7 +1923,7 @@ public class Signal implements WaveDataListener
      */
     public void AutoscaleY()
     {
-        if (type == this.TYPE_2D)
+        if (type == TYPE_2D)
         {
             if(mode2D == Signal.MODE_IMAGE || mode2D == Signal.MODE_CONTOUR)
             {
@@ -1951,7 +1948,7 @@ public class Signal implements WaveDataListener
         }
 
         float currY[];
-         if(type == this.TYPE_2D && (mode2D == MODE_XZ || mode2D == MODE_YZ))
+         if(type == TYPE_2D && (mode2D == MODE_XZ || mode2D == MODE_YZ))
             currY = sliceY;
         else
             currY = y;
@@ -1980,7 +1977,7 @@ public class Signal implements WaveDataListener
      */
     public void AutoscaleY(double min, double max)
     {
-        if (type == this.TYPE_2D && (mode2D == Signal.MODE_IMAGE || mode2D == Signal.MODE_CONTOUR))
+        if (type == TYPE_2D && (mode2D == Signal.MODE_IMAGE || mode2D == Signal.MODE_CONTOUR))
         {
             ymin = this.y2D_min;
             ymax = this.y2D_max;
@@ -1989,7 +1986,7 @@ public class Signal implements WaveDataListener
 
         float currY[];
         double currX[];
-        if(type == this.TYPE_2D && (mode2D == MODE_XZ || mode2D == MODE_YZ))
+        if(type == TYPE_2D && (mode2D == MODE_XZ || mode2D == MODE_YZ))
         {
             currY = sliceY;
             currX = sliceX;

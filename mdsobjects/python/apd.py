@@ -1,3 +1,28 @@
+#
+# Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice, this
+# list of conditions and the following disclaimer in the documentation and/or
+# other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
 def _mimport(name, level=1):
     try:
         return __import__(name, globals(), level=level)
@@ -42,13 +67,26 @@ class Apd(_array.Array):
             d.pointer=_C.cast(_C.pointer(descs_ptrs),_C.c_void_p)
         d.a0=d.pointer
         return _compound.Compound._descriptorWithProps(self,d)
+    @property
+    def tree(self):
+        for desc in self.descs:
+            if isinstance(desc,_data.Data):
+                tree=desc.tree
+                if tree is not None:
+                    return tree
+        return None
+    @tree.setter
+    def tree(self,tree):
+        for desc in self.descs:
+            if isinstance(desc,_data.Data):
+                desc._setTree(tree)
 
     @classmethod
     def fromDescriptor(cls,d):
         num   = int(d.arsize/d.length)
         dptrs = _C.cast(d.pointer,_C.POINTER(_C.c_void_p*num)).contents
-        descs = [_descriptor.pointerToObject(dptr) for dptr in dptrs]
-        return cls(descs)._setCtx(d.ctx)
+        descs = [_descriptor.pointerToObject(dptr,d.tree) for dptr in dptrs]
+        return cls(descs)._setTree(d.tree)
 
 
     def __hasBadTreeReferences__(self,tree):
@@ -59,9 +97,10 @@ class Apd(_array.Array):
 
 
     def __fixTreeReferences__(self,tree):
-        for idx in range(len(self._escs)):
-            if isinstance(self.descs[idx],_data.Data) and self.descs[idx].__hasBadTreeReferences__(tree):
-                self.descs[idx]=self.descs[idx].__fixTreeReferences__(tree)
+        for idx in range(len(self.descs)):
+            d=self.descs[idx]
+            if isinstance(d,_data.Data) and d.__hasBadTreeReferences__(tree):
+                self.descs[idx]=d.__fixTreeReferences__(tree)
         return self
 
     def __init__(self,value,dtype=0):
@@ -83,7 +122,7 @@ class Apd(_array.Array):
         @rtype: Data|tuple
         """
         try:
-            return self.descs[idx]._setCtx(self.ctx)
+            return self.descs[idx]._setTree(self.tree)
         except:
             return
 
@@ -106,7 +145,7 @@ class Apd(_array.Array):
         """Return the descriptor indexed by idx. (indexes start at 0).
         @rtype: Data
         """
-        return self[idx]._setCtx(self.ctx)
+        return self[idx]._setTree(self.tree)
 
     def setDescs(self,descs):
         """Set the descriptors of the Apd.
@@ -234,7 +273,7 @@ class List(list,Apd):
         if value is not None:
             if isinstance(value,(Apd,tuple,list,_ver.mapclass,_ver.generator,_N.ndarray)):
                 for val in value:
-                    self.append(_data.Data(val))
+                    List.append(self,_data.Data(val))
             else:
                 raise TypeError('Cannot create List from type: '+str(type(value)))
 

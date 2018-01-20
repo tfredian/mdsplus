@@ -1,3 +1,28 @@
+#
+# Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice, this
+# list of conditions and the following disclaimer in the documentation and/or
+# other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
 def _mimport(name, level=1):
     try:
         return __import__(name, globals(), level=level)
@@ -15,8 +40,7 @@ _exc=_mimport('mdsExceptions')
 
 class Scalar(_dat.Data):
     _value = None
-
-    def _setCtx(self,*args,**kwargs): return self
+    def _setTree(self,*a,**kw): return self;
 
     def __new__(cls,*value):
         if cls is not Scalar or len(value)==0:
@@ -76,7 +100,10 @@ class Scalar(_dat.Data):
             value = value.data()
         elif isinstance(value,_C._SimpleCData):
             value = value.value
-        self._value = self._ntype(value)
+        if _ver.ispy3 and self._ntype is _N.bytes_:
+            self._value = self._ntype(_ver.tobytes(value))
+        else:   
+            self._value = self._ntype(value)
 
     def _str_bad_ref(self):
         return _ver.tostr(self._value)
@@ -261,7 +288,7 @@ class Uint64(Scalar):
            mdstime=MDSplus.Uint64.fromTime(time.time()-time.altzone)
            print(mdstime.date)
         """
-        return cls(int(value * cls._utc1) + cls_utc0)
+        return cls(int(value * cls._utc1) + cls._utc0)
 
     def _getDate(self):
         return _dat.Data.execute('date_time($)',self)
@@ -273,28 +300,28 @@ class Uint64(Scalar):
     time=property(_getTime)
 _dsc.addDtypeToClass(Uint64)
 
-class Int8(Scalar):
+class Int8(Uint8):
     """8-bit signed number"""
     dtype_id=6
     _ctype=_C.c_int8
     _ntype=_N.int8
 _dsc.addDtypeToClass(Int8)
 
-class Int16(Scalar):
+class Int16(Uint16):
     """16-bit signed number"""
     dtype_id=7
     _ctype=_C.c_int16
     _ntype=_N.int16
 _dsc.addDtypeToClass(Int16)
 
-class Int32(Scalar):
+class Int32(Uint32):
     """32-bit signed number"""
     dtype_id=8
     _ctype=_C.c_int32
     _ntype=_N.int32
 _dsc.addDtypeToClass(Int32)
 
-class Int64(Scalar):
+class Int64(Uint64):
     """64-bit signed number"""
     dtype_id=9
     _ctype=_C.c_int64
@@ -328,8 +355,7 @@ class String(Scalar):
     def __init__(self,value):
         super(String,self).__init__(value)
         if not isinstance(self._value,_N.str):
-            self._value = _ver.np2npstr(self._value)
-
+            self._value = _ver.npstr(_ver.tostr(self._value))
     @property
     def _descriptor(self):
         d=_dsc.Descriptor_s()
@@ -372,7 +398,7 @@ class Uint128(Scalar):
         raise TypeError("Uint128 is not yet supported")
 _dsc.addDtypeToClass(Uint128)
 
-class Int128(Scalar):
+class Int128(Uint128):
     """128-bit number"""
     dtype_id=26
     def __init__(self):

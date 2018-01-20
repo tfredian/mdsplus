@@ -1,3 +1,27 @@
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 /*	MDS$COMPRESS.C
 	Compress waveform or other data using specified or delta method.
 		status = MDS$COMPRESS(%descr(cimage), %descr(centry), %descr(input), %ref(output_xd))
@@ -54,6 +78,7 @@ The expansion routine "xentry":
 #include <strroutines.h>
 #include <mdsshr_messages.h>
 #include <STATICdef.h>
+#include <mdsplus/mdsplus.h>
 #include "mdsshrp.h"
 
 #define _MOVC3(a,b,c) memcpy(c,b,(size_t)(a))
@@ -247,6 +272,7 @@ EXPORT int MdsCompress(const struct descriptor *cimage_ptr,
   case CLASS_R:
     if (((struct descriptor_r *)in_ptr)->ndesc == 0)
       return MdsCopyDxXd(in_ptr, out_ptr);
+    MDS_ATTR_FALLTHROUGH
   case CLASS_A:
   case CLASS_APD:
   case CLASS_CA:

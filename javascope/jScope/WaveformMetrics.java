@@ -1,12 +1,15 @@
 package jScope;
 
-/* $Id$ */
-import jScope.Signal;
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.image.IndexColorModel;
 import java.io.Serializable;
+import java.util.Vector;
 
 public class WaveformMetrics
     implements Serializable
@@ -239,7 +242,7 @@ public class WaveformMetrics
 
     public void ToImage(Signal s, Image img, Dimension d, ColorMap colorMap)
     {
-        int i, j;
+        int i;
         int xSt, xEt, ySt, yEt;
         Graphics2D g2 = (Graphics2D) img.getGraphics();
 
@@ -353,7 +356,7 @@ public class WaveformMetrics
 
     public Vector<Polygon> ToPolygonsDoubleX(Signal sig, Dimension d)
     {
-        int i, j, curr_num_points, curr_x, start_x, max_points;
+        int i, j, curr_num_points, curr_x, start_x;
         double max_y, min_y, curr_y;
         Vector<Polygon> curr_vect = new Vector<Polygon>(5);
         int xpoints[], ypoints[];
@@ -370,17 +373,12 @@ public class WaveformMetrics
 
         if (x_log || y_log)
         {
-            //double xmax_nolog = Math.pow(10, xmax);
-            //double xmin_nolog = Math.pow(10, xmin);
-            double xmax_curr;
-            double xmin_curr;
 
-            xmax_curr = x_log ? Math.pow(10, xmax) : xmax;
-            xmin_curr = x_log ? Math.pow(10, xmin) : xmin;
+            double xmin_nolog = Math.pow(10, xmin);
 
 
             double first_y, last_y;
-            for (i = 0; i < sig.getNumPoints() && sig.getX(i) < xmin_curr; i++)
+            for (i = 0; i < sig.getNumPoints() && sig.getX(i) < xmin_nolog; i++)
                 ;
             if (i > 0)
                 i--;
@@ -389,11 +387,9 @@ public class WaveformMetrics
 
             start_x = XPixel(sig.getX(i), d);
 
+            first_y = last_y = sig.getY(i);
             while (j < end_point) //sig.getNumPoints()  && sig.x_double[j] < xmax_nolog)
             {
-
-            	first_y = last_y = sig.getY(i);
-
                 for (j = i + 1; j < sig.getNumPoints() &&
                      (pol_idx >= sig.getNumNaNs() || j != sig.getNaNs()[pol_idx]) &&
                      (curr_x = XPixel(sig.getX(j), d)) == start_x; j++)
@@ -448,7 +444,7 @@ public class WaveformMetrics
                     start_x = XPixel(sig.getX(j), d);
                     max_y = min_y = sig.getY(j);
                     i = j;
-                    if (sig.getX(j) > xmax_curr)
+                    if (sig.getX(j) > xmax)
                         end_point = j + 1;
                 }
             }

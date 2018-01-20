@@ -1,4 +1,28 @@
-#include <config.h>
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+#include <mdsplus/mdsconfig.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -25,7 +49,7 @@ static const char *environ_var[NUM_SETTINGS] = {"mdsevent_loop", "mdsevent_ttl",
 static const char *xml_setting[NUM_SETTINGS] = {"IP_MULTICAST_LOOP", "IP_MULTICAST_TTL", "IP_MULTICAST_IF", "PORT", "ADDRESS"};
 static const char *fname = "eventsConfig.xml";
 
-int UdpEventGetLoop(unsigned char *loop) {
+EXPORT int UdpEventGetLoop(unsigned char *loop) {
   int status = 0;
   if (settings[LOOP]) {
     if (strcmp("0", settings[LOOP]) == 0) {
@@ -157,7 +181,7 @@ static const char *getProperty(xmlDocPtr doc, const char *settings, const char *
   return ans;
 }
 
-void InitializeEventSettings()
+EXPORT void InitializeEventSettings()
 {
   int i, missing=0;
   xmlInitParser();
@@ -177,24 +201,26 @@ void InitializeEventSettings()
 #else
     home_dir = getenv("HOME");
 #endif
-    if (home_dir != NULL) {
+    if (home_dir) {
       xmlDocPtr doc=NULL;
       static const char *home_xml_dir = "/.mdsplus.conf/";
-      char *xmlfname = malloc(strlen(home_dir) + strlen(home_xml_dir) + strlen(fname) + 10);
-      sprintf(xmlfname, "%s%s%s", home_dir, home_xml_dir, fname);
-      if (access(xmlfname,R_OK) == 0)
-	doc = xmlParseFile(xmlfname);
-      free(xmlfname);
-      if (doc) {
-	missing = 0;
-	for (i=0;i<NUM_SETTINGS;i++) {
-	  if (settings[i] == NULL) {
-	    settings[i] = getProperty(doc, "UdpEvents", xml_setting[i]);
-	    if (settings[i] == NULL)
-	      missing = 1;
+      char* xmlfname = malloc(strlen(home_dir) + strlen(home_xml_dir) + strlen(fname) + 1);
+      if (xmlfname) {
+	sprintf(xmlfname, "%s%s%s", home_dir, home_xml_dir, fname);
+	if (access(xmlfname,R_OK) == 0)
+	  doc = xmlParseFile(xmlfname);
+	free(xmlfname);
+	if (doc) {
+	  missing = 0;
+	  for (i=0;i<NUM_SETTINGS;i++) {
+	    if (settings[i] == NULL) {
+	      settings[i] = getProperty(doc, "UdpEvents", xml_setting[i]);
+	      if (settings[i] == NULL)
+	        missing = 1;
+	    }
 	  }
+	  xmlFreeDoc(doc);
 	}
-	xmlFreeDoc(doc);
       }
     }
   }
@@ -202,19 +228,21 @@ void InitializeEventSettings()
     xmlDocPtr doc=NULL;
     char *mdsplus_dir = getenv("MDSPLUS_DIR");
     static const char *local_xml_dir = "/local/";
-    if (mdsplus_dir != NULL) {
-      char *xmlfname = malloc(strlen(mdsplus_dir) + strlen(local_xml_dir) + strlen(fname) + 10);
-      sprintf(xmlfname,"%s%s%s",mdsplus_dir,local_xml_dir,fname);
-      if (access(xmlfname,R_OK) == 0)
-	doc = xmlParseFile(xmlfname);
-      free(xmlfname);
-      if (doc) {
-	for (i=0;i<NUM_SETTINGS;i++) {
-	  if (settings[i] == NULL) {
-	    settings[i] = getProperty(doc, "UdpEvents", xml_setting[i]);
+    if (mdsplus_dir) {
+      char *xmlfname = malloc(strlen(mdsplus_dir) + strlen(local_xml_dir) + strlen(fname) + 1);
+      if (xmlfname) {
+	sprintf(xmlfname,"%s%s%s",mdsplus_dir,local_xml_dir,fname);
+	if (access(xmlfname,R_OK) == 0)
+	  doc = xmlParseFile(xmlfname);
+	free(xmlfname);
+	if (doc) {
+	  for (i=0;i<NUM_SETTINGS;i++) {
+	    if (settings[i] == NULL) {
+	      settings[i] = getProperty(doc, "UdpEvents", xml_setting[i]);
+	    }
 	  }
+	  xmlFreeDoc(doc);
 	}
-	xmlFreeDoc(doc);
       }
     }
   }

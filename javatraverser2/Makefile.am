@@ -1,5 +1,5 @@
 EXTRA_DIST = 
-CLEANFILES = $(java_DATA) JTMANIFEST.mf \
+CLEANFILES = $(java_DATA) \
 	$(addprefix $(JAVAROOT)/,$(TRAV_CLS)) \
 	$(addprefix $(JAVAROOT)/,$(TOOLS_CLS)) \
 	$(addprefix $(JAVAROOT)/,$(MDS_CLS))
@@ -129,6 +129,7 @@ MDS_SRC = \
 	mds/TreeShr.java \
 	mds/UpdateEvent.java \
 	mds/UpdateEventListener.java \
+	mds/data/CTX.java \
 	mds/data/DATA.java \
 	mds/data/DTYPE.java \
 	mds/data/OPC.java \

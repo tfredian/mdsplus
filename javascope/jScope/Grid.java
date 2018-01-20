@@ -1,12 +1,19 @@
 package jScope;
 
 /* $Id$ */
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.SimpleTimeZone;
 
 public class Grid
     implements Serializable
@@ -88,10 +95,8 @@ public class Grid
                yrange = ymax - ymin;
         
         boolean greater = false;
-        boolean is_log;
         int grid_step;
-        int count = 0, i, num_steps, rem_step = 1;
-        Float f;
+        int count = 0, i, num_steps;
         
         if (xrange <= 0)
             xrange = 1E-3;
@@ -106,8 +111,6 @@ public class Grid
             step = (xmax - xmin) / grid_step;
             
             step = evalStep(xmin, xmax,  grid_step);
-            
-            is_log = xlog;
         }
         else
         {
@@ -115,7 +118,6 @@ public class Grid
             curr_max = ymax + 0.1 * yrange;
             curr_min = ymin - 0.1 * yrange;
             step = (ymax - ymin) / grid_step;
-            is_log = ylog;
         }
 
         if (step > 1)
@@ -198,10 +200,8 @@ public class Grid
                yrange = ymax - ymin;
         
         boolean greater = false;
-        boolean is_log;
         int grid_step;
-        int count = 0, i, num_steps, rem_step = 1;
-        Float f;
+        int count = 0, i, num_steps;
         
         if (xrange <= 0)
             xrange = 1E-3;
@@ -214,7 +214,6 @@ public class Grid
             curr_max = xmax + 0.1 * xrange;
             curr_min = xmin - 0.1 * xrange;
             step = (xmax - xmin) / grid_step;
-            is_log = xlog;
         }
         else
         {
@@ -225,8 +224,6 @@ public class Grid
             step = (ymax - ymin) / grid_step;
 //	    if(step < 10e-10)
 //		step = 10e-10;
-            is_log = ylog;
-
         }
 
         if (step > 1)
@@ -294,7 +291,6 @@ public class Grid
     {
         int label_width, label_height, curr_dim;
         FontMetrics fm;
-        Font curr_font;
 
         fm = g.getFontMetrics();
         if (int_xlabels)
@@ -351,12 +347,11 @@ public class Grid
 
     public void paint(Graphics g, Dimension d, Waveform w, WaveformMetrics wm)
     {
-        int i, j, dim, num_steps, curr_dim;
+        int i, j, dim, curr_dim;
         Color prev_col;
         FontMetrics fm;
         double curr_step;
         String curr_string;
-        boolean displayDate = true;
         String curr_date_string = null;
         String prev_date_string = "";
 

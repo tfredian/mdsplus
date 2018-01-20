@@ -1,3 +1,27 @@
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 /*  CMS REPLACEMENT HISTORY, Element MDSXDROUTINES.C */
 /*  *12    4-SEP-1996 08:04:48 TWF "Remove libvmdef.h" */
 /*  *11    5-AUG-1996 14:38:17 TWF "Fix copy_dx for unpacked descriptors" */
@@ -42,8 +66,6 @@ inline static char *_align(char *ptr, size_t offset, size_t size) {
 void MdsFixDscLength(struct descriptor *in);
 //static void _checkAlign(struct descriptor *in);
 
-STATIC_CONSTANT void *MdsVM_ZONE = 0;
-
 EXPORT int MdsGet1Dx(unsigned int const *length_ptr, unsigned char const *dtype_ptr, struct descriptor_xd *dsc_ptr,
 	      void **zone)
 {
@@ -52,13 +74,12 @@ EXPORT int MdsGet1Dx(unsigned int const *length_ptr, unsigned char const *dtype_
     if (*length_ptr != dsc_ptr->l_length) {
       if (dsc_ptr->l_length)
 	status =
-	  LibFreeVm(&dsc_ptr->l_length, (void *)&dsc_ptr->pointer,
-		      zone ? zone : (MdsVM_ZONE ? &MdsVM_ZONE : 0));
+	  LibFreeVm(&dsc_ptr->l_length, (void *)&dsc_ptr->pointer, zone);
       else
 	status = 1;
       if STATUS_OK
 	status =
-	  LibGetVm((unsigned int *)length_ptr, (void *)&dsc_ptr->pointer, zone ? zone : (MdsVM_ZONE ? &MdsVM_ZONE : 0));
+	  LibGetVm((unsigned int *)length_ptr, (void *)&dsc_ptr->pointer, zone);
     } else
       status = 1;
     if STATUS_OK {
@@ -78,8 +99,7 @@ EXPORT int MdsFree1Dx(struct descriptor_xd *dsc_ptr, void **zone)
   if (dsc_ptr->class == CLASS_XD) {
     if (dsc_ptr->pointer)
       status =
-	LibFreeVm(&dsc_ptr->l_length, (void *)&dsc_ptr->pointer,
-		    zone ? zone : (MdsVM_ZONE ? &MdsVM_ZONE : 0));
+	LibFreeVm(&dsc_ptr->l_length, (void *)&dsc_ptr->pointer, zone);
     else
       status = 1;
     if STATUS_OK {

@@ -1,3 +1,27 @@
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 /*      Tdi1GetNci.C
         Get node characteristic information by name.
         WARNING this routine is an exception to rule that NIDs and PATHs are evaluated.
@@ -85,7 +109,7 @@ STATIC_CONSTANT struct item {
   "IO_STV", 0, 0, NciIO_STV, DTYPE_LU, 4}, {
   "IS_CHILD", 0xffff, NciK_IS_CHILD, NciPARENT_RELATIONSHIP, DTYPE_BU, 1}, {
   "IS_MEMBER", 0xffff, NciK_IS_MEMBER, NciPARENT_RELATIONSHIP, DTYPE_BU, 1}, {
-  "LENGTH", 0, 0, NciLENGTH, DTYPE_L, 4}, {
+  "LENGTH", 0, 0, NciLENGTH, DTYPE_LU, 4}, {
   "MEMBER", 0, 0, NciMEMBER, DTYPE_NID, 4}, {
   "MEMBER_NIDS", 0, NciNUMBER_OF_MEMBERS, NciMEMBER_NIDS, DTYPE_NID, 0}, {
   "MINPATH", 0, 0, NciMINPATH, DTYPE_T, 0}, {
@@ -109,7 +133,7 @@ STATIC_CONSTANT struct item {
   "PATH_REFERENCE", NciM_PATH_REFERENCE, NciM_PATH_REFERENCE, NciGET_FLAGS, DTYPE_BU, 1}, {
   "RECORD", 0, 0, RECORDIDX, DTYPE_L, 0}, {
   "RFA", 0, 0, NciRFA, DTYPE_Q, 8}, {
-  "RLENGTH", 0, 0, NciRLENGTH, DTYPE_L, 4}, {
+  "RLENGTH", 0, 0, NciRLENGTH, DTYPE_LU, 4}, {
   "SEGMENTED", NciM_SEGMENTED, NciM_SEGMENTED, NciGET_FLAGS, DTYPE_BU, 1}, {
   "SETUP_INFORMATION", NciM_SETUP_INFORMATION, NciM_SETUP_INFORMATION, NciGET_FLAGS, DTYPE_BU, 1}, {
   "STATE", NciM_STATE, NciM_STATE, NciGET_FLAGS, DTYPE_BU, 1}, {

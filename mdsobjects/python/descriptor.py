@@ -1,3 +1,28 @@
+#
+# Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# Redistributions in binary form must reproduce the above copyright notice, this
+# list of conditions and the following disclaimer in the documentation and/or
+# other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
 def _mimport(name, level=1):
     try:
         return __import__(name, globals(), level=level)
@@ -15,14 +40,15 @@ _MdsShr=_ver.load_library('MdsShr')
 #
 #############################################
 
-def pointerToObject(pointer):
+def pointerToObject(pointer,tree=None):
     if not pointer: return None
-    return Descriptor(pointer).value
+    return Descriptor(pointer)._setTree(tree).value
 
 class Descriptor(object):
-    tree=None
-    ctx=None
+    tree = None
     dclass_id = 0
+    _value = None
+    _structure = None
     class _structure_class(_C.Structure):
         _fields_=[("length",_C.c_ushort),
                   ("dtype",_C.c_ubyte),
@@ -33,9 +59,10 @@ class Descriptor(object):
     @property
     def value(self):
         if self.dclass:
-            return self.desc_class(self._structure,self.__dict__)._setCtx(self.ctx).value
-    def _setCtx(self,ctx):
-        self.ctx=ctx
+            return self.desc_class(self._structure,self.__dict__)._setTree(self.tree).value
+    def _setTree(self,tree):
+        _tre = _mimport('tree')
+        if isinstance(tree,_tre.Tree): self.tree=tree
         return self
 
     @property
@@ -95,12 +122,12 @@ class Descriptor(object):
     def addressof(self):
         return _C.addressof(self._structure)
     @property
-    def byref(self):
+    def ref(self):
         return _C.byref(self._structure)
 
 class DescriptorNULL(Descriptor):
     dclass = length = dtype = addressof = pointer = 0
-    byref=ptr_=ptr=Descriptor.null
+    ref=ptr_=ptr=Descriptor.null
     def __init__(self):pass
 DescriptorNULL=DescriptorNULL()
 
@@ -109,7 +136,7 @@ class Descriptor_s(Descriptor):
     @property
     def value(self):
         if self.dtype:
-            return dtypeToClass[self.dtype].fromDescriptor(self)._setCtx(self.ctx)
+            return dtypeToClass[self.dtype].fromDescriptor(self)._setTree(self.tree)
 
 class Descriptor_d(Descriptor_s):
     dclass_id = 2
@@ -129,7 +156,7 @@ class Descriptor_xs(Descriptor_s):
     @property
     def value(self):
         if self.l_length and self.pointer:
-            return Descriptor(self.pointer,self.__dict__)._setCtx(self.ctx).value
+            return Descriptor(self.pointer,self.__dict__)._setTree(self.tree).value
 
 class Descriptor_xd(Descriptor_xs):
     dclass_id = 192
@@ -170,7 +197,7 @@ class Descriptor_a(Descriptor):
     @property
     def value(self):
         if self.dtype:
-            return dtypeToArrayClass[self.dtype].fromDescriptor(self)._setCtx(self.ctx)
+            return dtypeToArrayClass[self.dtype].fromDescriptor(self)._setTree(self.tree)
     @property
     def binscale(self):
         return bool(self.aflags & 8)
@@ -223,7 +250,7 @@ class Descriptor_ca(Descriptor_a):
     def value(self):
         xd = Descriptor_xd()
         _exc.checkStatus(_MdsShr.MdsDecompress(self.ptr,xd.ptr))
-        return xd._setCtx(self.ctx).value
+        return xd._setTree(self.tree).value
 
 class Descriptor_apd(Descriptor_a):
     dclass_id = 196

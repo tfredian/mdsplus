@@ -1,7 +1,7 @@
 #ifndef _TREESHRP_H
 #define _TREESHRP_H
 
-#include <config.h>
+#include <mdsplus/mdsconfig.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -154,17 +154,17 @@ typedef struct named_attributes_index {
                            (outp)[6] = ((char *)&in)[1]; (outp)[7] = ((char *)&in)[0]
 #else
 
-static inline int64_t swapquad(void *buf) {
+static inline int64_t swapquad(const void *buf) {
   int64_t ans;
   memcpy(&ans,buf,sizeof(ans));
   return ans;
 }
-static inline int32_t swapint(void *buf) {
+static inline int32_t swapint(const void *buf) {
   int32_t ans;
   memcpy(&ans,buf,sizeof(ans));
   return ans;
 }
-static inline int16_t swapshort(void *buf) {
+static inline int16_t swapshort(const void *buf) {
   int16_t ans;
   memcpy(&ans,buf,sizeof(ans));
   return ans;
@@ -640,29 +640,22 @@ Another useful macro based on nid:
 nid_to_tree_nidx(pino, nid, info, nidx)
 *******************************************/
 
-#define nid_to_tree_nidx(pino, nid, info, nidx) \
-    {\
-      unsigned int nid_to_tree_nidx__i;\
-      info = pino->tree_info;\
-      for (nid_to_tree_nidx__i=0; info ? nid_to_tree_nidx__i < nid->tree : 0; nid_to_tree_nidx__i++) \
-               info = info->next_info; \
-      info = info ? (info->header->nodes >= (int)nid->node ? info : 0) : 0; \
-      nidx = info ? nid->node : 0; \
-    }
+#define nid_to_tree_nidx(pino, nid, info, nidx) nidx = nid_to_tree_idx(pino,nid,&info)
+static inline int nid_to_tree_idx(PINO_DATABASE* pino,NID* nid,TREE_INFO** info_out) {
+  unsigned int i;
+  TREE_INFO* info = pino->tree_info;
+  for (i=0; info && i < nid->tree; i++)
+    info = info->next_info;
+  *info_out = info ? (info->header->nodes >= (int)nid->node ? info : 0) : NULL;
+  return *info_out ? nid->node : 0;
+}
 /******************************************
 Another useful macro based on nid:
 
 nid_to_tree(pino, nid, info)
 *******************************************/
 
-#define nid_to_tree(pino, nid, info) \
-    {\
-      unsigned int nid_to_tree_nidx__i;\
-      info = pino->tree_info;\
-      for (nid_to_tree_nidx__i=0; info ? nid_to_tree_nidx__i < nid->tree : 0; nid_to_tree_nidx__i++) \
-               info = info->next_info; \
-      info = info ? (info->header->nodes >= (int)nid->node ? info : 0) : 0; \
-    }
+#define nid_to_tree(pino, nid, info) nid_to_tree_idx(pino,nid,&info)
 
 /****************************
 Macro's for checking access
@@ -732,7 +725,7 @@ extern void _TreeDeleteNodesDiscard(void *dbid);
 extern int TreeGetDatafile(TREE_INFO * info_ptr, unsigned char *rfa, int *buffer_size, char *record,
 			   int *retsize, int *nodenum, unsigned char flags);
 extern int TreeEstablishRundownEvent(TREE_INFO * info);
-extern int TreeGetDsc(TREE_INFO * info, int nid, int64_t offset, int length,
+extern int TreeGetDsc(TREE_INFO * info, const int nid, const int64_t offset, const int length,
 		      struct descriptor_xd *dsc);
 extern int TreeGetExtendedAttributes(TREE_INFO * info_ptr, int64_t offset,
 				     EXTENDED_ATTRIBUTES * att);

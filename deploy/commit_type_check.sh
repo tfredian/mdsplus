@@ -4,12 +4,12 @@
 #
 # The original commit is passed in as an argument ("origin" for pull requests and
 # the last release tag for release builds.
-# 
+#
 # The second argument to this script should be the filespec of the contents of an
 # email to be sent to the person who created a commit with an invalid title.
 #
 
-git log $1..HEAD --no-merges --decorate=short --pretty=format:"%<(80,trunc)%s%n%ce" |
+git log $1..HEAD --no-merges --decorate=short --pretty=format:"%<(80,trunc)%s%n%ae" |
 awk -v EMAILMSG="$2" -F: '{ IGNORECASE=1
                TITLE=$0
                switch ($1) {
@@ -20,18 +20,20 @@ awk -v EMAILMSG="$2" -F: '{ IGNORECASE=1
                  break
                case "Fix":
 	       case "Revert \"Fix":
-                 if ( VERSION == "SAME" ) {
+                 if ( VERSION == "" || VERSION == "SAME" ) {
                    VERSION="PATCH"
                  }
                  OK="1"
-                 break 
+                 break
                case "Tests":
 	       case "Revert \"Tests":
-               case "Docs": 
+               case "Docs":
 	       case "Revert \"Docs":
                case "Build":
 	       case "Revert \"Build":
-                 
+                 if ( VERSION == "" ) {
+                   VERSION="SAME"
+                 }
                  OK="1"
                  break
                default:
@@ -46,9 +48,10 @@ awk -v EMAILMSG="$2" -F: '{ IGNORECASE=1
                }
             }
             END {
-              if ( VERSION == "" ) VERSION="SAME";
-              if ( FAIL == "TRUE" && VERSION == "SAME" ) {
+              if ( FAIL == "TRUE" && VERSION == "" ) {
                 print("BADCOMMIT")
+              } else if ( VERSION == "" ) {
+                print("SAME")
               } else {
                 print(VERSION)
               }

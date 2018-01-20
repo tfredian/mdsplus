@@ -1,4 +1,28 @@
-#include <config.h>
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+#include <mdsplus/mdsconfig.h>
 #include <servershr.h>
 #include "servershrp.h"
 #include <stdlib.h>
@@ -275,16 +299,18 @@ static int QJob(SrvJob * job){
 }
 // main
 static void LogPrefix(char *ans_c){
-  char hname[512];
-  char *port = MdsGetServerPortname();
-  gethostname(hname, 512);
-  sprintf(ans_c, "%s, %s:%s, %s, ", Now(), hname, port ? port : "?",
+  if (ans_c) {
+    char hname[512];
+    char *port = MdsGetServerPortname();
+    gethostname(hname, 512);
+    sprintf(ans_c, "%s, %s:%s, %s, ", Now(), hname, port ? port : "?",
           Logging == 0 ? "logging disabled" : "logging enabled");
-  if (Debug) {
+    if (Debug) {
       sprintf(ans_c + strlen(ans_c), "\nDebug info: QueueLocked = %d ProgLoc = %d WorkerDied = %d"
             "\n            LeftWorkerLoop = %d CondWStat = %d\n",
             QueueLocked, ProgLoc, WorkerDied, LeftWorkerLoop, CondWStat);
     }
+  }
 }
 // main
 static int ShowCurrentJob(struct descriptor_xd *ans){
@@ -320,7 +346,7 @@ static int ShowCurrentJob(struct descriptor_xd *ans){
 }
 // main
 static int RemoveLast(){
-  INIT_STATUS_ERROR;
+  int status;
   SrvJob *job;
   QUEUE_LOCK;
   job = JobQueueNext;
@@ -333,15 +359,16 @@ static int RemoveLast(){
     FreeJob(job);
     printf("Removed pending action");
     status = MDSplusSUCCESS;
-  }
+  } else
+    status = MDSplusERROR;
   QUEUE_UNLOCK;
   return status;
 }
 // thread
 static SrvJob *NextJob(int wait){
   SrvJob *job;
-  int done = 0;
-  while (!done) {
+  //  int done = 0;
+  while (1) {
     QUEUE_LOCK;
     job = JobQueue;
     if (job) {
@@ -351,11 +378,11 @@ static SrvJob *NextJob(int wait){
       else
 	JobQueueNext = 0;
     }
-    if (job || (!wait))
-      done = 1;
-    else
+    if (job == NULL && wait)
       _CONDITION_WAIT(&JobQueueCond);
     QUEUE_UNLOCK;
+    if (job || (!wait))
+      break;
   }
   return job;
 }
@@ -538,6 +565,8 @@ static void SendToMonitor(MonitorList *m, MonitorList *prev, SrvJob *job_in){
   DESCRIPTOR_NID(niddsc, 0);
   char *status_text = MdsGetMsg(job->status);
   status = TreeOpen(job->tree, job->shot, 0);
+  if STATUS_NOT_OK // try to open model instead
+      status = TreeOpen(job->tree, -1, 0);
   if STATUS_OK {
     niddsc.pointer = (char *)&job->nid;
     status = TdiGetNci(&niddsc, &fullpath_d, &fullpath MDS_END_ARG);

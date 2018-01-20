@@ -28,7 +28,7 @@ class Frames extends Canvas
 {
     static final int ROI = 20;
 
-    Vector frame_time = new Vector();
+    Vector<Float> frame_time = new Vector<>();
     Rectangle zoom_rect = null;
     Rectangle view_rect = null;
     private int curr_frame_idx = -1;
@@ -70,7 +70,7 @@ class Frames extends Canvas
     class FrameCache
     {
         FrameData fd;
-        Hashtable recentFrames;
+        Hashtable<Integer, FrameDescriptor> recentFrames;
         int bitShift;
         boolean bitClip;
         ColorMap colorMap;
@@ -82,13 +82,13 @@ class Frames extends Canvas
         Dimension frameDim;
         int numFrames;
         MediaTracker tracker;
-        Vector recentIdxV= new Vector();
+        Vector<Integer> recentIdxV= new Vector<Integer>();
         int updateCount = 0;
         static final int MAX_CACHE_MEM = 50000000;
 
         public FrameCache()
         {
-            recentFrames = new Hashtable();
+            recentFrames = new Hashtable<>();
             bitShift = 0;
             bitClip = false;
             min = Float.MIN_VALUE;
@@ -105,12 +105,12 @@ class Frames extends Canvas
             min = Float.MIN_VALUE;
             max = Float.MAX_VALUE;            
             colorMap = new ColorMap();
-            recentFrames = new Hashtable();
-            Enumeration fds = fc.recentFrames.keys();
+            recentFrames = new Hashtable<>();
+            Enumeration<Integer> fds = fc.recentFrames.keys();
             while(fds.hasMoreElements())
             {
-                Integer idx = (Integer)fds.nextElement();
-                FrameDescriptor fDescr = (FrameDescriptor)fc.recentFrames.get(idx);
+                Integer idx = fds.nextElement();
+                FrameDescriptor fDescr = fc.recentFrames.get(idx);
                 recentFrames.put(idx, fDescr);
             }
 
@@ -333,12 +333,10 @@ class Frames extends Canvas
             }
             if(fDesc == null) return null;   
             if(fDesc.updateCount == updateCount) //fDesc.updatedImage  is still ok
-            {
                 return fDesc.updatedImage;
-            }
             //Othewise it is necessary to update it
-	    Image img;
-	    if( pixelSize > 0 )
+            Image img ;
+            if(pixelSize > 0)
             {
 
                 ColorModel colorModel = colorMap.getIndexColorModel( (pixelSize < 32 ? pixelSize : 16) );
@@ -537,12 +535,11 @@ class Frames extends Canvas
     Frames(Frames frames)
     {
         this();
-
         cache = new FrameCache(frames.cache);
 
-        if(frame_time.isEmpty())
+        if(frame_time.size() != 0)
             frame_time.removeAllElements();
-        
+
         if(frames.zoom_rect != null)
             zoom_rect = new Rectangle(frames.zoom_rect);
         if(frames.view_rect != null)
@@ -701,7 +698,7 @@ class Frames extends Canvas
 
         int img_size = d.height*d.width * num_byte_pixel;
         byte tmp[] = new byte[img_size];
-        int i, j , k , l, ofs;
+        int j , k , l;
 
         int h = vertical_flip ? d.height - 1: 0;
         int w = horizontal_flip ? d.width - 1: 0;
@@ -905,8 +902,8 @@ class Frames extends Canvas
     {
         Point p;
         int n_point = (int) (Math.sqrt( Math.pow((double)(st_x - end_x), 2.0) + Math.pow((double)(st_y - end_y), 2.0)) + 0.5);
-        int e_x, s_x, x, y;
-        int pixels_line[];
+        int x, y;
+        int pixels_line[] = {pixel_array[(st_y * img_width) + st_x], pixel_array[(st_y * img_width) + st_x]};
 
         grabFrame();
         if(n_point < 2)
@@ -935,6 +932,7 @@ class Frames extends Canvas
         Point p;
         int n_point = (int) (Math.sqrt( Math.pow((double)(st_x - end_x), 2.0) + Math.pow((double)(st_y - end_y), 2.0)) + 0.5);
         int x, y;
+        //float values_line[] = {values_array[(st_y * img_width) + st_x], values_array[(st_y * img_width) + st_x]};
         float values_line[]; 
             
         grabFrame();
@@ -1154,7 +1152,7 @@ class Frames extends Canvas
 
     public float[] getFramesTime()
     {
-        if( frame_time == null || frame_time.isEmpty() )
+        if(frame_time == null || frame_time.size() == 0)
             return null;
 
         if(ft == null)
@@ -1188,13 +1186,16 @@ class Frames extends Canvas
         {
             Dimension fr_dim = getFrameSize(curr_frame_idx, d);
 
+            Dimension view_dim;
             Dimension dim;
 
             if(zoom_rect == null)
             {
-                dim = GetFrameDim(curr_frame_idx);;
+                view_dim = GetFrameDim(curr_frame_idx);
+                dim = view_dim;
             } else {
                 dim = new Dimension(zoom_rect.width, zoom_rect.height);
+                view_dim = new Dimension(zoom_rect.x+zoom_rect.width, zoom_rect.y+zoom_rect.height);
                 p.x -= zoom_rect.x;
                 p.y -= zoom_rect.y;
             }

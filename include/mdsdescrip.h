@@ -1,12 +1,12 @@
 #ifndef MDSDESCRIP_H_DEFINED
 #define MDSDESCRIP_H_DEFINED 1
 
-#include <config.h>
+#include <mdsplus/mdsconfig.h>
 
 #ifdef _WIN32
+#define __char_align__ char
 #define __fill_name__ fill
 #define __fill_value__ 0,
-#define __char_align__ char
 #else				/* _WINDOWS */
 #define __char_align__
 #define __fill_name__
@@ -723,36 +723,18 @@ struct descriptor_opaque {
  */
 
 #define MAXDIM 8
-typedef ARRAY_COEFF(char, MAXDIM) array_coeff;
-typedef ARRAY_BOUNDS(char, MAXDIM) array_bounds;
-typedef ARRAY_BOUNDS(struct descriptor *, MAXDIM) array_bounds_desc;
+typedef ARRAY_COEFF(char, MAXDIM * 10) array_coeff;
+typedef ARRAY_BOUNDS(char, MAXDIM * 10) array_bounds;
+typedef ARRAY_BOUNDS(struct descriptor *, MAXDIM * 10) array_bounds_desc;
 typedef ARRAY(char) array;
 typedef ARRAY(int) array_int;
 typedef ARRAY(struct descriptor *) array_desc;
 typedef SIGNAL(MAXDIM) signal_maxdim;
 
-#ifdef __VMS
-#pragma member_alignment restore
-#endif				/* __VMS */
-
-#ifdef __VMS
-#define DTYPE_NATIVE_FLOAT DTYPE_F
-#define DTYPE_FLOAT_COMPLEX DTYPE_FC
-
-#if __G_FLOAT
-#define DTYPE_NATIVE_DOUBLE DTYPE_G
-#define DTYPE_DOUBLE_COMPLEX DTYPE_GC
-#else				/* __G_FLOAT */
-#define DTYPE_NATIVE_DOUBLE DTYPE_D
-#define DTYPE_DOUBLE_COMPLEX DTYPE_DC
-#endif				/* __G_FLOAT */
-
-#else				/* __VMS */
 #define DTYPE_NATIVE_FLOAT DTYPE_FS
 #define DTYPE_NATIVE_DOUBLE DTYPE_FT
 #define DTYPE_FLOAT_COMPLEX DTYPE_FSC
 #define DTYPE_DOUBLE_COMPLEX DTYPE_FTC
-#endif				/* __VMS */
 
 #ifndef DTYPE_FLOAT
 #define DTYPE_FLOAT DTYPE_NATIVE_FLOAT

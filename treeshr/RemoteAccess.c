@@ -1,23 +1,39 @@
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <wspiapi.h>
 #endif
 #include "treeshrp.h"
-#include <config.h>
+#include <mdsplus/mdsconfig.h>
 #include <mdstypes.h>
-#ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#endif
 #ifdef _WIN32
 #include <windows.h>
 #include <io.h>
-/*#define write _write
-#define lseek _lseeki64
-#define open _open
-#define close _close
-#define read _read
-*/
 #else
 #include <unistd.h>
 #endif
@@ -1037,8 +1053,7 @@ STATIC_ROUTINE int SendArg(int socket, unsigned char idx, char dtype, unsigned c
 {
   if (MDS_SEND_ARG == 0) {
     int status = FindImageSymbol("SendArg", (void **)&MDS_SEND_ARG);
-    if (!(status & 1))
-      return status;
+    if STATUS_NOT_OK  return status;
   }
   return (*MDS_SEND_ARG) (socket, idx, dtype, nargs, length, ndims, dims, bytes);
 }
@@ -1050,11 +1065,25 @@ STATIC_ROUTINE int GetAnswerInfoTS(int sock, char *dtype, short *length, char *n
 {
   if (MDS_GET_ANSWER_INFO_TS == 0) {
     int status = FindImageSymbol("GetAnswerInfoTS", (void **)&MDS_GET_ANSWER_INFO_TS);
-    if (!(status & 1))
-      return status;
+    if STATUS_NOT_OK  return status;
   }
   return (*MDS_GET_ANSWER_INFO_TS) (sock, dtype, length, ndims, dims, numbytes, dptr, m);
 }
+
+/*
+STATIC_THREADSAFE int (*MDS_GET_ANSWER_INFO_TO) () = 0;
+
+STATIC_ROUTINE int GetAnswerInfoTO(int sock, char *dtype, short *length, char *ndims, int *dims,
+				   int *numbytes, void **dptr, void **m, int timeout)
+{
+  if (MDS_GET_ANSWER_INFO_TO == 0) {
+    int status = FindImageSymbol("GetAnswerInfoTO", (void **)&MDS_GET_ANSWER_INFO_TO);
+    if STATUS_NOT_OK  return status;
+  }
+  return (*MDS_GET_ANSWER_INFO_TO) (sock, dtype, length, ndims, dims, numbytes, dptr, m, timeout);
+}
+*/
+
 
 #define MDS_IO_OPEN_K   1
 #define MDS_IO_CLOSE_K  2
@@ -1156,15 +1185,14 @@ int MDS_IO_OPEN(char *filename, int options, mode_t mode)
 #ifndef _WIN32
     if ((fd != -1) && ((options & O_CREAT) != 0)) {
       struct descriptor cmd_d = { 0, DTYPE_T, CLASS_S, 0 };
-      char *cmd = (char *)malloc(64 + strlen(filename));
-      sprintf(cmd, "SetMdsplusFileProtection %s 2> /dev/null", filename);
-      cmd_d.length = strlen(cmd);
-      cmd_d.pointer = cmd;
-      LibSpawn(&cmd_d, 1, 0);
-      /*
-         system(cmd);
-       */
-      free(cmd);
+      char *cmd = (char *)malloc(39 + strlen(filename));
+      if (cmd) {
+        sprintf(cmd, "SetMdsplusFileProtection %s 2> /dev/null", filename);
+        cmd_d.length = strlen(cmd);
+        cmd_d.pointer = cmd;
+        LibSpawn(&cmd_d, 1, 0);
+        free(cmd);
+      }
     }
 #endif
   }
@@ -1513,7 +1541,7 @@ int MDS_IO_LOCK(int fd, off_t offset, size_t size, int mode_in, int *deleted)
     if (FDS[fd - 1].socket == -1) {
       int mode = mode_in & MDS_IO_LOCK_MASK;
       int nowait = mode_in & MDS_IO_LOCK_NOWAIT;
-#if defined (_WIN32)
+#ifdef _WIN32
       OVERLAPPED overlapped;
       int flags;
       offset = ((offset >= 0) && (nowait == 0)) ? offset : (lseek(FDS[fd - 1].fd, 0, SEEK_END));
@@ -1550,9 +1578,6 @@ int MDS_IO_LOCK(int fd, off_t offset, size_t size, int mode_in, int *deleted)
 #endif
     } else
       status = io_lock_remote(fd, offset, size, mode_in, deleted);
-#if !defined(_WIN32)
-    //ThreadLock(fd,offset,size,mode_in);
-#endif
   }
   UNLOCKFDS return status;
 }

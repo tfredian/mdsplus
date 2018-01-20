@@ -1,3 +1,27 @@
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 /*      TdiIntrinsic.C
         Dispatch internal functions to their routines.
         These are extensions of the basic types.
@@ -26,9 +50,6 @@
 #define MINMAX(min, test, max) ((min) >= (test) ? (min) : (test) < (max) ? (test) : (max))
 #define DEF_FREEXD
 #define DEF_FREEBEGIN
-#if defined(_WIN32)
-#include <windows.h>
-#endif
 
 #include <STATICdef.h>
 #include "tdithreadsafe.h"
@@ -56,9 +77,6 @@ extern int TdiFaultHandlerNoFixup();
 extern int Tdi0Decompile();
 extern int TdiConvert();
 extern int TdiGetLong();
-#ifdef __VMS
-#define SysGetMsg sys##$##getmsg
-#endif
 extern int SysGetMsg();
 STATIC_ROUTINE struct descriptor *FixedArray();
 
@@ -181,21 +199,22 @@ Useful for access violation errors.
 STATIC_ROUTINE int interlude(int (*f1) (), int opcode, int narg,
                              struct descriptor *list[], struct descriptor_xd *out_ptr)
 {
-  INIT_STATUS;
-#if defined(_WIN32) && !defined(HAVE_PTHREAD_H)
-  __try {
-#endif
-    status = (*f1) (opcode, narg, list, out_ptr);
-#if defined(_WIN32) && !defined(HAVE_PTHREAD_H)
-  }
-  __except(EXCEPTION_EXECUTE_HANDLER) {
-    status = TdiBOMB;
-  }
-#endif
-  return status;
+  return (*f1) (opcode, narg, list, out_ptr);
 }
 
-int TdiIntrinsic(int opcode, int narg, struct descriptor *list[], struct descriptor_xd *out_ptr)
+struct _fixed {
+  int n;
+  char f[256];
+  struct descriptor *a[256];
+};
+void cleanup_list(void* fixed_in) {
+  struct _fixed* fixed = (struct _fixed*)fixed_in;
+    for (; --fixed->n >= 0 ;)
+      if (fixed->f[fixed->n])
+	free(fixed->a[fixed->n]);
+}
+
+EXPORT int TdiIntrinsic(int opcode, int narg, struct descriptor *list[], struct descriptor_xd *out_ptr)
 {
   INIT_STATUS, stat1 = MDSplusSUCCESS;
   struct TdiFunctionStruct *fun_ptr = (struct TdiFunctionStruct *)&TdiRefFunction[opcode];
@@ -214,21 +233,18 @@ int TdiIntrinsic(int opcode, int narg, struct descriptor *list[], struct descrip
   else if (TdiThreadStatic_p->TdiIntrinsic_recursion_count > 1800)
     status = TdiRECURSIVE;
   else {
-    struct descriptor *fixed_list[256];
-    char fixed[256];
-    int i;
-    for (i = 0; i < narg; i++)
-      if (list[i] != NULL && list[i]->class == CLASS_NCA) {
-	fixed[i] = 1;
-	fixed_list[i] = FixedArray(list[i]);
+    struct _fixed fixed = {0};
+    pthread_cleanup_push(cleanup_list,&fixed);
+    for (fixed.n = 0; fixed.n < narg; fixed.n++)
+      if (list[fixed.n] != NULL && list[fixed.n]->class == CLASS_NCA) {
+	fixed.f[fixed.n] = 1;
+	fixed.a[fixed.n] = FixedArray(list[fixed.n]);
       } else {
-	fixed[i] = 0;
-	fixed_list[i] = list[i];
+	fixed.f[fixed.n] = 0;
+	fixed.a[fixed.n] = list[fixed.n];
       }
-    status = interlude(fun_ptr->f1, opcode, narg, fixed_list, &tmp);
-    for (i = 0; i < narg; i++)
-      if (fixed[i])
-	free(fixed_list[i]);
+    status = interlude(fun_ptr->f1, opcode, narg, fixed.a, &tmp);
+    pthread_cleanup_pop(1);
   }
   if (STATUS_OK || status == TdiBREAK || status == TdiCONTINUE || status == TdiGOTO || status == TdiRETURN) {
     if (!out_ptr)
@@ -328,7 +344,7 @@ int TdiIntrinsic(int opcode, int narg, struct descriptor *list[], struct descrip
   /********************************
   Compiler errors get special help.
   ********************************/
-  if (opcode == OpcCompile && message->length < MAXMESS) {
+  if (opcode == OpcCompile && message->length < MAXMESS && TdiRefZone.a_begin) {
     struct descriptor pre = { 0, DTYPE_T, CLASS_S, 0 };
     struct descriptor body = { 0, DTYPE_T, CLASS_S, 0 };
     struct descriptor post = { 0, DTYPE_T, CLASS_S, 0 };

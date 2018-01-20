@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#include <config.h>
+#include <mdsplus/mdsconfig.h>
 #include <mdstypes.h>
 
 #define TreeBLOCKID 0x3ade68b1
@@ -35,7 +35,8 @@ extern int TREE_BLOCKID;
 #endif
 
 
-
+  extern EXPORT void* TreeSavePrivateCtx(void* ctx);
+  extern EXPORT void TreeRestorePrivateCtx(void* pctx);
   extern EXPORT char *TreeAbsPath(char const *in);	     /********** Use TreeFree(result) *****/
   extern EXPORT char *_TreeAbsPath(void *dbid, char const *in);/********** Use TreeFree(result) *****/
   extern EXPORT int TreeAddConglom(char const *path, char const *congtype, int *nid);
@@ -230,8 +231,8 @@ extern int TREE_BLOCKID;
 				    struct descriptor_xd *out);
   extern EXPORT int _TreeGetSegments(void *dbid, int nid, struct descriptor *start,
 				     struct descriptor *end, struct descriptor_xd *out);
-  extern EXPORT int TreeGetSegmentTimes(int nid, int *numsegs, uint64_t ** times);
-  extern EXPORT int _TreeGetSegmentTimes(void *dbid, int nid, int *numsegs, uint64_t ** times);
+  extern EXPORT int TreeGetSegmentTimes(int nid, int *numsegs, int64_t ** times);
+  extern EXPORT int _TreeGetSegmentTimes(void *dbid, int nid, int *numsegs, int64_t ** times);
   extern EXPORT int TreeGetSegmentTimesXd(int nid, int *numsegs, struct descriptor_xd *start_list,
 					  struct descriptor_xd *end_list);
   extern EXPORT int _TreeGetSegmentTimesXd(void *dbid, int nid, int *numsegs,

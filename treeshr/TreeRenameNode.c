@@ -1,3 +1,27 @@
+/*
+Copyright (c) 2017, Massachusetts Institute of Technology All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 /*------------------------------------------------------------------------------
 
 		Name: TreeRenameNode
@@ -29,7 +53,7 @@
   move the node from its location in the tree.
 +-----------------------------------------------------------------------------*/
 
-#include <config.h>
+#include <mdsplus/mdsconfig.h>
 #include <string.h>
 #include <stdlib.h>
 #include <mdsdescrip.h>
@@ -74,7 +98,7 @@ int _TreeRenameNode(void *dbid, int nid, char const *newname)
 /****************************************************
   make sure that the new node is not already there
 ***************************************************/
-  status = TreeFindNode(upcase_name, &i);
+  status = _TreeFindNode(dbid, upcase_name, &i);
   if (status & 1) {
     status = TreeALREADY_THERE;
     goto cleanup;
@@ -187,7 +211,7 @@ static int FixParentState(PINO_DATABASE * dblist, NODE * parent_ptr, NODE * chil
   int retlen;
   unsigned int child_flags;
   NCI_ITM child_itm_list[] =
-      { {sizeof(unsigned int), NciGET_FLAGS, (unsigned char *)&child_flags, &retlen},
+      { {sizeof(unsigned int), NciGET_FLAGS, &child_flags, &retlen},
 	{0, NciEND_OF_LIST, 0, 0}
   };
   node_to_nid(dblist, parent_ptr, (&parent_nid));
@@ -200,10 +224,12 @@ static int FixParentState(PINO_DATABASE * dblist, NODE * parent_ptr, NODE * chil
   to SET_PARENT_STATE are negative boolean logic.
 ****************************************************/
   parent_state = _TreeIsOn(dblist, *(int *)&parent_nid) & 1;
-  TreeGetNci(*(int *)&child_nid, child_itm_list);
-  child_parent_state = ((child_flags & NciM_PARENT_STATE) == 0);
-  if (child_parent_state != parent_state)
-    status = SetParentState(dblist, child_ptr, !parent_state);
+  status = _TreeGetNci(dblist, *(int *)&child_nid, child_itm_list);
+  if (status & 1) {
+    child_parent_state = ((child_flags & NciM_PARENT_STATE) == 0);
+    if (child_parent_state != parent_state)
+      status = SetParentState(dblist, child_ptr, !parent_state);
+  }
 
   return status;
 }
