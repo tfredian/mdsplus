@@ -785,11 +785,13 @@ class NI6368AI(Device):
 
     def stop_store(self):
       print ("=============== PXI 6368 stop_store ===========")
-      self.restoreWorker()
-      if self.worker.isAlive():
-          print ("PXI 6368 stop_worker")
-          self.worker.stop()
-
+      try:
+          self.restoreWorker()
+          if self.worker.isAlive():
+              print ("PXI 6368 stop_worker")
+              self.worker.stop()
+      except:
+          pass
       print("===============================================")
 
       return 1

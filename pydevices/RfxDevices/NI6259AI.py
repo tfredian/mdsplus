@@ -716,10 +716,14 @@ class NI6259AI(Device):
 
     def stop_store(self):
       print("PXI 6259 stop_store")
-      self.restoreWorker()
-      if self.worker.isAlive():
-          print("PXI 6259 stop_worker")
-          self.worker.stop()
+      try:
+          self.restoreWorker()
+          if self.worker.isAlive():
+              print("PXI 6259 stop_worker")
+              self.worker.stop()
+      except:
+          pass
+
       return 1
 
     def readConfig(self):
