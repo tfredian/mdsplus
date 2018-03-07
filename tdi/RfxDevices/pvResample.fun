@@ -1,5 +1,7 @@
-public fun pvResample(as_is _sig, optional in _dt, optional in _start, optional in _end, optional in _t0)
+
+public fun pvResample(as_is _sig, optional in _dt, optional in _start, optional in _end, optional in _t0, optional in _mode)
 {
+    SetTimeContext(*,*,*);
    _sigDim = dim_of( _sig );
 
 
@@ -9,10 +11,11 @@ public fun pvResample(as_is _sig, optional in _dt, optional in _start, optional 
    } 
    else   
    {
-       if ( size( _t0 ) == 0  )
+     
+       if ( size( _t0 ) == 0 || _t0 == -1 )
             _t0 = _sigDim[0];
-   } 
 
+   }   
 
    _dim = ( _sigDim - _t0 )/1000000000.;
    _data = data( _sig );
@@ -28,7 +31,17 @@ public fun pvResample(as_is _sig, optional in _dt, optional in _start, optional 
 
    if ( present(_dt) )
    {
-       _sr = resample(_s, _start, _end, _dt);
+   	if ( !present(_mode) )
+        {
+            _sr = resample(_s, _start, _end, _dt); 
+        }
+	else
+	{
+	    if( _mode == "step")
+               _sr = step_resample(_s, _start, _end, _dt); 
+	    else
+               _sr = resample(_s, _start, _end, _dt); 
+	}
    }
    else
    {
@@ -36,4 +49,5 @@ public fun pvResample(as_is _sig, optional in _dt, optional in _start, optional 
    }
   
    return ( _sr );
+
 }
