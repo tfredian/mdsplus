@@ -105,4 +105,12 @@ _mimport('SIS3820')
 _mimport('SPIDER')
 _mimport('SPIDER_SM')
 _mimport('ZELOS2150GV')
+_mimport('SPIDER_TIMING')
+_mimport('SPIDER_SETUP')
+_mimport('PV_WAVE_SETUP')
+_mimport('CRIO_FAU')
+_mimport('PICAM')
+
+
+
 #print('RfxDevices loaded.')

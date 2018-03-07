@@ -259,6 +259,7 @@ class NI6259AI(Device):
                     gain = getattr(self.device, 'channel_%d_range'%(self.chanMap[chan]+1)).data()
                     gain_code = self.device.gainDict[gain]
 
+                    time.sleep(0.300)
                     n_coeff = c_int(0)
                     status = NI6259AI.niInterfaceLib.pxi6259_getCalibrationParams(currFd, gain_code, coeff, byref(n_coeff) )
 
