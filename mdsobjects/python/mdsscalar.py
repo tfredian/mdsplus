@@ -124,7 +124,9 @@ class Scalar(_dat.Data):
 
     def __getattr__(self,name):
         if name.startswith("__array"):
-          raise AttributeError
+            raise AttributeError
+        try: return super(Scalar,self).__getattr__(name)
+        except AttributeError: pass
         return self.value.__getattribute__(name)
 
     @property
@@ -283,10 +285,10 @@ class Uint64(Scalar):
     def fromTime(cls,value):
         """converts from seconds since 01-JAN-1970 00:00:00.00
         For example:
-           import MDSplus
-           import time
-           mdstime=MDSplus.Uint64.fromTime(time.time()-time.altzone)
-           print(mdstime.date)
+        >>> import MDSplus
+        >>> import time
+        >>> mdstime=MDSplus.Uint64.fromTime(time.time()-time.altzone)
+        >>> print(mdstime.date)
         """
         return cls(int(value * cls._utc1) + cls._utc0)
 

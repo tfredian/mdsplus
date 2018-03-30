@@ -467,7 +467,7 @@ STATIC_ROUTINE int free_one(node_type * node_ptr, user_type * user_ptr)
         Deallocated variables are not displayed or re-freed.
         ***************************************************/
   if (node_ptr->xd.class == 0)
-    return 1;
+    return MDSplusSUCCESS;
   if (user_ptr->match.length == 0)
     status = MDSplusSUCCESS;
   else
@@ -523,7 +523,7 @@ int Tdi1Deallocate(int opcode __attribute__ ((unused)), int narg, struct descrip
     _private.head = NULL;
     return status;
   }
-  return wild((int (*)())free_one, narg, list, &_private, out_ptr);
+  return wild((int (*)())free_one, narg, list, &_private, out_ptr); // runs on public and private, or clears private if no args
 }
 
 /*--------------------------------------------------------------
@@ -650,13 +650,13 @@ int TdiDoFun(struct descriptor *ident_ptr,
         ******************************************/
   static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
   int status, ispython;
-  char *filename, *dirspec;
+  char *filename = NULL, *dirspec = NULL;
   FREE_ON_EXIT(filename);
   FREE_ON_EXIT(dirspec);
   // look up method: check cached, check python, or load
   pthread_mutex_lock(&lock);
   pthread_cleanup_push((void*)pthread_mutex_unlock,&lock);
-  dirspec = NULL; filename = NULL; ispython = B_FALSE;
+  ispython = B_FALSE;
   status = TdiFindIdent(7, (struct descriptor_r *)ident_ptr, 0, &node_ptr, 0);
   if (status==TdiUNKNOWN_VAR) {
     // check if method is python

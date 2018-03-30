@@ -7,8 +7,8 @@ AM_CFLAGS = $(TARGET_ARCH) $(WARNFLAGS) $(TEST_CFLAGS)
 AM_CXXFLAGS = $(TARGET_ARCH) $(WARNFLAGS) -fsigned-char -Wno-deprecated @CXXFLAGS@ $(TEST_CFLAGS)
 AM_LDFLAGS = -L@MAKESHLIBDIR@ $(RPATHLINK),@MAKESHLIBDIR@
 AM_LIBS = $(LIBS) $(TEST_LIBS) testutils/libMdsTestUtils.a
-LDADD = $(AM_LIBS) -lMdsShr -lTreeShr -lTdiShr -lMdsIpShr -lMdsObjectsCppShr
-
+LDADD = $(AM_LIBS) -lMdsShr -lTreeShr -lTdiShr -lMdsIpShr -lMdsObjectsCppShr \
+@MINGW_TRUE@	-lws2_32
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## // TESTS  //////////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -27,6 +27,7 @@ TESTS = \
         MdsExpressionCompileTest \
         MdsExceptionTest \
         MdsDataTest \
+        MdsTdiTest \
         MdsScalarTest_NumericConversion \
         MdsScalarTest_NumericLimits \
         MdsScalarTest_ScalarCast \
@@ -71,9 +72,7 @@ VALGRIND_SUPPRESSIONS_FILES = \
 #
 MOSTLYCLEANFILES = *.out \
                    testing.hosts \
-                   t_*_*.characteristics \
-                   t_*_*.datafile \
-                   t_*_*.tree
+                   t_*.*
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## // TARGETS  ////////////////////////////////////////////////////////////// ##

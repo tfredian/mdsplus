@@ -104,7 +104,7 @@ target_triplet = @target@
 @ENABLE_SANITIZE_TRUE@	echo --skip;)
 TESTS = buildtest$(EXEEXT) MdsExpressionCompileTest$(EXEEXT) \
 	MdsExceptionTest$(EXEEXT) MdsDataTest$(EXEEXT) \
-	MdsScalarTest_NumericConversion$(EXEEXT) \
+	MdsTdiTest$(EXEEXT) MdsScalarTest_NumericConversion$(EXEEXT) \
 	MdsScalarTest_NumericLimits$(EXEEXT) \
 	MdsScalarTest_ScalarCast$(EXEEXT) MdsStringTest$(EXEEXT) \
 	MdsCompoundTest$(EXEEXT) MdsSignalTest$(EXEEXT) \
@@ -150,7 +150,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__EXEEXT_1 = buildtest$(EXEEXT) MdsExpressionCompileTest$(EXEEXT) \
 	MdsExceptionTest$(EXEEXT) MdsDataTest$(EXEEXT) \
-	MdsScalarTest_NumericConversion$(EXEEXT) \
+	MdsTdiTest$(EXEEXT) MdsScalarTest_NumericConversion$(EXEEXT) \
 	MdsScalarTest_NumericLimits$(EXEEXT) \
 	MdsScalarTest_ScalarCast$(EXEEXT) MdsStringTest$(EXEEXT) \
 	MdsCompoundTest$(EXEEXT) MdsSignalTest$(EXEEXT) \
@@ -244,6 +244,10 @@ MdsStringTest_SOURCES = MdsStringTest.cpp
 MdsStringTest_OBJECTS = MdsStringTest.$(OBJEXT)
 MdsStringTest_LDADD = $(LDADD)
 MdsStringTest_DEPENDENCIES = $(am__DEPENDENCIES_2)
+MdsTdiTest_SOURCES = MdsTdiTest.cpp
+MdsTdiTest_OBJECTS = MdsTdiTest.$(OBJEXT)
+MdsTdiTest_LDADD = $(LDADD)
+MdsTdiTest_DEPENDENCIES = $(am__DEPENDENCIES_2)
 MdsTreeNodeTest_SOURCES = MdsTreeNodeTest.cpp
 MdsTreeNodeTest_OBJECTS = MdsTreeNodeTest.$(OBJEXT)
 MdsTreeNodeTest_LDADD = $(LDADD)
@@ -304,9 +308,9 @@ SOURCES = MdsActionTest.cpp MdsApdTest.cpp MdsCallTest.cpp \
 	MdsExpressionCompileTest.cpp MdsFunctionTest.cpp \
 	MdsRangeTest.cpp MdsScalarTest_NumericConversion.cpp \
 	MdsScalarTest_NumericLimits.cpp MdsScalarTest_ScalarCast.cpp \
-	MdsSignalTest.cpp MdsStringTest.cpp MdsTreeNodeTest.cpp \
-	MdsTreeSegments.cpp MdsTreeSuppression.cpp MdsTreeTest.cpp \
-	MdsWindowTest.cpp buildtest.cpp
+	MdsSignalTest.cpp MdsStringTest.cpp MdsTdiTest.cpp \
+	MdsTreeNodeTest.cpp MdsTreeSegments.cpp MdsTreeSuppression.cpp \
+	MdsTreeTest.cpp MdsWindowTest.cpp buildtest.cpp
 DIST_SOURCES = MdsActionTest.cpp MdsApdTest.cpp MdsCallTest.cpp \
 	MdsCompoundTest.cpp MdsConglomTest.cpp MdsConnectionTest.cpp \
 	MdsDataTest.cpp MdsDimensionTest.cpp MdsEventSuppression.cpp \
@@ -314,9 +318,9 @@ DIST_SOURCES = MdsActionTest.cpp MdsApdTest.cpp MdsCallTest.cpp \
 	MdsExpressionCompileTest.cpp MdsFunctionTest.cpp \
 	MdsRangeTest.cpp MdsScalarTest_NumericConversion.cpp \
 	MdsScalarTest_NumericLimits.cpp MdsScalarTest_ScalarCast.cpp \
-	MdsSignalTest.cpp MdsStringTest.cpp MdsTreeNodeTest.cpp \
-	MdsTreeSegments.cpp MdsTreeSuppression.cpp MdsTreeTest.cpp \
-	MdsWindowTest.cpp buildtest.cpp
+	MdsSignalTest.cpp MdsStringTest.cpp MdsTdiTest.cpp \
+	MdsTreeNodeTest.cpp MdsTreeSegments.cpp MdsTreeSuppression.cpp \
+	MdsTreeTest.cpp MdsWindowTest.cpp buildtest.cpp
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -614,6 +618,7 @@ D3D_PACKAGE = @D3D_PACKAGE@
 DC1394_SUPPORT = @DC1394_SUPPORT@
 DC1394_SUPPORT2 = @DC1394_SUPPORT2@
 DEFS = @DEFS@
+DEF_PYLIB = @DEF_PYLIB@
 DEPDIR = @DEPDIR@
 DNET_STUB = @DNET_STUB@
 DOXYGEN = @DOXYGEN@
@@ -691,6 +696,7 @@ JAVACFLAGS = @JAVACFLAGS@
 JAVAC_PATH_NAME = @JAVAC_PATH_NAME@
 JAVAVERSION = @JAVAVERSION@
 JAVA_APS = @JAVA_APS@
+JAVA_JAR = @JAVA_JAR@
 JAVA_ONLY = @JAVA_ONLY@
 JDK_CFLAGS = @JDK_CFLAGS@
 JDK_DIR = @JDK_DIR@
@@ -910,7 +916,9 @@ AM_CFLAGS = $(TARGET_ARCH) $(WARNFLAGS) $(TEST_CFLAGS)
 AM_CXXFLAGS = $(TARGET_ARCH) $(WARNFLAGS) -fsigned-char -Wno-deprecated @CXXFLAGS@ $(TEST_CFLAGS)
 AM_LDFLAGS = -L@MAKESHLIBDIR@ $(RPATHLINK),@MAKESHLIBDIR@
 AM_LIBS = $(LIBS) $(TEST_LIBS) testutils/libMdsTestUtils.a
-LDADD = $(AM_LIBS) -lMdsShr -lTreeShr -lTdiShr -lMdsIpShr -lMdsObjectsCppShr
+LDADD = $(AM_LIBS) -lMdsShr -lTreeShr -lTdiShr -lMdsIpShr -lMdsObjectsCppShr \
+@MINGW_TRUE@	-lws2_32
+
 AM_DEFAULT_SOURCE_EXT = .cpp
 BUILD_FLAGS = @MAKEFLAG_J@
 # no parallel execution as this currently breaks the MdsConnectionTest "Connection local"
@@ -938,9 +946,7 @@ VALGRIND_SUPPRESSIONS_FILES = \
 #
 MOSTLYCLEANFILES = *.out \
                    testing.hosts \
-                   t_*_*.characteristics \
-                   t_*_*.datafile \
-                   t_*_*.tree
+                   t_*.*
 
 check_SCRIPTS = 
 all: all-recursive
@@ -1057,6 +1063,10 @@ MdsStringTest$(EXEEXT): $(MdsStringTest_OBJECTS) $(MdsStringTest_DEPENDENCIES) $
 	@rm -f MdsStringTest$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(MdsStringTest_OBJECTS) $(MdsStringTest_LDADD) $(LIBS)
 
+MdsTdiTest$(EXEEXT): $(MdsTdiTest_OBJECTS) $(MdsTdiTest_DEPENDENCIES) $(EXTRA_MdsTdiTest_DEPENDENCIES) 
+	@rm -f MdsTdiTest$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(MdsTdiTest_OBJECTS) $(MdsTdiTest_LDADD) $(LIBS)
+
 MdsTreeNodeTest$(EXEEXT): $(MdsTreeNodeTest_OBJECTS) $(MdsTreeNodeTest_DEPENDENCIES) $(EXTRA_MdsTreeNodeTest_DEPENDENCIES) 
 	@rm -f MdsTreeNodeTest$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(MdsTreeNodeTest_OBJECTS) $(MdsTreeNodeTest_LDADD) $(LIBS)
@@ -1106,6 +1116,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MdsScalarTest_ScalarCast.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MdsSignalTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MdsStringTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MdsTdiTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MdsTreeNodeTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MdsTreeSegments.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MdsTreeSuppression.Po@am__quote@
@@ -1393,6 +1404,13 @@ MdsExceptionTest.log: MdsExceptionTest$(EXEEXT)
 MdsDataTest.log: MdsDataTest$(EXEEXT)
 	@p='MdsDataTest$(EXEEXT)'; \
 	b='MdsDataTest'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+MdsTdiTest.log: MdsTdiTest$(EXEEXT)
+	@p='MdsTdiTest$(EXEEXT)'; \
+	b='MdsTdiTest'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1902,9 +1920,12 @@ tests-envdump:
 	done;
 
 test-env:
-	for _i in ${TESTS_ENVIRONMENT}; do \
+	@for _i in ${TESTS_ENVIRONMENT}; do \
+	  echo $${_i}; \
 	  export $${_i}; \
 	done; \
+	echo srcdir=$(srcdir); \
+	export srcdir=$(srcdir); \
 	bash -i
 
 @HAVE_WINE_TRUE@wineconsole:

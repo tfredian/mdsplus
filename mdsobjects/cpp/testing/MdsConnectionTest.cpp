@@ -22,30 +22,22 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-// if windows skip this test .. //
-#ifdef _WIN32
-#include "testing.h"
-int main(int argc __attribute__ ((unused)), char *argv[] __attribute__ ((unused))){
- SKIP_TEST("Connection test requires fork")
-}
-#else
 
-
+#include "testutils/MdsIpInstancer.h"
 #include <unistd.h>
 #include <fstream>
 #include <sys/types.h>
 #include <signal.h>
 
-
-#include <sys/wait.h>
 #include <mdsobjects.h>
-
 
 #include "testutils/testutils.h"
 #include "testutils/unique_ptr.h"
-#include "testutils/MdsIpInstancer.h"
 #include "testing.h"
 
+#ifdef _WIN32
+#define setenv(name,val,extra) _putenv_s(name,val)
+#endif
 
 //
 // TODO: Finish tests with PutMany and GetMany ...
@@ -64,33 +56,48 @@ void test_tree_open(const char *prot, const unsigned short port)
     // get address form instancer for the specified protocol //
     std::string addr = mdsip.getAddress();
 
-    std::cout << "attempt to connect to: " << addr << "\n";
-    usleep(1000000);
-    Connection cnx(const_cast<char*>(addr.c_str()));
-
+    std::cout << "attempt to connect to: " << addr << "\n" << std::flush;
+    unique_ptr<Connection> cnx = NULL;
+    int retry = 5;
+    for (;!cnx;) try {
+      cnx = new Connection(const_cast<char*>(addr.c_str()));
+    } catch (...) {
+      if (--retry<0)
+        throw;
+      std::cout << "retry\n" << std::flush;
+      usleep(500000);
+    }
     // test client-server communication //
-    unique_ptr<Data> data = cnx.get("ZERO(10)");
+    unique_ptr<Data> data = cnx->get("ZERO(10)");
     TEST1( AutoString(data->getString()).string
            == "[0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]" );
 
+    data = cnx->get("DECOMPILE(`TreeShr->TreeDbid:P())");
+    TEST0( AutoString(data->getString()).string
+           == "Pointer(0)" );
+
+    data = cnx->get("setTimeContext()");
+    TEST1(data->getInt() == 1);
+
     // test tree opening //
-    cnx.openTree((char*)"t_connect",1);
+    data = cnx->get("setenv('t_connect_path=.')");
+    cnx->openTree((char*)"t_connect",1);
 
     Data *args[] = { new Int32(5552368),
                      new Float64(111.234) };
 
-    cnx.put("test_cnx",(char*)"$+10",args,1);
-    cnx.put("test_cnx",(char*)"[$1+10, $2]",args,2);
-    cnx.put("test_cnx",(char*)"5552368",NULL,0);
+    cnx->put("test_cnx",(char*)"$+10",args,1);
+    cnx->put("test_cnx",(char*)"[$1+10, $2]",args,2);
+    cnx->put("test_cnx",(char*)"5552368",NULL,0);
 
     deleteData(args[0]);
     deleteData(args[1]);
 
-    data = cnx.get("test_cnx");
+    data = cnx->get("test_cnx");
     TEST1( data->getInt() == 5552368 );
 
     // colsing tree //
-    cnx.closeTree((char*)"t_connect",1);
+    cnx->closeTree((char*)"t_connect",1);
 }
 
 
@@ -112,26 +119,14 @@ int main(int argc UNUSED_ARGUMENT, char *argv[] UNUSED_ARGUMENT)
 
     // this makes the t_connect in a separate process so that all static
     // variables instanced are destroied when the child ends.
-    pid_t pid = fork();
-    if(pid == 0)
-    {
-        {
-            unique_ptr<Tree> tree = new Tree("t_connect",-1,"NEW");
-            unique_ptr<TreeNode>(tree->addNode("test_cnx","NUMERIC"));
-            tree->write();
-            tree->edit(false);
-            tree->createPulse(1);
-        }
-        exit(0);
-    }
-    else {
-        // wait for child to finish the tree generation //
-        int status;
-        while (-1 == waitpid(pid, &status, 0));
-        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-            std::cerr << "Process " << " (pid " << pid << ") failed" << "\n";
-            exit(1);
-        }
+    try {
+      unique_ptr<Tree> tree = new Tree("t_connect",-1,"NEW");
+      unique_ptr<TreeNode>(tree->addNode("test_cnx","NUMERIC"));
+      tree->write();
+      tree->edit(false);
+      tree->createPulse(1);
+    } catch (...) {
+      std::cerr << "Error creating model tree";
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -198,5 +193,3 @@ int main(int argc UNUSED_ARGUMENT, char *argv[] UNUSED_ARGUMENT)
     END_TESTING;
 */
 }
-
-#endif

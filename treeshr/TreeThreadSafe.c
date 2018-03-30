@@ -32,14 +32,40 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <strroutines.h>
 #include <string.h>
 
+extern int _TreeNewDbid(void** dblist);
+extern int TreeFreeDbid(PINO_DATABASE *db);
+static pthread_rwlock_t treectx_lock = PTHREAD_RWLOCK_INITIALIZER;
+static void *DBID = NULL, *G_DBID = NULL;
+
 /* Key for the thread-specific buffer */
 STATIC_THREADSAFE pthread_key_t buffer_key;
 /* Free the thread-specific buffer */
 STATIC_ROUTINE void buffer_destroy(void *buf){
+  PINO_DATABASE* P_DBID = ((TreeThreadStatic*)buf)->DBID;
+  if (P_DBID) {
+    PINO_DATABASE *g_dbid, *p_dbid;
+    pthread_rwlock_rdlock(&treectx_lock);
+    for (g_dbid=G_DBID ; g_dbid && g_dbid!=P_DBID ; g_dbid=g_dbid->next);
+    if (g_dbid) {
+      pthread_rwlock_unlock(&treectx_lock);
+      perror("privateCtx share globalCtx on Threadexit! -> memory leak");
+    } else {
+      for (p_dbid=P_DBID ; p_dbid->next ; p_dbid=p_dbid->next) {
+        if (p_dbid->next==G_DBID) {
+	  //clip private context if extension of global
+	  p_dbid->next = NULL;
+	  break;
+	}
+      }
+      pthread_rwlock_unlock(&treectx_lock);
+      TreeFreeDbid(P_DBID);
+    }
+  }
   free(buf);
 }
 STATIC_ROUTINE void buffer_key_alloc(){
   pthread_key_create(&buffer_key, buffer_destroy);
+  if (!G_DBID) _TreeNewDbid(&G_DBID);
 }
 /* Return the thread-specific buffer */
 TreeThreadStatic *TreeGetThreadStatic(){
@@ -47,20 +73,24 @@ TreeThreadStatic *TreeGetThreadStatic(){
   TreeThreadStatic* p = (TreeThreadStatic*)pthread_getspecific(buffer_key);
   if (!p) {
     p = (TreeThreadStatic*)calloc(1,sizeof(TreeThreadStatic));
+    _TreeNewDbid(&p->DBID);
     pthread_setspecific(buffer_key, (void*)p);
   }
   return p;
 }
 
-void *DBID = NULL;
-
-static pthread_rwlock_t treectx_lock = PTHREAD_RWLOCK_INITIALIZER;
 EXPORT void **TreeCtx(){
   TreeThreadStatic *p = TreeGetThreadStatic();
-  pthread_rwlock_rdlock(&treectx_lock);
-  void **old_dbid = p->privateCtx ? &p->DBID : &DBID;
-  pthread_rwlock_unlock(&treectx_lock);
-  return old_dbid;
+  void **ctx;
+  if (p->privateCtx)
+    ctx = &p->DBID;
+  else {
+    pthread_rwlock_wrlock(&treectx_lock);
+    if (!DBID) DBID = G_DBID;
+    ctx = &DBID;
+    pthread_rwlock_unlock(&treectx_lock);
+  }
+  return ctx;
 }
 
 EXPORT void *TreeDbid(){
@@ -73,11 +103,16 @@ EXPORT void *_TreeDbid(void **dbid){
 
 EXPORT void *TreeSwitchDbid(void *dbid){
   TreeThreadStatic *p = TreeGetThreadStatic();
-  pthread_rwlock_wrlock(&treectx_lock);
-  void *old_dbid = p->privateCtx ? p->DBID : DBID;
-  if (p->privateCtx) p->DBID = dbid;
-  else                  DBID = dbid;
-  pthread_rwlock_unlock(&treectx_lock);
+  void *old_dbid;
+  if (p->privateCtx) {
+    old_dbid = p->DBID;
+    p->DBID = dbid;
+  } else {
+    pthread_rwlock_wrlock(&treectx_lock);
+    old_dbid = DBID;
+    DBID = dbid;
+    pthread_rwlock_unlock(&treectx_lock);
+  }
   return old_dbid;
 }
 
@@ -112,17 +147,3 @@ EXPORT void TreeRestorePrivateCtx(void* _pctx){
   TreeUsePrivateCtx(pctx->upc);
   free(pctx);
 }
-
-/*
-EXPORT int _Call(void** ctx, struct descriptor* dsc){
-  if (!dsc) return TreeNormal;
-  void* pctx = TreeSavePrivateCtx(ctx);
-  pthread_cleanup_push(RestorePrivateCtx,pctx);
-  // do stuff that requires ctx but does not accept ctx as input
-  pthread_cleanup_pop(1);
-}
-
-EXPORT int TreeDeRef(struct descript* dsc){
-  return _TreeDeRef(TreeCtx(), dsc);
-}
-*/

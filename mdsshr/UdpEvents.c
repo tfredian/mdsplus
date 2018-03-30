@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ws2tcpip.h>
 #define SHUT_RDWR SD_BOTH
 #else
+#define SOCKET int
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -43,7 +44,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <mdsshr.h>
 #include <libroutines.h>
-#define LOAD_INITIALIZESOCKETS
 #include "mdsshrthreadsafe.h"
 
 extern int UdpEventGetPort(unsigned short *port);
@@ -57,8 +57,8 @@ extern int UdpEventGetInterface(struct in_addr **interface_addr);
 
 
 #ifdef _WIN32
-static void print_error(char* message) {
-  int error = WSAGetLastError();
+#define socklen_t int
+static void print_error_code(char* message, int error) {
   char *errorstr;
   switch (error) {
     case WSANOTINITIALISED:
@@ -102,6 +102,9 @@ static void print_error(char* message) {
   else
     fprintf(stderr, "%s - error code %d\n", message,error);
 }
+inline static void print_error(char* message) {
+  print_error_code(message,WSAGetLastError());
+}
 #else
 #define print_error(message)  fprintf(stderr,"%s\n",message)
 #endif
@@ -109,7 +112,7 @@ static void print_error(char* message) {
 typedef struct _EventList {
   int eventid;
   pthread_t thread;
-  int socket;
+  SOCKET socket;
   struct _EventList *next;
 } EventList;
 
@@ -126,10 +129,6 @@ static int sendSocket = 0;
 static pthread_mutex_t eventIdMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t sendEventMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t getSocketMutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t initializeMutex = PTHREAD_MUTEX_INITIALIZER;
-
-extern void InitializeEventSettings();
-
 
 
 /**********************
@@ -141,18 +140,6 @@ extern void InitializeEventSettings();
 - buf (buf len chars)
 
 ***********************/
-static void EventExit(void *socket) {
-/*
-ifdef _WIN32
-  // For some reason shutdown does not abort the recvfrom and hangs the process joining
-  // the handleMessage thread. closesocket seems to work though.
-  closesocket(*(int*)socket);
-#else
-*/
-  shutdown(*(int*)socket, SHUT_RDWR);
-  close(*(int*)socket);
-//#endif
-}
 
 static void *handleMessage(void *info_in)
 {
@@ -164,36 +151,25 @@ static void *handleMessage(void *info_in)
   void *arg = info->arg;
   void (*astadr) (void *, int, char *) = info->astadr;
   ssize_t recBytes;
-  char recBuf[MAX_MSG_LEN];
+  char recBuf[MAX_MSG_LEN]; //TODO: would malloc be better for a slim stack
   struct sockaddr clientAddr;
-  int addrSize = sizeof(clientAddr);
+  socklen_t addrSize = sizeof(clientAddr);
   unsigned int nameLen,bufLen;
   char *eventName;
   char *currPtr;
   free(info->eventName);
   free(info);
   pthread_mutex_unlock(&eventIdMutex);
-  pthread_cleanup_push(EventExit,(void*)&socket);
-  while (1) {
+  for (;;) {
+    recBytes = recvfrom(socket, (char *)recBuf, MAX_MSG_LEN, 0, (struct sockaddr *)&clientAddr, &addrSize);
+    if (recBytes <= 0) {
 #ifdef _WIN32
-    if ((recBytes = recvfrom(socket, (char *)recBuf, MAX_MSG_LEN, 0,
-			     (struct sockaddr *)&clientAddr, &addrSize)) < 0) {
       int error = WSAGetLastError();
-      if (error == WSAESHUTDOWN || error == WSAEINTR || error == WSAENOTSOCK) {
-	break;
-      } else {
-	fprintf(stderr,"Error getting data - %d\n", error);
-      }
-      continue;
-    }
-#else
-    if ((recBytes = recvfrom(socket, (char *)recBuf, MAX_MSG_LEN, 0,
-			     (struct sockaddr *)&clientAddr, (socklen_t *) & addrSize)) < 0) {
-      break;
-    }
+      if (!(recBytes==0 || error == WSAEBADF || error == WSAESHUTDOWN || error == WSAEINTR || error == WSAENOTSOCK ))
+	print_error_code("Error getting data", error);
 #endif
-    if (recBytes == 0)
       break;
+    }
     if (recBytes < (int)(sizeof(int) * 2 + thisNameLen))
       continue;
     currPtr = recBuf;
@@ -207,22 +183,13 @@ static void *handleMessage(void *info_in)
     memcpy(&bufLen, currPtr, sizeof(bufLen));
     bufLen = ntohl(bufLen);
     currPtr += sizeof(int);
-    if ((size_t)recBytes != (nameLen + bufLen + 8)) /*** check for invalid buffer ***/
+    if ((size_t)recBytes != (nameLen + bufLen + 2*sizeof(int)))/*** check for invalid buffer ***/
       continue;
-    if (strncmp(thisEventName, eventName, nameLen))   /*** check to see if this message matches the event name ***/
+    if (strncmp(thisEventName, eventName, nameLen))/*** check to see if this message matches the event name ***/
       continue;
     astadr(arg, (int)bufLen, currPtr);
   }
-  pthread_cleanup_pop(1);
   return 0;
-}
-
-static void initialize()
-{
-  INITIALIZESOCKETS;
-  pthread_mutex_lock(&initializeMutex);
-  InitializeEventSettings();
-  pthread_mutex_unlock(&initializeMutex);
 }
 
 static int pushEvent(pthread_t thread, int socket) {
@@ -242,18 +209,16 @@ static EventList *popEvent(int eventid) {
   EventList *ev,*ev_prev;
   for (ev=EVENTLIST,ev_prev=0; ev && ev->eventid != eventid; ev_prev=ev,ev=ev->next);
   if (ev) {
-    if (ev_prev) {
+    if (ev_prev)
       ev_prev->next = ev->next;
-    } else {
+    else
       EVENTLIST = ev->next;
-    }
   }
   pthread_mutex_unlock(&eventIdMutex);
   return ev;
 }
 
-static int getSendSocket()
-{
+static int getSendSocket(){
   pthread_mutex_lock(&getSocketMutex);
   if (!sendSocket) {
     if ((sendSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -300,16 +265,13 @@ int MDSUdpEventAst(char const *eventName, void (*astadr) (void *, int, char *), 
   unsigned short port;
   pthread_t thread;
   memset(&ipMreq, 0, sizeof(ipMreq));
-
-  initialize();
-
+  UdpEventGetPort(&port);
   if ((udpSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     print_error("Error creating socket");
     return 0;
   }
   //    serverAddr.sin_len = sizeof(serverAddr);
   serverAddr.sin_family = AF_INET;
-  UdpEventGetPort(&port);
   serverAddr.sin_port = htons(port);
   serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
@@ -341,7 +303,6 @@ int MDSUdpEventAst(char const *eventName, void (*astadr) (void *, int, char *), 
   currInfo->arg = astprm;
   currInfo->astadr = astadr;
   pthread_create(&thread, 0, handleMessage, (void *)currInfo);
-//  pthread_detach(thread);
   *eventid = pushEvent(thread, udpSocket);
   return 1;
 }
@@ -349,15 +310,29 @@ int MDSUdpEventAst(char const *eventName, void (*astadr) (void *, int, char *), 
 int MDSUdpEventCan(int eventid)
 {
   EventList *ev = popEvent(eventid);
-  if (ev) {
-    pthread_cancel(ev->thread);
-    pthread_join(ev->thread,0);
-    free(ev);
-    return 1;
-  } else {
+  if (!ev) {
     printf("invalid eventid %d\n",eventid);
     return 0;
   }
+#ifdef _WIN32
+ /**********************************************
+  Windows fails on canceling thread in recvfrom.
+  Closing the socket causes recvfrom to error
+  with WSAEBADF which terminates the thread.
+  This however is a race condition so we cancel
+  when we can (ifndef _WIN32)
+ **********************************************/
+  closesocket(ev->socket);
+#else
+  pthread_cancel(ev->thread);
+#endif
+  pthread_join(ev->thread,NULL);
+#ifndef _WIN32
+  shutdown(ev->socket, SHUT_RDWR);
+  close(ev->socket);
+#endif
+  free(ev);
+  return 1;
 }
 
 int MDSUdpEvent(char const *eventName, unsigned int bufLen, char const *buf)
@@ -374,7 +349,6 @@ int MDSUdpEvent(char const *eventName, unsigned int bufLen, char const *buf)
   char ttl, loop;
   struct in_addr *interface_addr=0;
 
-  initialize();
   getMulticastAddr(eventName, multiIp);
   udpSocket = getSendSocket();
 
@@ -388,23 +362,19 @@ int MDSUdpEvent(char const *eventName, unsigned int bufLen, char const *buf)
   }
   if (hp) memcpy(&sin.sin_addr, hp->h_addr_list[0], (size_t)hp->h_length);
 #else
-  size_t memlen = 1024;
+  size_t memlen;
   struct hostent hostbuf, *hp = NULL;
   int herr;
-  char *hp_mem = (char*)malloc(memlen);
+  char *hp_mem = NULL;
   FREE_ON_EXIT(hp_mem);
-  while ( hp_mem && (gethostbyname_r(multiIp,&hostbuf,hp_mem,memlen,&hp,&herr) == ERANGE) ) {
-    memlen *=2;
-    free(hp_mem);
-    hp_mem = (char*)malloc(memlen);
-  }
+  for ( memlen=1024, hp_mem=malloc(memlen);
+        hp_mem && (gethostbyname_r(multiIp,&hostbuf,hp_mem,memlen,&hp,&herr) == ERANGE);
+        memlen *= 2, free(hp_mem), hp_mem = malloc(memlen));
   if (!hp) {
     int addr = (int)inet_addr(multiIp);
-    while ( hp_mem && (gethostbyaddr_r(((void *)&addr),sizeof(int),AF_INET,&hostbuf,hp_mem,memlen,&hp,&herr) == ERANGE) ) {
-      memlen *=2;
-      free(hp_mem);
-      hp_mem = (char*)malloc(memlen);
-    }
+    for (;
+        hp_mem && (gethostbyaddr_r(((void *)&addr),sizeof(int),AF_INET,&hostbuf,hp_mem,memlen,&hp,&herr) == ERANGE);
+        memlen *=2, free(hp_mem), hp_mem = (char*)malloc(memlen));
   }
   if (hp) memcpy(&sin.sin_addr, hp->h_addr_list[0], (size_t)hp->h_length);
   FREE_NOW(hp_mem);

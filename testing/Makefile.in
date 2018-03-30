@@ -263,6 +263,7 @@ D3D_PACKAGE = @D3D_PACKAGE@
 DC1394_SUPPORT = @DC1394_SUPPORT@
 DC1394_SUPPORT2 = @DC1394_SUPPORT2@
 DEFS = @DEFS@
+DEF_PYLIB = @DEF_PYLIB@
 DEPDIR = @DEPDIR@
 DNET_STUB = @DNET_STUB@
 DOXYGEN = @DOXYGEN@
@@ -340,6 +341,7 @@ JAVACFLAGS = @JAVACFLAGS@
 JAVAC_PATH_NAME = @JAVAC_PATH_NAME@
 JAVAVERSION = @JAVAVERSION@
 JAVA_APS = @JAVA_APS@
+JAVA_JAR = @JAVA_JAR@
 JAVA_ONLY = @JAVA_ONLY@
 JDK_CFLAGS = @JDK_CFLAGS@
 JDK_DIR = @JDK_DIR@
@@ -956,7 +958,8 @@ TEST_DIRS ?= \
 			   mdsobjects/python/tests \
 			   mdsshr/testing \
 			   mdslib/testing \
-			   mdsobjects/cpp/testing
+			   mdsobjects/cpp/testing \
+			   tditest/testing
 #               testing/selftest
 
 TEST_OUTDIR  ?= ${top_builddir}/testing

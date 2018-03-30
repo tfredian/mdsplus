@@ -24,7 +24,6 @@
 #
 
 from unittest import TestCase,TestSuite,TextTestRunner
-from threading import Lock
 from numpy import ndarray, array, int32
 from math import log10
 import MDSplus as m
@@ -134,6 +133,8 @@ class Tests(TestCase):
     def testData(self):
         self.assertEqual(m.Data(2).compare(2),True)
         self.assertEqual(m.Data(2).compare(1),False)
+        self.assertEqual(m.Dictionary([1,'a',2,'b']).data().tolist(),{1: 'a', 2: 'b'})
+        self.assertEqual(m.List([1,'a',2,'b']).data().tolist(),[1, 'a', 2, 'b'])
 
     def testScalars(self):
         def doTest(suffix,cl,scl,ucl,**kw):
@@ -275,8 +276,7 @@ class Tests(TestCase):
         self._doThreeTestArray('accumulate([1,2,3])',m.ACCUMULATE(m.makeArray([1,2,3])),m.Int32Array([1,3,6]))
         self._doThreeTestArray('accumulate([[1,3,5],[2,4,6]])',m.ACCUMULATE(m.makeArray([[1,3,5],[2,4,6]])),m.Int32Array([[1,4,9], [11,15,21]]))
         self._doThreeTestArray('accumulate([[1,3,5],[2,4,6]],0)',m.ACCUMULATE(m.makeArray([[1,3,5],[2,4,6]]),0),m.Int32Array([[1,4,9],[2,6,12]]))
-        #self._doThreeTestArray('accumulate([[1,3,5],[2,4,6]],1)',m.ACCUMULATE([[1,3,5],[2,4,6]],1),m.Int32Array([[1,3,5],[3,7,11]]))  # tdi issue
-        self._doUnaryArray(m.Data.execute('accumulate([[1,3,5],[2,4,6]],1)'),m.ACCUMULATE(m.makeArray([[1,3,5],[2,4,6]]),1).getData())
+        self._doThreeTestArray('accumulate([[1,3,5],[2,4,6]],1)',m.ACCUMULATE(m.makeArray([[1,3,5],[2,4,6]]),1),m.Int32Array([[1,3,5],[3,7,11]]))
         """Test achar"""
         self._doThreeTest('achar(88)',m.ACHAR(88),m.String('X'))
         """Test ADJUSTL"""
