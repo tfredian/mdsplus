@@ -109,7 +109,7 @@ _mimport('SPIDER_TIMING')
 _mimport('SPIDER_SETUP')
 _mimport('PV_WAVE_SETUP')
 _mimport('CRIO_FAU')
-_mimport('PICAM')
+_mimport('PI_CAM')
 
 
 
