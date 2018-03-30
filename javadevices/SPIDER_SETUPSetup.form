@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
+<Form version="1.7" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
   <Properties>
-    <Property name="deviceProvider" type="java.lang.String" value="localhost"/>
+    <Property name="deviceProvider" type="java.lang.String" value="scpsl.nbtf"/>
     <Property name="deviceTitle" type="java.lang.String" value="SPIDER Experiment Setup"/>
     <Property name="deviceType" type="java.lang.String" value="SPIDER_SETUP"/>
     <Property name="height" type="int" value="600"/>
@@ -56,7 +56,7 @@
             <Container class="javax.swing.JPanel" name="jPanel28">
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-                  <BorderConstraints direction="First"/>
+                  <BorderConstraints direction="Center"/>
                 </Constraint>
               </Constraints>
 
@@ -168,130 +168,105 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
               <SubComponents>
-                <Container class="javax.swing.JPanel" name="jPanel1">
+                <Container class="javax.swing.JPanel" name="jPanel3">
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                      <JTabbedPaneConstraints tabName="Data Acquisition">
-                        <Property name="tabTitle" type="java.lang.String" value="Data Acquisition"/>
+                      <JTabbedPaneConstraints tabName="Setup">
+                        <Property name="tabTitle" type="java.lang.String" value="Setup"/>
                       </JTabbedPaneConstraints>
                     </Constraint>
                   </Constraints>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
-                    <Property name="columns" type="int" value="1"/>
-                    <Property name="rows" type="int" value="4"/>
+                    <Property name="columns" type="int" value="0"/>
+                    <Property name="rows" type="int" value="3"/>
                   </Layout>
                   <SubComponents>
-                    <Container class="javax.swing.JPanel" name="jPanel4">
+                    <Container class="javax.swing.JPanel" name="jPanel32">
                       <Properties>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                            <TitledBorder title="CAEN DT5720 Timing"/>
+                            <TitledBorder title="EG Modulation"/>
                           </Border>
                         </Property>
                       </Properties>
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
                       <SubComponents>
-                        <Component class="DeviceField" name="deviceField4">
+                        <Component class="DeviceChoice" name="deviceChoice1">
                           <Properties>
+                            <Property name="choiceItems" type="[Ljava.lang.String;" editor="org.netbeans.beaninfo.editors.StringArrayEditor">
+                              <StringArray count="2">
+                                <StringItem index="0" value="DISABLED"/>
+                                <StringItem index="1" value="ENABLED"/>
+                              </StringArray>
+                            </Property>
                             <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Start Time: "/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="4"/>
+                            <Property name="labelString" type="java.lang.String" value="State"/>
+                            <Property name="offsetNid" type="int" value="124"/>
+                            <Property name="updateIdentifier" type="java.lang.String" value=""/>
                           </Properties>
                         </Component>
-                        <Component class="DeviceField" name="deviceField5">
+                        <Component class="DeviceField" name="deviceField1">
                           <Properties>
                             <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Duration: "/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="5"/>
+                            <Property name="labelString" type="java.lang.String" value="Frequency:"/>
+                            <Property name="offsetNid" type="int" value="125"/>
+                          </Properties>
+                        </Component>
+                        <Component class="DeviceField" name="deviceField2">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Duty Cycle:"/>
+                            <Property name="offsetNid" type="int" value="126"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="jPanel33">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                            <TitledBorder title="RF Modulation"/>
+                          </Border>
+                        </Property>
+                      </Properties>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+                      <SubComponents>
+                        <Component class="DeviceChoice" name="deviceChoice2">
+                          <Properties>
+                            <Property name="choiceItems" type="[Ljava.lang.String;" editor="org.netbeans.beaninfo.editors.StringArrayEditor">
+                              <StringArray count="2">
+                                <StringItem index="0" value="DISABLED"/>
+                                <StringItem index="1" value="ENABLED"/>
+                              </StringArray>
+                            </Property>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="State"/>
+                            <Property name="offsetNid" type="int" value="127"/>
+                            <Property name="updateIdentifier" type="java.lang.String" value=""/>
+                          </Properties>
+                        </Component>
+                        <Component class="DeviceField" name="deviceField3">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Frequency:"/>
+                            <Property name="offsetNid" type="int" value="128"/>
                           </Properties>
                         </Component>
                         <Component class="DeviceField" name="deviceField6">
                           <Properties>
                             <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Frequency: "/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="3"/>
+                            <Property name="labelString" type="java.lang.String" value="Duty Cycle:"/>
+                            <Property name="offsetNid" type="int" value="129"/>
                           </Properties>
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Container class="javax.swing.JPanel" name="jPanel5">
-                      <Properties>
-                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                            <TitledBorder title="NI 6259 Timing"/>
-                          </Border>
-                        </Property>
-                      </Properties>
+                    <Container class="javax.swing.JPanel" name="jPanel34">
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-                      <SubComponents>
-                        <Component class="DeviceField" name="deviceField7">
-                          <Properties>
-                            <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Start Time: "/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="7"/>
-                          </Properties>
-                        </Component>
-                        <Component class="DeviceField" name="deviceField8">
-                          <Properties>
-                            <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Duration"/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="8"/>
-                          </Properties>
-                        </Component>
-                        <Component class="DeviceField" name="deviceField9">
-                          <Properties>
-                            <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Frequency: "/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="6"/>
-                          </Properties>
-                        </Component>
-                      </SubComponents>
-                    </Container>
-                    <Container class="javax.swing.JPanel" name="jPanel11">
-                      <Properties>
-                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                            <TitledBorder title="NI 6368 Timing"/>
-                          </Border>
-                        </Property>
-                      </Properties>
-
-                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-                      <SubComponents>
-                        <Component class="DeviceField" name="deviceField14">
-                          <Properties>
-                            <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Start Time: "/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="10"/>
-                          </Properties>
-                        </Component>
-                        <Component class="DeviceField" name="deviceField15">
-                          <Properties>
-                            <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Duration"/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="11"/>
-                          </Properties>
-                        </Component>
-                        <Component class="DeviceField" name="deviceField16">
-                          <Properties>
-                            <Property name="identifier" type="java.lang.String" value=""/>
-                            <Property name="labelString" type="java.lang.String" value="Frequency: "/>
-                            <Property name="numCols" type="int" value="20"/>
-                            <Property name="offsetNid" type="int" value="9"/>
-                          </Properties>
-                        </Component>
-                      </SubComponents>
                     </Container>
                   </SubComponents>
                 </Container>
@@ -592,6 +567,125 @@
                             </Container>
                           </SubComponents>
                         </Container>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
+                <Container class="javax.swing.JPanel" name="jPanel1">
+                  <Constraints>
+                    <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                      <JTabbedPaneConstraints tabName="Data Acquisition">
+                        <Property name="tabTitle" type="java.lang.String" value="Data Acquisition"/>
+                      </JTabbedPaneConstraints>
+                    </Constraint>
+                  </Constraints>
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+                    <Property name="columns" type="int" value="1"/>
+                    <Property name="rows" type="int" value="4"/>
+                  </Layout>
+                  <SubComponents>
+                    <Container class="javax.swing.JPanel" name="jPanel4">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                            <TitledBorder title="CAEN DT5720 Timing"/>
+                          </Border>
+                        </Property>
+                      </Properties>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+                      <SubComponents>
+                        <Component class="DeviceField" name="deviceField4">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Start Time: "/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="4"/>
+                          </Properties>
+                        </Component>
+                        <Component class="DeviceField" name="deviceField5">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Duration: "/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="5"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="jPanel5">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                            <TitledBorder title="NI 6259 Timing"/>
+                          </Border>
+                        </Property>
+                      </Properties>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+                      <SubComponents>
+                        <Component class="DeviceField" name="deviceField7">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Start Time: "/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="7"/>
+                          </Properties>
+                        </Component>
+                        <Component class="DeviceField" name="deviceField8">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Duration"/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="8"/>
+                          </Properties>
+                        </Component>
+                        <Component class="DeviceField" name="deviceField9">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Frequency: "/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="6"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="jPanel11">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                            <TitledBorder title="NI 6368 Timing"/>
+                          </Border>
+                        </Property>
+                      </Properties>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+                      <SubComponents>
+                        <Component class="DeviceField" name="deviceField14">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Start Time: "/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="10"/>
+                          </Properties>
+                        </Component>
+                        <Component class="DeviceField" name="deviceField15">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Duration"/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="11"/>
+                          </Properties>
+                        </Component>
+                        <Component class="DeviceField" name="deviceField16">
+                          <Properties>
+                            <Property name="identifier" type="java.lang.String" value=""/>
+                            <Property name="labelString" type="java.lang.String" value="Frequency: "/>
+                            <Property name="numCols" type="int" value="20"/>
+                            <Property name="offsetNid" type="int" value="9"/>
+                          </Properties>
+                        </Component>
                       </SubComponents>
                     </Container>
                   </SubComponents>

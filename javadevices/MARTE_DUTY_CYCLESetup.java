@@ -32,20 +32,24 @@ public class MARTE_DUTY_CYCLESetup extends DeviceSetup {
         deviceField1 = new DeviceField();
         deviceDispatch1 = new DeviceDispatch();
         jPanel3 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
         deviceField2 = new DeviceField();
         deviceField3 = new DeviceField();
         deviceField4 = new DeviceField();
+        jPanel6 = new javax.swing.JPanel();
         deviceField5 = new DeviceField();
         jPanel4 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
         deviceField6 = new DeviceField();
         deviceField7 = new DeviceField();
+        jPanel8 = new javax.swing.JPanel();
         deviceField8 = new DeviceField();
 
         setDeviceProvider("localhost");
         setDeviceTitle("Variable Dudt Cycle clock generator");
         setDeviceType("MARTE_DUTY_CYCLE");
         setHeight(250);
-        setWidth(500);
+        setWidth(700);
         getContentPane().add(deviceButtons1, java.awt.BorderLayout.SOUTH);
 
         jPanel1.setLayout(new java.awt.GridLayout(3, 1));
@@ -60,49 +64,61 @@ public class MARTE_DUTY_CYCLESetup extends DeviceSetup {
 
         jPanel1.add(jPanel2);
 
+        jPanel3.setLayout(new java.awt.GridLayout(2, 0));
+
         deviceField2.setIdentifier("");
         deviceField2.setLabelString("Device ID: ");
-        deviceField2.setNumCols(3);
+        deviceField2.setNumCols(15);
         deviceField2.setOffsetNid(2);
-        jPanel3.add(deviceField2);
+        jPanel5.add(deviceField2);
 
         deviceField3.setIdentifier("");
         deviceField3.setLabelString("In Clock bit:");
-        deviceField3.setNumCols(3);
+        deviceField3.setNumCols(15);
         deviceField3.setOffsetNid(1039);
-        jPanel3.add(deviceField3);
+        jPanel5.add(deviceField3);
 
         deviceField4.setIdentifier("");
         deviceField4.setLabelString("Enable bit:");
-        deviceField4.setNumCols(3);
+        deviceField4.setNumCols(15);
         deviceField4.setOffsetNid(1045);
-        jPanel3.add(deviceField4);
+        jPanel5.add(deviceField4);
+
+        jPanel3.add(jPanel5);
 
         deviceField5.setIdentifier("");
         deviceField5.setLabelString("Out Clock bit:");
-        deviceField5.setNumCols(3);
+        deviceField5.setNumCols(30);
         deviceField5.setOffsetNid(1051);
-        jPanel3.add(deviceField5);
+        jPanel6.add(deviceField5);
+
+        jPanel3.add(jPanel6);
 
         jPanel1.add(jPanel3);
 
+        jPanel4.setLayout(new java.awt.GridLayout(2, 0));
+
         deviceField6.setIdentifier("");
         deviceField6.setLabelString("Input Freq.(Hz): ");
-        deviceField6.setNumCols(4);
+        deviceField6.setNumCols(20);
         deviceField6.setOffsetNid(1057);
-        jPanel4.add(deviceField6);
+        jPanel7.add(deviceField6);
 
         deviceField7.setIdentifier("");
         deviceField7.setLabelString("Output Freq. (Hz):");
-        deviceField7.setNumCols(4);
+        deviceField7.setNumCols(20);
         deviceField7.setOffsetNid(1063);
-        jPanel4.add(deviceField7);
+        jPanel7.add(deviceField7);
+
+        jPanel4.add(jPanel7);
 
         deviceField8.setIdentifier("");
         deviceField8.setLabelString("Duty Cycle %:");
-        deviceField8.setNumCols(3);
+        deviceField8.setNumCols(30);
         deviceField8.setOffsetNid(1069);
-        jPanel4.add(deviceField8);
+        jPanel8.add(deviceField8);
+
+        jPanel4.add(jPanel8);
 
         jPanel1.add(jPanel4);
 
@@ -125,5 +141,9 @@ public class MARTE_DUTY_CYCLESetup extends DeviceSetup {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     // End of variables declaration//GEN-END:variables
 }

@@ -43,19 +43,16 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
         deviceField17 = new DeviceField();
         jPanel17 = new javax.swing.JPanel();
         jTabbedPane3 = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
-        deviceField4 = new DeviceField();
-        deviceField5 = new DeviceField();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel32 = new javax.swing.JPanel();
+        deviceChoice1 = new DeviceChoice();
+        deviceField1 = new DeviceField();
+        deviceField2 = new DeviceField();
+        jPanel33 = new javax.swing.JPanel();
+        deviceChoice2 = new DeviceChoice();
+        deviceField3 = new DeviceField();
         deviceField6 = new DeviceField();
-        jPanel5 = new javax.swing.JPanel();
-        deviceField7 = new DeviceField();
-        deviceField8 = new DeviceField();
-        deviceField9 = new DeviceField();
-        jPanel11 = new javax.swing.JPanel();
-        deviceField14 = new DeviceField();
-        deviceField15 = new DeviceField();
-        deviceField16 = new DeviceField();
+        jPanel34 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
         deviceField10 = new DeviceField();
@@ -79,6 +76,18 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
         deviceWave9 = new DeviceWave();
         jPanel12 = new javax.swing.JPanel();
         deviceWave5 = new DeviceWave();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        deviceField4 = new DeviceField();
+        deviceField5 = new DeviceField();
+        jPanel5 = new javax.swing.JPanel();
+        deviceField7 = new DeviceField();
+        deviceField8 = new DeviceField();
+        deviceField9 = new DeviceField();
+        jPanel11 = new javax.swing.JPanel();
+        deviceField14 = new DeviceField();
+        deviceField15 = new DeviceField();
+        deviceField16 = new DeviceField();
         jPanel18 = new javax.swing.JPanel();
         jPanel19 = new javax.swing.JPanel();
         jPanel20 = new javax.swing.JPanel();
@@ -97,7 +106,7 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
         jPanel26 = new javax.swing.JPanel();
         deviceWave15 = new DeviceWave();
 
-        setDeviceProvider("localhost");
+        setDeviceProvider("scpsl.nbtf");
         setDeviceTitle("SPIDER Experiment Setup");
         setDeviceType("SPIDER_SETUP");
         setHeight(600);
@@ -150,81 +159,58 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
 
         jPanel28.add(jPanel29);
 
-        jPanel27.add(jPanel28, java.awt.BorderLayout.PAGE_START);
+        jPanel27.add(jPanel28, java.awt.BorderLayout.CENTER);
 
         jTabbedPane1.addTab("SPIDER", jPanel27);
 
         jPanel17.setLayout(new java.awt.BorderLayout());
 
-        jPanel1.setLayout(new java.awt.GridLayout(4, 1));
+        jPanel3.setLayout(new java.awt.GridLayout(3, 0));
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("CAEN DT5720 Timing"));
+        jPanel32.setBorder(javax.swing.BorderFactory.createTitledBorder("EG Modulation"));
 
-        deviceField4.setIdentifier("");
-        deviceField4.setLabelString("Start Time: ");
-        deviceField4.setNumCols(20);
-        deviceField4.setOffsetNid(4);
-        jPanel4.add(deviceField4);
+        deviceChoice1.setChoiceItems(new String[] {"DISABLED", "ENABLED"});
+        deviceChoice1.setIdentifier("");
+        deviceChoice1.setLabelString("State");
+        deviceChoice1.setOffsetNid(124);
+        deviceChoice1.setUpdateIdentifier("");
+        jPanel32.add(deviceChoice1);
 
-        deviceField5.setIdentifier("");
-        deviceField5.setLabelString("Duration: ");
-        deviceField5.setNumCols(20);
-        deviceField5.setOffsetNid(5);
-        jPanel4.add(deviceField5);
+        deviceField1.setIdentifier("");
+        deviceField1.setLabelString("Frequency:");
+        deviceField1.setOffsetNid(125);
+        jPanel32.add(deviceField1);
+
+        deviceField2.setIdentifier("");
+        deviceField2.setLabelString("Duty Cycle:");
+        deviceField2.setOffsetNid(126);
+        jPanel32.add(deviceField2);
+
+        jPanel3.add(jPanel32);
+
+        jPanel33.setBorder(javax.swing.BorderFactory.createTitledBorder("RF Modulation"));
+
+        deviceChoice2.setChoiceItems(new String[] {"DISABLED", "ENABLED"});
+        deviceChoice2.setIdentifier("");
+        deviceChoice2.setLabelString("State");
+        deviceChoice2.setOffsetNid(127);
+        deviceChoice2.setUpdateIdentifier("");
+        jPanel33.add(deviceChoice2);
+
+        deviceField3.setIdentifier("");
+        deviceField3.setLabelString("Frequency:");
+        deviceField3.setOffsetNid(128);
+        jPanel33.add(deviceField3);
 
         deviceField6.setIdentifier("");
-        deviceField6.setLabelString("Frequency: ");
-        deviceField6.setNumCols(20);
-        deviceField6.setOffsetNid(3);
-        jPanel4.add(deviceField6);
+        deviceField6.setLabelString("Duty Cycle:");
+        deviceField6.setOffsetNid(129);
+        jPanel33.add(deviceField6);
 
-        jPanel1.add(jPanel4);
+        jPanel3.add(jPanel33);
+        jPanel3.add(jPanel34);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("NI 6259 Timing"));
-
-        deviceField7.setIdentifier("");
-        deviceField7.setLabelString("Start Time: ");
-        deviceField7.setNumCols(20);
-        deviceField7.setOffsetNid(7);
-        jPanel5.add(deviceField7);
-
-        deviceField8.setIdentifier("");
-        deviceField8.setLabelString("Duration");
-        deviceField8.setNumCols(20);
-        deviceField8.setOffsetNid(8);
-        jPanel5.add(deviceField8);
-
-        deviceField9.setIdentifier("");
-        deviceField9.setLabelString("Frequency: ");
-        deviceField9.setNumCols(20);
-        deviceField9.setOffsetNid(6);
-        jPanel5.add(deviceField9);
-
-        jPanel1.add(jPanel5);
-
-        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("NI 6368 Timing"));
-
-        deviceField14.setIdentifier("");
-        deviceField14.setLabelString("Start Time: ");
-        deviceField14.setNumCols(20);
-        deviceField14.setOffsetNid(10);
-        jPanel11.add(deviceField14);
-
-        deviceField15.setIdentifier("");
-        deviceField15.setLabelString("Duration");
-        deviceField15.setNumCols(20);
-        deviceField15.setOffsetNid(11);
-        jPanel11.add(deviceField15);
-
-        deviceField16.setIdentifier("");
-        deviceField16.setLabelString("Frequency: ");
-        deviceField16.setNumCols(20);
-        deviceField16.setOffsetNid(9);
-        jPanel11.add(deviceField16);
-
-        jPanel1.add(jPanel11);
-
-        jTabbedPane3.addTab("Data Acquisition", jPanel1);
+        jTabbedPane3.addTab("Setup", jPanel3);
 
         jPanel2.setLayout(new java.awt.BorderLayout());
 
@@ -329,6 +315,70 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
 
         jTabbedPane3.addTab("Waveforms", jPanel2);
 
+        jPanel1.setLayout(new java.awt.GridLayout(4, 1));
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("CAEN DT5720 Timing"));
+
+        deviceField4.setIdentifier("");
+        deviceField4.setLabelString("Start Time: ");
+        deviceField4.setNumCols(20);
+        deviceField4.setOffsetNid(4);
+        jPanel4.add(deviceField4);
+
+        deviceField5.setIdentifier("");
+        deviceField5.setLabelString("Duration: ");
+        deviceField5.setNumCols(20);
+        deviceField5.setOffsetNid(5);
+        jPanel4.add(deviceField5);
+
+        jPanel1.add(jPanel4);
+
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("NI 6259 Timing"));
+
+        deviceField7.setIdentifier("");
+        deviceField7.setLabelString("Start Time: ");
+        deviceField7.setNumCols(20);
+        deviceField7.setOffsetNid(7);
+        jPanel5.add(deviceField7);
+
+        deviceField8.setIdentifier("");
+        deviceField8.setLabelString("Duration");
+        deviceField8.setNumCols(20);
+        deviceField8.setOffsetNid(8);
+        jPanel5.add(deviceField8);
+
+        deviceField9.setIdentifier("");
+        deviceField9.setLabelString("Frequency: ");
+        deviceField9.setNumCols(20);
+        deviceField9.setOffsetNid(6);
+        jPanel5.add(deviceField9);
+
+        jPanel1.add(jPanel5);
+
+        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("NI 6368 Timing"));
+
+        deviceField14.setIdentifier("");
+        deviceField14.setLabelString("Start Time: ");
+        deviceField14.setNumCols(20);
+        deviceField14.setOffsetNid(10);
+        jPanel11.add(deviceField14);
+
+        deviceField15.setIdentifier("");
+        deviceField15.setLabelString("Duration");
+        deviceField15.setNumCols(20);
+        deviceField15.setOffsetNid(11);
+        jPanel11.add(deviceField15);
+
+        deviceField16.setIdentifier("");
+        deviceField16.setLabelString("Frequency: ");
+        deviceField16.setNumCols(20);
+        deviceField16.setOffsetNid(9);
+        jPanel11.add(deviceField16);
+
+        jPanel1.add(jPanel11);
+
+        jTabbedPane3.addTab("Data Acquisition", jPanel1);
+
         jPanel17.add(jTabbedPane3, java.awt.BorderLayout.CENTER);
 
         jTabbedPane1.addTab("ISEPS ", jPanel17);
@@ -413,6 +463,9 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private DeviceButtons deviceButtons1;
+    private DeviceChoice deviceChoice1;
+    private DeviceChoice deviceChoice2;
+    private DeviceField deviceField1;
     private DeviceField deviceField10;
     private DeviceField deviceField11;
     private DeviceField deviceField12;
@@ -423,7 +476,9 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
     private DeviceField deviceField17;
     private DeviceField deviceField18;
     private DeviceField deviceField19;
+    private DeviceField deviceField2;
     private DeviceField deviceField20;
+    private DeviceField deviceField3;
     private DeviceField deviceField4;
     private DeviceField deviceField5;
     private DeviceField deviceField6;
@@ -467,8 +522,12 @@ public class SPIDER_SETUPSetup extends DeviceSetup {
     private javax.swing.JPanel jPanel27;
     private javax.swing.JPanel jPanel28;
     private javax.swing.JPanel jPanel29;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel30;
     private javax.swing.JPanel jPanel31;
+    private javax.swing.JPanel jPanel32;
+    private javax.swing.JPanel jPanel33;
+    private javax.swing.JPanel jPanel34;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
