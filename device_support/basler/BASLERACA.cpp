@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <mdsobjects.h>
+#include <string>
+#include <iostream>
 using namespace MDSplus;
 using namespace std;
 
@@ -245,6 +247,7 @@ void  getLastError(int camHandle, char *msg)
 }
 
 
+
 #ifdef __cplusplus 
 } 
 #endif 
@@ -256,7 +259,7 @@ BASLER_ACA::BASLER_ACA(const char *ipAddress)
 { 
    try
    {
-     this->ipAddress = ipAddress; 
+     memcpy(this->ipAddress, ipAddress, strlen(ipAddress)+1); 
      PylonInitialize();
      CTlFactory& TlFactory = CTlFactory::GetInstance();
      CBaslerGigEDeviceInfo di;
@@ -264,12 +267,12 @@ BASLER_ACA::BASLER_ACA(const char *ipAddress)
      this->pDevice = TlFactory.CreateDevice( di);       
      this->pCamera = new Pylon::CBaslerGigEInstantCamera::CBaslerGigEInstantCamera(this->pDevice); 		
      pCamera->Open();
-     printf("Device Connected.\n"); 
+     printf("%s: Device Connected.\n", this->ipAddress); 
      lastOpRes=SUCCESS;
    }
    catch (const GenericException & e)
    {
-     cerr << "Error Device connection. Reason: " << e.GetDescription() << endl;
+     cerr << this->ipAddress << ": Error Device connection. Reason: " << e.GetDescription() << endl;
      PylonTerminate();
      lastOpRes=ERROR;
    }
@@ -285,9 +288,15 @@ BASLER_ACA::BASLER_ACA()  //new 25/07/2013: let to use the device without the ca
 
 BASLER_ACA::~BASLER_ACA()
 {
-   PylonTerminate();
-   printf("Device Disconnected.\n");
+   printf("COUNT = %d\n", this->getCount());
+   if( this->getCount() == 1)
+   {
+      printf("PylonTerminate.\n");
+      PylonTerminate();
+   }
+   printf("%s: Device Disconnected.\n", this->ipAddress);
 }
+
 
 
 
@@ -308,7 +317,7 @@ int BASLER_ACA::readInternalTemperature()
     pCamera->TemperatureSelector.SetValue(TemperatureSelector_Coreboard);
     // Read the device temperature
     double t = pCamera->TemperatureAbs.GetValue();
-    printf("Camera Temperature is now %3.2f°C\n", t); 
+    printf("%s: Camera Temperature is now %3.2f°C\n", this->ipAddress, t); 
     this->internalTemperature=t;
 
    return SUCCESS;
@@ -322,7 +331,7 @@ int BASLER_ACA::setExposure(double exposure)
    {
      pCamera->ExposureTimeAbs.SetValue(exposure);
      //pCamera->ExposureTimeRaw.SetValue(exposure);  //not to use!
-     cout << "Exposure set to: " << exposure << endl;  
+     cout << this->ipAddress << ": Exposure set to: " << exposure << endl;  
    }    
    this->exposure=exposure;
 
@@ -339,7 +348,7 @@ int BASLER_ACA::setExposureAuto(char *exposureAuto)
   if(IsAvailable( pFormat->GetEntryByName(exposureAuto)))             //OFF Once Continuous
   {
      pFormat->FromString(exposureAuto);
-     cout << "Exposure Auto set to : " << pFormat->ToString() << endl;
+     cout << this->ipAddress << ": Exposure Auto set to : " << pFormat->ToString() << endl;
   }
  
   return SUCCESS;
@@ -354,7 +363,7 @@ int BASLER_ACA::setGainAuto(char *gainAuto)
   if(IsAvailable( pFormat->GetEntryByName(gainAuto)))             //OFF Once Continuous
   {
      pFormat->FromString(gainAuto);
-     cout << "Gain Auto set to : " << pFormat->ToString() << endl;
+     cout << this->ipAddress << ": Gain Auto set to : " << pFormat->ToString() << endl;
   }
  
   return SUCCESS;
@@ -365,7 +374,7 @@ int BASLER_ACA::setGain(int gain)
     if (IsWritable(pCamera->GainRaw))
     {
      pCamera->GainRaw.SetValue(gain);
-     cout << "Gain set to: " << gain << endl;
+     cout << this->ipAddress << ": Gain set to: " << gain << endl;
     }   
     this->gain = gain;
 
@@ -383,7 +392,7 @@ int BASLER_ACA::setGammaEnable(char *gammaEnable)
     pCamera->GammaEnable.SetValue(false);
   }
    
-  cout << "Gamma Enable set to: " << gammaEnable << endl;  
+  cout << this->ipAddress << ": Gamma Enable set to: " << gammaEnable << endl;  
   return SUCCESS;
 }
 
@@ -391,7 +400,7 @@ int BASLER_ACA::setFrameRate(double frameRate)
 {
     pCamera->AcquisitionFrameRateEnable.SetValue(true);
     pCamera->AcquisitionFrameRateAbs.SetValue(frameRate);
-    cout << "Frame Rate set to: " << frameRate << endl;   
+    cout << this->ipAddress << ": Frame Rate set to: " << frameRate << endl;   
     this->frameRate = frameRate;
     return SUCCESS;
 }
@@ -423,14 +432,14 @@ int BASLER_ACA::setReadoutArea(int x, int y, int width, int height)
 
     if((x+width) > widthCI->GetMax())   //GetMax depend on previous offset set so now is the maximum
     {
-     printf("ERROR in setReadoutArea: OffsetX + Width exceed maximum allowed.");
+     printf("%s: ERROR in setReadoutArea: OffsetX + Width exceed maximum allowed.", this->ipAddress);
      offsetX->SetValue( oldOffsetX );
      lastOpRes=ERROR;
      return ERROR;
     }
     if((y+height) > heightCI->GetMax())
     {
-     printf("ERROR in setReadoutArea: OffsetY + Height exceed maximum allowed.");
+     printf("%s: ERROR in setReadoutArea: OffsetY + Height exceed maximum allowed.", this->ipAddress);
      offsetY->SetValue( oldOffsetY );
      lastOpRes=ERROR;
      return ERROR;
@@ -441,11 +450,11 @@ int BASLER_ACA::setReadoutArea(int x, int y, int width, int height)
     offsetX->SetValue( x );
     offsetY->SetValue( y );
 
-    cout << "OffsetX          : " << offsetX->GetValue() << endl;
-    cout << "OffsetY          : " << offsetY->GetValue() << endl;
+    cout << this->ipAddress << ": OffsetX          : " << offsetX->GetValue() << endl;
+    cout << this->ipAddress << ": OffsetY          : " << offsetY->GetValue() << endl;
 
-    cout << "Width            : " << widthCI->GetValue() << endl;
-    cout << "Height           : " << heightCI->GetValue() << endl;
+    cout << this->ipAddress << ": Width            : " << widthCI->GetValue() << endl;
+    cout << this->ipAddress << ": Height           : " << heightCI->GetValue() << endl;
 
     return SUCCESS;
   }
@@ -466,7 +475,7 @@ int BASLER_ACA::setPixelFormat(char *pixelFormat)
   if(IsAvailable( pFormat->GetEntryByName(pixelFormat)))             //Mono8 - BayerRG8
   {
      pFormat->FromString(pixelFormat);
-     cout << "PixelFormat set to : " << pFormat->ToString() << endl; 
+     cout << this->ipAddress << ": PixelFormat set to : " << pFormat->ToString() << endl; 
      if(strcmp(pixelFormat, "Mono8")==0)
      {
        this->pixelFormat = CSU_PIX_FMT_GRAY8;
@@ -491,8 +500,11 @@ int BASLER_ACA::setPixelFormat(char *pixelFormat)
  }
  else
  {
-    printf("The camera does NOT support the selected Pixel Format.\n");
-    throw RUNTIME_EXCEPTION("The camera does NOT support the selected Pixel Format.");
+    char msg[256];
+    sprintf(msg, "%s, The camera does NOT support the selected Pixel Format.", this->ipAddress);
+ 
+    printf("%s\n", msg);
+    throw RUNTIME_EXCEPTION(msg);
  }
  return ERROR;
 }
@@ -508,9 +520,9 @@ int BASLER_ACA::startAcquisition(int *width, int *height, int *payloadSize)
 			
    *payloadSize=this->width*this->height*this->Bpp;  //no metadata
 
-   printf("width=%d.", this->width); 
-   printf("height=%d.", this->height);
-   printf("Bpp=%d.\n", this->Bpp);
+   printf("%s: width=%d.", this->ipAddress, this->width); 
+   printf("%s: height=%d.", this->ipAddress, this->height);
+   printf("%s: Bpp=%d.\n", this->ipAddress, this->Bpp);
 
    //fede new 30/06/2017 due to incomplete grabbed frame error. The error advice to change iter-packed delay
    pCamera->GevStreamChannelSelector.SetValue(GevStreamChannelSelector_StreamChannel0);
@@ -547,7 +559,7 @@ int BASLER_ACA::startAcquisition(int *width, int *height, int *payloadSize)
    if(IsAvailable(ChunkSelector->GetEntryByName("ExposureTime")))
    {
      ChunkSelector->FromString("ExposureTime");
-     cout << "New ChunkSelector_ExposureTime: " << ChunkSelector->ToString() << endl;
+     cout << this->ipAddress << ": New ChunkSelector_ExposureTime: " << ChunkSelector->ToString() << endl;
    }
    node = nodeMap.GetNode("ChunkEnable");
    CBooleanPtr(node)->SetValue(true);
@@ -555,7 +567,7 @@ int BASLER_ACA::startAcquisition(int *width, int *height, int *payloadSize)
    if(IsAvailable(ChunkSelector->GetEntryByName("GainAll")))
    {
      ChunkSelector->FromString("GainAll");
-     cout << "New ChunkSelector_GainAll: " << ChunkSelector->ToString() << endl;
+     cout << this->ipAddress << ": New ChunkSelector_GainAll: " << ChunkSelector->ToString() << endl;
    }
    node = nodeMap.GetNode("ChunkEnable");
    CBooleanPtr(node)->SetValue(true);
@@ -581,7 +593,7 @@ int BASLER_ACA::startAcquisition(int *width, int *height, int *payloadSize)
 int BASLER_ACA::stopAcquisition()
 {
     pCamera->StopGrabbing();
-    printf("Stop Acquisition\n");
+    printf("%s: Stop Acquisition\n", this->ipAddress);
     return SUCCESS;
 }
 
@@ -600,7 +612,7 @@ int BASLER_ACA::getFrame(int *status, void *frame, void *metaData)
       }catch (const GenericException &e) 
       {
         // Error handling.
-        cerr << "An exception occurred." << endl << e.GetDescription() << endl;
+        cerr << this->ipAddress << "An exception occurred." << endl << e.GetDescription() << endl;
        // exitCode = 1;
         *status=3; //timeout
         printf("-> 5s timeout reached in getFrame\n");
@@ -613,7 +625,7 @@ int BASLER_ACA::getFrame(int *status, void *frame, void *metaData)
 	  const uint8_t *dataPtr = (uint8_t *) ptrGrabResult->GetBuffer();     //use always char* also 4 bigger images
           memcpy( frame , (unsigned char *)dataPtr, width*height*this->Bpp );
 
-         // cout << "Gray value of first pixel: " << (uint32_t) dataPtr[0] << endl << endl;
+         // cout << this->ipAddress << ": Gray value of first pixel: " << (uint32_t) dataPtr[0] << endl << endl;
 
             // Check to see if a buffer containing chunk data has been received.
             if (PayloadType_ChunkData != ptrGrabResult->GetPayloadType())
@@ -663,7 +675,7 @@ int BASLER_ACA::getFrame(int *status, void *frame, void *metaData)
        }// if (ptrGrabResult->GrabSucceeded()
        else
        {
-         cout << "Grab Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
+         cout << this->ipAddress << ": Grab Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
        }
     }//if(camera.IsGrabbing())
 }
@@ -743,7 +755,7 @@ void FLIR_SC65X::printLastError(const char *format, const char *msg)
 */
 void BASLER_ACA::getLastError(char *msg)
 {
-	sprintf(msg, "%s", (error[0]==0) ? "" : error);
+	sprintf(msg, "%s:%s", this->ipAddress, (error[0]==0) ? "" : error);
 }
 
 int BASLER_ACA::stopFramesAcquisition()
@@ -763,7 +775,7 @@ int BASLER_ACA::stopFramesAcquisition()
 
 	if(count == 10)
 	{
-		printf("Cannot stop acquisition loop\n");
+		printf("%s: Cannot stop acquisition loop\n", this->ipAddress);
 		return ERROR;
 	}
 		
@@ -802,7 +814,7 @@ int BASLER_ACA::startFramesAcquisition()
              timeStamp0 = (int64_t)nodeData->getLong();
         }catch(MdsException *exc)
          {
-            printf("Error getting frame0 time\n");
+            printf("%s: Error getting frame0 time\n", this->ipAddress);
          }
 
         if(this->Bpp==1)
@@ -840,7 +852,7 @@ int BASLER_ACA::startFramesAcquisition()
            	if ( (frameStatus == 4) && (startStoreTrg == 0) )       //start data storing @ 1st trigger seen (trigger is on image header!)
 		{
             	  startStoreTrg = 1;
-            	  printf("TRIGGERED:\n");	
+            	  printf("%s: TRIGGERED:\n", this->ipAddress);	
 		}
 
            	if (frameTriggerCounter == burstNframe) 
@@ -849,12 +861,12 @@ int BASLER_ACA::startFramesAcquisition()
 		  startStoreTrg   = 0;   //disable storing                  
 		  NtriggerCount++; 
     
-                  printf("ACQUIRED ALL FRAMES %d FOR TRIGGER : %d\n", frameTriggerCounter,  NtriggerCount );	
+                  printf("%s: ACQUIRED ALL FRAMES %d FOR TRIGGER : %d\n", this->ipAddress, frameTriggerCounter,  NtriggerCount );	
                   frameTriggerCounter = 0;
 
 	          if ( NtriggerCount == numTrigger ) //stop store when all trigger will be received
 		  { 
-	            printf("ACQUIRED ALL FRAME BURST: %d\n", numTrigger );
+	            printf("%s: ACQUIRED ALL FRAME BURST: %d\n", this->ipAddress, numTrigger );
                     storeEnabled=0;	
 	            //break;             
 		  }
@@ -889,7 +901,7 @@ int BASLER_ACA::startFramesAcquisition()
                    startStoreTrg   = 0;   //disable storing   
                    frameTriggerCounter = 0;
                    NtriggerCount++; 
-            	   printf("Stop Internal trigger acquisition time:%f dur:%f fps:%f\n", frameTime, burstDuration, frameRate);
+            	   printf("%s: Stop Internal trigger acquisition time:%f dur:%f fps:%f\n", this->ipAddress, frameTime, burstDuration, frameRate);
                    //storeEnabled=0;  //infinite trigger until stop acquisition
 		   //break;
               }
@@ -922,11 +934,11 @@ int BASLER_ACA::startFramesAcquisition()
             	rstatus = camOpenTcpConnection(streamingServer, streamingPort, &tcpStreamHandle, width, height, pixelFormat);
             	if( rstatus !=-1 )
                 {
-            	  printf( "Connected to FFMPEG on %s : %d\n", streamingServer, streamingPort);
+            	  printf( "%s: Connected to FFMPEG on %s : %d\n", this->ipAddress, streamingServer, streamingPort);
                 }
 		else
 		{
-            	  printf( "Cannot connect to FFMPEG on %s : %d. Disable streaming\n", streamingServer, streamingPort);
+            	  printf( "%s, Cannot connect to FFMPEG on %s : %d. Disable streaming\n", this->ipAddress, streamingServer, streamingPort);
 		  streamingEnabled = 0;
 		}
 	    }
@@ -952,13 +964,13 @@ int BASLER_ACA::startFramesAcquisition()
 
     rstatus = stopAcquisition();  //stop camera acquisition
     if (rstatus < 0)
-	printf("Cannot stop camera acquisition\n");
+	printf("%s: Cannot stop camera acquisition\n", this->ipAddress);
    
     free(frameBuffer);
     free(frame8bit);
     free(metaData);
 
-	printf("Acquisition Statistics : \tTotal frames read %d, \n\t\t\t\tTotal frames stored %d (expected %d), \n\t\t\t\tNumber of trigger %d (expected %d), \n\t\t\t\tIncomplete frame %d\n", frameCounter, enqueueFrameNumber, 1 + numTrigger * ((int)( burstDuration * (frameRate-acqSkipFrameNumber))), NtriggerCount, numTrigger, incompleteFrame );
+	printf("%s: Acquisition Statistics : Total frames read %d, \n\t\t\t\t\tTotal frames stored %d (expected %d), \n\t\t\t\t\tNumber of trigger %d (expected %d), \n\t\t\t\t\tIncomplete frame %d\n", this->ipAddress, frameCounter, enqueueFrameNumber, 1 + numTrigger * ((int)( burstDuration * (frameRate-acqSkipFrameNumber))), NtriggerCount, numTrigger, incompleteFrame );
 
 	acqStopped = 1;
 

@@ -7,7 +7,7 @@ import traceback
 class BASLERACA(Device):
     """BASLER NEW Camera"""
     parts=[                                                              #offset nid
-      {'path':':NAME', 'type':'text', 'value':'192.168.54.96'},          #1
+      {'path':':IP_NAME', 'type':'text', 'value':'192.168.54.96'},          #1
       {'path':':COMMENT', 'type':'text'},                                
 
       {'path':'.FRAME', 'type':'structure'},                             #3
@@ -67,6 +67,9 @@ class BASLERACA(Device):
 
     error = create_string_buffer(version.tobytes(''), 512)
 
+    def debugPrint(self, msg="", obj=""):
+          print( self.name + ":" + msg, obj );
+
 
     """Asynchronous readout internal class"""
     class AsynchStore(Thread):
@@ -78,14 +81,14 @@ class BASLERACA(Device):
 
         def run(self):
 
-            print("Asychronous acquisition thread")
+            self.device.debugPrint("Asychronous acquisition thread")
 
             status = BASLERACA.baslerLib.startFramesAcquisition(self.device.handle)
             if status < 0:
                 BASLERACA.baslerLib.getLastError(self.device.handle, self.device.error)
                 Data.execute('DevLogErr($1,$2)', self.device.nid, 'Cannot start frames acquisition : ' + self.device.error.raw )
 
-            print("Fine acquisition thread")
+            self.device.debugPrint("Fine acquisition thread")
 
             status = BASLERACA.baslerLib.baslerClose(self.device.handle)  #close device and remove from info
             if status < 0:
@@ -96,7 +99,7 @@ class BASLERACA(Device):
             #raise mdsExceptions.TclFAILED_ESSENTIAL
 
         def stop(self):
-            print("STOP frames acquisition loop")
+            self.device.debugPrint("STOP frames acquisition loop")
             status = BASLERACA.baslerLib.stopFramesAcquisition(self.device.handle)
             if status < 0:
                 BASLERACA.baslerLib.getLastError(self.device.handle, self.device.error)
@@ -125,41 +128,41 @@ class BASLERACA(Device):
 
 ###restore info###
     def restoreInfo(self):
-      print("restore Info")
+      self.debugPrint("restore Info")
       try:
         if BASLERACA.baslerLib is None:
            libName = "libbasleraca.so"
            BASLERACA.baslerLib = CDLL(libName)
-           print(BASLERACA.baslerLib)
+           self.debugPrint(obj=BASLERACA.baslerLib)
         if BASLERACA.mdsLib is None:
            libName = "libcammdsutils.so"
            BASLERACA.mdsLib = CDLL(libName)
-           print(BASLERACA.mdsLib)
+           self.debugPrint(obj=BASLERACA.mdsLib)
         if BASLERACA.streamLib is None:
            libName = "libcamstreamutils.so"
            BASLERACA.streamLib = CDLL(libName)
-           print(BASLERACA.streamLib)
+           self.debugPrint(obj=BASLERACA.streamLib)
 
       except:
            Data.execute('DevLogErr($1,$2)', self.nid, 'Cannot load library : ' + libName )
            raise mdsExceptions.TclFAILED_ESSENTIAL
       if self.nid in BASLERACA.handles.keys():
         self.handle = BASLERACA.handles[self.nid]
-        print('RESTORE INFO HANDLE TROVATO')
+        self.debugPrint('RESTORE INFO HANDLE TROVATO',  self.handle)
       else:
-        print('RESTORE INFO HANDLE NON TROVATO')
+        self.debugPrint('RESTORE INFO HANDLE NON TROVATO')
         try:
-          name = self.name.data()
+          name = self.ip_name.data()
         except:
           Data.execute('DevLogErr($1,$2)', self.nid, 'Missing device name' )
           raise mdsExceptions.TclFAILED_ESSENTIAL
 
-        print("Opening")
+        self.debugPrint("Opening")
 
         self.handle = c_int(-1)
         status = BASLERACA.baslerLib.baslerOpen(c_char_p(name), byref(self.handle))
 
-        print("Opened ", status)
+        self.debugPrint("Opened ", self.handle)
 
         if status < 0:
           BASLERACA.baslerLib.getLastError(self.handle, self.error)
@@ -173,7 +176,7 @@ class BASLERACA(Device):
       try:
         del(BASLERACA.handles[self.nid])
       except:
-        print('ERROR TRYING TO REMOVE INFO')
+        self.debugPrint('ERROR TRYING TO REMOVE INFO')
 
 
 ##########init############################################################################
@@ -330,7 +333,7 @@ class BASLERACA(Device):
         else:
            trigSource = array([0.])
 
-      print("OK " + triggerMode )
+      self.debugPrint("OK ", triggerMode )
       if triggerMode == 'EXTERNAL':   #0=internal  1=external trigger
         trigModeCode=c_int(1)
       else:
@@ -338,13 +341,13 @@ class BASLERACA(Device):
         trigModeCode=c_int(0)
 
       numTrigger = trigSource.size
-      print("OK - NUM TRIGGER ", numTrigger)
-      print("OK - Trigger Source ", trigSource)
+      self.debugPrint("OK - NUM TRIGGER ", numTrigger)
+      self.debugPrint("OK - Trigger Source ", trigSource)
 
 
       timeBase = Data.compile(" $ : $ + $ :(zero( size( $ ), 0.) + 1.) * 1./$", trigSource, trigSource, burstDuration, trigSource, frameRate)
 
-      print("Data = " + Data.decompile(timeBase))
+      self.debugPrint("Data = " + Data.decompile(timeBase))
 
       self.timing_time_base.putData(timeBase)
       status = BASLERACA.baslerLib.setTriggerMode(self.handle, trigModeCode, c_double(burstDuration), numTrigger)
@@ -432,17 +435,17 @@ class BASLERACA(Device):
              Data.execute('DevLogErr($1,$2)', self.nid, 'Invalid streaming ROI height value')
              raise mdsExceptions.TclFAILED_ESSENTIAL
 
-          print("lowLim ", lowLim)
-          print("highLim ", highLim)
-          print("streamingPort ", streamingPort)
-          print("streamingServer ", streamingServer)
-          print("streaming adj ROI x ", adjRoiX)
-          print("streaming adj ROI y  ", adjRoiY)
-          print("streaming adj ROI w  ", adjRoiW)
-          print("streaming adj ROI h  ", adjRoiH)
+          self.debugPrint("lowLim ", lowLim)
+          self.debugPrint("highLim ", highLim)
+          self.debugPrint("streamingPort ", streamingPort)
+          self.debugPrint("streamingServer ", streamingServer)
+          self.debugPrint("streaming adj ROI x ", adjRoiX)
+          self.debugPrint("streaming adj ROI y  ", adjRoiY)
+          self.debugPrint("streaming adj ROI w  ", adjRoiW)
+          self.debugPrint("streaming adj ROI h  ", adjRoiH)
           deviceName = str(self).rsplit(":",1)        #Recover device name to overlay it as text on frame
           deviceName = deviceName[1]
-          print("Device Name ", deviceName)     
+          self.debugPrint("Device Name ", deviceName)     
       
           status = BASLERACA.baslerLib.setStreamingMode(self.handle, streamingEnabled,  autoAdjustLimit, c_char_p(streamingServer), streamingPort,  lowLim,  highLim, adjRoiX, adjRoiY, adjRoiW, adjRoiH, c_char_p(deviceName));
           if status < 0:
@@ -486,7 +489,7 @@ class BASLERACA(Device):
         Data.execute('DevLogErr($1,$2)', self.nid, 'Cannot execute set tree info : '+self.error.raw)
         raise mdsExceptions.TclFAILED_ESSENTIAL
 
-      print('Init action completed.')
+      self.debugPrint('Init action completed.')
       return 1
 
 
@@ -541,7 +544,7 @@ class BASLERACA(Device):
       if self.restoreInfo() == 0:
           raise mdsExceptions.TclFAILED_ESSENTIAL
 
-      print("Starting Acquisition...")
+      self.debugPrint("Starting Acquisition...")
       self.worker = self.AsynchStore()
       self.worker.daemon = True
       self.worker.stopReq = False
@@ -553,7 +556,7 @@ class BASLERACA(Device):
         BASLERACA.baslerLib.getLastError(self.handle, self.error)
         Data.execute('DevLogErr($1,$2)', self.nid, 'Cannot Start Camera Acquisition : '+self.error.raw)
         raise mdsExceptions.TclFAILED_ESSENTIAL
-      print("OK!")
+      self.debugPrint("OK!")
       self.worker.configure(self)
       self.saveWorker()
       self.worker.start()
@@ -570,7 +573,7 @@ class BASLERACA(Device):
       if self.restoreInfo() == 0:
           raise mdsExceptions.TclFAILED_ESSENTIAL
 
-      print('SOFTWARE TRIGGER')
+      self.debugPrint('SOFTWARE TRIGGER')
 
       status = BASLERACA.baslerLib.softwareTrigger(self.handle)
       if status < 0:

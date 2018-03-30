@@ -1,4 +1,5 @@
 // Include files to use the PYLON API.
+
 #include <pylon/PylonIncludes.h>
 #include <pylon/gige/PylonGigEIncludes.h>
 #include <GenApi/IEnumerationT.h>
@@ -69,12 +70,25 @@ typedef struct _baslerMetaData
     int64_t timestamp;
 }BASLERMETADATA;
 
-class BASLER_ACA
+
+template<class T> class Counted {
+static int count;
+public:
+Counted() { ++count; }
+Counted(const Counted<T>&) { ++count; }
+~Counted() { --count; }
+static int getCount() { return count; }
+};
+ 
+template<class T> int Counted<T>::count = 0;
+
+
+class BASLER_ACA : public Counted<BASLER_ACA>
 {
 	private:
                 IPylonDevice *pDevice;		//device handle
                 Camera_t *pCamera;              //camera handle
-		const char *ipAddress;
+		char ipAddress[64];
 
 		int	 x;
 		int 	 y;

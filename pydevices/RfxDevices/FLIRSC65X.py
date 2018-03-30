@@ -32,7 +32,7 @@ import traceback
 class FLIRSC65X(Device):
     """FLIR655 NEW Camera"""
     parts=[								#offset nid
-      {'path':':NAME', 'type':'text'},					#1
+      {'path':':IP_NAME', 'type':'text'},					#1
       {'path':':COMMENT', 'type':'text'},
 
       {'path':'.OBJECT', 'type':'structure'},				#3
@@ -190,7 +190,7 @@ class FLIRSC65X(Device):
       else:
         print('RESTORE INFO HANDLE NON TROVATO')
         try:
-          name = self.name.data()
+          name = self.ip_name.data()
         except:
           Data.execute('DevLogErr($1,$2)', self.nid, 'Missing device name' )
           raise mdsExceptions.TclFAILED_ESSENTIAL
