@@ -24,11 +24,15 @@
 #
 
 from MDSplus import mdsExceptions, Device, Data, Range, Dimension, Window, Int32, Float32, Float64, Float32Array
+from MDSplus.mdsExceptions import DevCOMM_ERROR
+from MDSplus.mdsExceptions import DevBAD_PARAMETER
+
 from threading import Thread
 from ctypes import CDLL, byref, c_int, c_void_p, c_byte, c_float, c_char_p
 import os
 import time
 import sys, traceback
+
 
 class NI6259AI(Device):
     """NI PXI-6259 M-series multi functional data acquisition card"""
@@ -133,6 +137,13 @@ class NI6259AI(Device):
     ni6259Fds = {}
     workers = {}
 
+    DEV_IS_OPEN = 1
+    DEV_OPEN = 2
+
+
+    def debugPrint(self, msg="", obj=""):
+          print( self.name + ":" + msg, obj );
+
 #saveInfo and restoreInfo allow to handle open file descriptors
     def saveInfo(self):
         NI6259AI.ni6259Fds[self.nid] = self.fd
@@ -145,12 +156,14 @@ class NI6259AI(Device):
 
         if self.nid in NI6259AI.ni6259Fds.keys():
             self.fd = NI6259AI.ni6259Fds[self.nid]
+            return self.DEV_IS_OPEN
         else:
             try:
                 boardId = self.board_id.data();
             except:
-                Data.execute('DevLogErr($1,$2)', self.getNid(), 'Missing Board Id' )
-                raise mdsExceptions.TclFAILED_ESSENTIAL
+                emsg = 'Missing Board Id'
+                Data.execute('DevLogErr($1,$2)', self.getNid(), emsg )
+                raise DevBAD_PARAMETER
 
             try:
                devName = '/dev/pxi6259.'+str(boardId);
@@ -161,15 +174,13 @@ class NI6259AI(Device):
                os.close(dfd)
             except:
                pass
-
             try:
                 fileName = '/dev/pxi6259.'+str(boardId)+'.ai';
                 self.fd = os.open(fileName, os.O_RDWR);
             except Exception as e:
-                print(e)
-                Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot open device '+ fileName + ' :' + e)
-                raise mdsExceptions.TclFAILED_ESSENTIAL
-
+                emsg = 'Cannot open device %s : %s'%(fileName, str(e))
+                Data.execute('DevLogErr($1,$2)', self.getNid(), emsg)
+                raise DevBAD_PARAMETER
 
         """
         try:
@@ -180,7 +191,7 @@ class NI6259AI(Device):
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot reset device '+ fileName)
             raise mdsExceptions.TclFAILED_ESSENTIAL
         """
-        return
+        return self.DEV_OPEN
 
     def closeInfo(self):
         if self.nid in NI6259AI.ni6259Fds.keys():
@@ -188,11 +199,13 @@ class NI6259AI(Device):
             del(NI6259AI.ni6259Fds[self.nid])
             try:
                 if NI6259AI.niLib.pxi6259_reset_ai(self.fd):
-                    Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot reset device '+ self.fd)
-                    raise mdsExceptions.TclFAILED_ESSENTIAL
+                    emsg = 'Cannot reset device ' + str(self.fd)
+                    Data.execute('DevLogErr($1,$2)', self.getNid(), emsg)
+                    raise DevBAD_PARAMETER(emsg)
             except:
-                Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot reset device '+ self.fd)
-                raise mdsExceptions.TclFAILED_ESSENTIAL
+                emsg = 'Cannot reset device ' + str(self.fd)
+                Data.execute('DevLogErr($1,$2)', self.getNid(), emsg)
+                raise DevBAD_PARAMETER
             os.close(self.fd)
         return
 
@@ -204,10 +217,15 @@ class NI6259AI(Device):
         if self.nid in NI6259AI.workers.keys():
             self.worker = NI6259AI.workers[self.nid]
         else:
-            print( 'Cannot restore worker!!')
+            self.debugPrint( 'Cannot restore worker!!')
 
 ########################AsynchStore class
     class AsynchStore(Thread):
+
+        ACQ_NOERROR = 0
+        ACQ_ERROR = 1
+
+
         def configure(self, device, fd, chanMap, hwChanMap, treePtr, stopAcq):
             self.device = device
             self.fd = fd
@@ -216,6 +234,7 @@ class NI6259AI(Device):
             self.treePtr = treePtr
             self.stopAcq = stopAcq
             self.stopReq = False
+            self.error = self.ACQ_NOERROR
 
         def run(self):
             bufSize = self.device.buf_size.data()
@@ -248,33 +267,37 @@ class NI6259AI(Device):
 
             for chan in range(len(self.chanMap)):
                 try:
-                    #print 'CHANNEL', self.chanMap[chan]+1
-                    #print '/dev/pxi6259.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]])
+                    #self.debugPrint 'CHANNEL', self.chanMap[chan]+1
+                    #self.debugPrint '/dev/pxi6259.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]])
                     currFd = os.open('/dev/pxi6259.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]]), os.O_RDWR | os.O_NONBLOCK)
                     chanFd.append(currFd)
 
                     chanNid.append( getattr(self.device, 'channel_%d_data_raw'%(self.chanMap[chan]+1)).getNid() )
-                    #print "chanFd "+'channel_%d_data'%(self.chanMap[chan]+1), chanFd[chan], " chanNid ", chanNid[chan]
+                    #self.debugPrint "chanFd "+'channel_%d_data'%(self.chanMap[chan]+1), chanFd[chan], " chanNid ", chanNid[chan]
 
                     gain = getattr(self.device, 'channel_%d_range'%(self.chanMap[chan]+1)).data()
                     gain_code = self.device.gainDict[gain]
 
-                    time.sleep(0.300)
+                    #time.sleep(0.600)
                     n_coeff = c_int(0)
                     status = NI6259AI.niInterfaceLib.pxi6259_getCalibrationParams(currFd, gain_code, coeff, byref(n_coeff) )
 
                     if( status < 0 ):
+                        errno = NI6259AI.niInterfaceLib.getErrno();
+                        msg = 'Error (%d) %s' % (errno, os.strerror( errno ))
+                        self.debugPrint (msg)
                         Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot read calibration values for Channel %d. Default value assumed ( offset= 0.0, gain = range/65536'%((self.chanMap[chan])) )
-                        gainValue = self.device.gainValueDict[gain]
+                        gainValue = self.device.gainValueDict[gain] * 2.
                         coeff[0] = coeff[2] = coeff[3] = 0
                         coeff[1] = c_float( gainValue / 65536. )
 		    
                     getattr(self.device, 'channel_%d_calib_param'%(self.chanMap[chan]+1)).putData(Float32Array(coeff))
 
                 except Exception as e:
-                    print(e)
+                    self.debugPrint(e)
                     Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot open Channel '+ str(self.chanMap[chan]))
-                    return
+                    self.error = self.ACQ_ERROR;
+                    return 
 
             if( not transientRec ):
 
@@ -287,7 +310,7 @@ class NI6259AI(Device):
                     segmentSize = c*bufSize
 
                 numSamples  = -1
-                print("PXI 6259 CONTINUOUS ", numSamples)
+                self.debugPrint("PXI 6259 CONTINUOUS ", numSamples)
 
             else:
                 NI6259AI.niInterfaceLib.setStopAcqFlag(self.stopAcq);
@@ -296,15 +319,15 @@ class NI6259AI(Device):
                     numSamples = self.device.end_idx.data() - self.device.start_idx.data()
                 except:
                     numSamples = 0
-
-                    print("PXI 6259 NUM SAMPLES ", numSamples)
+                    self.debugPrint("PXI 6259 NUM SAMPLES ", numSamples)
 
 
             status = NI6259AI.niLib.pxi6259_start_ai(c_int(self.fd))
 
             if(status != 0):
                 Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot Start Acquisition ')
-                return
+                self.error = self.ACQ_ERROR
+                return 
 
 
             saveList = c_void_p(0)
@@ -315,7 +338,7 @@ class NI6259AI(Device):
             chanFd_c = (c_int * len(chanFd) )(*chanFd)
 
             #timeAt0 = trigSource + startTime
-            #print("PXI 6259 TIME AT0 ", numSamples)            
+            #self.debugPrint("PXI 6259 TIME AT0 ", numSamples)            
             timeAt0 = startTime
 
             while not self.stopReq:
@@ -328,21 +351,26 @@ class NI6259AI(Device):
 
             if( transientRec and status == -1 ):
                 Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'PXI 6259 Module is not in stop state')
+                self.error = self.ACQ_ERROR
 
             status = NI6259AI.niLib.pxi6259_stop_ai(c_int(self.fd))
 
             for chan in range(len(self.chanMap)):
                 os.close(chanFd[chan])
-            #print 'ASYNCH WORKER TERMINATED'
+            #self.debugPrint 'ASYNCH WORKER TERMINATED'
             NI6259AI.niInterfaceLib.stopSave(saveList)
             NI6259AI.niInterfaceLib.freeStopAcqFlag(self.stopAcq)
             self.device.closeInfo()
-            return
+
+            return 
 
         def stop(self):
             self.stopReq = True
             NI6259AI.niInterfaceLib.setStopAcqFlag(self.stopAcq);
 
+        def hasError(self):
+            return ( self.error != self.ACQ_NOERROR)
+   
 
 
 #############End Inner class AsynchStore
@@ -350,16 +378,17 @@ class NI6259AI(Device):
 ##########init############################################################################
     def init(self):
 
-        print('================= PXI 6259 Init ===============')
+        self.debugPrint('================= PXI 6259 Init ===============')
 
         self.restoreInfo()
+
         aiConf = c_void_p(0)
         NI6259AI.niInterfaceLib.pxi6259_create_ai_conf_ptr(byref(aiConf))
         try:
             inputMode = self.inputModeDict[self.input_mode.data()]
         except:
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Invalid Input Mode')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
         if(inputMode == self.AI_CHANNEL_TYPE_DIFFERENTIAL):
             numChannels = 16
         else:
@@ -382,20 +411,20 @@ class NI6259AI(Device):
                 data.setUnits("Volts")
                 getattr(self, 'channel_%d_data'%(chan+1)).putData(data)
             except Exception as e:
-                print e
+                self.debugPrint (estr(e))
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Invalid Configuration for channel '+str(chan + 1))
-                raise mdsExceptions.TclFAILED_ESSENTIAL
+                raise DevBAD_PARAMETER
             if(enabled):
                 if(inputMode == self.AI_CHANNEL_TYPE_DIFFERENTIAL):
                     currChan = self.diffChanMap[chan]
                 else:
                     currChan = chan
-                #print 'POLARITY: ' + str(polarity) + ' GAIN: ' + str(gain) + ' INPUT MODE: ' + str(inputMode)
+                #self.debugPrint 'POLARITY: ' + str(polarity) + ' GAIN: ' + str(gain) + ' INPUT MODE: ' + str(inputMode)
                 status = NI6259AI.niLib.pxi6259_add_ai_channel(aiConf, c_byte(currChan), polarity, gain, inputMode, c_byte(0))
                 if(status != 0):
                     Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot add channel '+str(currChan + 1))
-                    raise mdsExceptions.TclFAILED_ESSENTIAL
-                #print('PXI 6259 CHAN '+ str(currChan+1) + ' CONFIGURED')
+                    raise DevBAD_PARAMETER
+                #self.debugPrint('PXI 6259 CHAN '+ str(currChan+1) + ' CONFIGURED')
                 activeChan = activeChan + 1
         #endfor
 
@@ -411,74 +440,73 @@ class NI6259AI(Device):
             acqMode = self.acq_mode.data()
         except:
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot resolve acquisition mode management')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
 
 #trigger mode
         try:
             trigMode = self.trig_mode.data()
-            print('PXI 6259 Trigger mode: ', trigMode)
+            self.debugPrint('PXI 6259 Trigger mode: ', trigMode)
             if(trigMode == 'EXTERNAL_PFI1' or  trigMode == 'EXTERNAL_RTSI1' or trigMode == 'EXT_PFI1_R_RTSI1'):
-                #print "AI_START_SELECT ", self.AI_START_SELECT
-                #print "aiConf ", aiConf
-                #print "AI_START_SELECT_PFI1 ", self.AI_START_SELECT_PFI1
-                #print "niLib ", NI6259AI.niLib
-                #print "AI_START_POLARITY ", self.AI_START_POLARITY
-                #print "AI_START_POLARITY_RISING_EDGE ", self.AI_START_POLARITY_RISING_EDGE
+                #self.debugPrint "AI_START_SELECT ", self.AI_START_SELECT
+                #self.debugPrint "aiConf ", aiConf
+                #self.debugPrint "AI_START_SELECT_PFI1 ", self.AI_START_SELECT_PFI1
+                #self.debugPrint "niLib ", NI6259AI.niLib
+                #self.debugPrint "AI_START_POLARITY ", self.AI_START_POLARITY
+                #self.debugPrint "AI_START_POLARITY_RISING_EDGE ", self.AI_START_POLARITY_RISING_EDGE
 
                 if(acqMode == 'TRANSIENT REC.'):
                     """
                     status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_SELECT, self.AI_START_SELECT_PULSE)
-                    print "status ", status
+                    self.debugPrint "status ", status
                     if( status == 0 ):
                         status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_REFERENCE_SELECT, self.AI_REFERENCE_SELECT_PFI1)
-                        print "status ", status
+                        self.debugPrint "status ", status
                     if( status == 0 ):
                         status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_REFERENCE_POLARITY, self.AI_REFERENCE_POLARITY_RISING_EDGE)
-                        print "status ", status
+                        self.debugPrint "status ", status
                     if( status != 0 ):
-                        print "status ", status
+                        self.debugPrint "status ", status
                         Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot set external trigger')
                         raise mdsExceptions.TclFAILED_ESSENTIAL
                     """
                     if( trigMode == 'EXTERNAL_PFI1' or trigMode == 'EXT_PFI1_R_RTSI1' ):
                         status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_SELECT, self.AI_START_SELECT_PFI1)
                     else:
-                        print("1 OK AI_START_SELECT_RTSI1")
+                        self.debugPrint("1 OK AI_START_SELECT_RTSI1")
                         status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_SELECT, self.AI_START_SELECT_RTSI1)
                     if( status == 0 ):
                         status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_POLARITY, self.AI_START_POLARITY_RISING_EDGE)
-                        print "status ", status
                     if( status != 0 ):
                         Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot set external trigger')
-                        raise mdsExceptions.TclFAILED_ESSENTIAL                    
+                        raise DevBAD_PARAMETER                    
                     
                 else:
                     if( trigMode == 'EXT_PFI1_R_RTSI1' ):
                          status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_SELECT, self.AI_START_SELECT_PFI1)
                     else:
-                         print("2 OK AI_START_SELECT_RTSI1")
+                         self.debugPrint("2 OK AI_START_SELECT_RTSI1")
                          status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_SELECT, self.AI_START_SELECT_RTSI1)
 
                     if( status == 0 ):
                         status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_POLARITY, self.AI_START_POLARITY_RISING_EDGE)
                     if( status != 0 ):
                         Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot set external trigger')
-                        raise mdsExceptions.TclFAILED_ESSENTIAL
+                        raise DevBAD_PARAMETER
 
 
                 if( trigMode == 'EXT_PFI1_R_RTSI1' ):
                     status = NI6259AI.niLib.pxi6259_export_ai_signal( aiConf, self.PXI6259_AI_START_TRIGGER,  self.PXI6259_RTSI1 )
                     if( status != 0 ):
                         Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot route PFI1 signal to RTSI1')
-                        raise mdsExceptions.TclFAILED_ESSENTIAL
+                        raise DevBAD_PARAMETER
             else:
-                #print "AI_START_SELECT ", self.AI_START_SELECT
-                #print "aiConf ", aiConf
-                #print "AI_START_SELECT_PFI1 ", self.AI_START_SELECT_PFI1
-                #print "niLib ", NI6259AI.niLib
-                #print "AI_START_POLARITY ", self.AI_START_POLARITY
-                #print "AI_START_POLARITY_RISING_EDGE ", self.AI_START_POLARITY_RISING_EDGE
-                #print "acqMode ", acqMode
+                #self.debugPrint "AI_START_SELECT ", self.AI_START_SELECT
+                #self.debugPrint "aiConf ", aiConf
+                #self.debugPrint "AI_START_SELECT_PFI1 ", self.AI_START_SELECT_PFI1
+                #self.debugPrint "niLib ", NI6259AI.niLib
+                #self.debugPrint "AI_START_POLARITY ", self.AI_START_POLARITY
+                #self.debugPrint "AI_START_POLARITY_RISING_EDGE ", self.AI_START_POLARITY_RISING_EDGE
+                #self.debugPrint "acqMode ", acqMode
 
                 if(acqMode == 'TRANSIENT REC.'):
                     #status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_START_SELECT, self.AI_START_SELECT_PULSE)
@@ -488,12 +516,12 @@ class NI6259AI(Device):
                     #    status = NI6259AI.niLib.pxi6259_set_ai_attribute(aiConf, self.AI_REFERENCE_POLARITY, self.AI_REFERENCE_POLARITY_RISING_EDGE)
                     if( status != 0 ):
                         Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot set external trigger')
-                        raise mdsExceptions.TclFAILED_ESSENTIAL
+                        raise DevBAD_PARAMETER
 
         except:
             traceback.print_exc(file=sys.stdout)
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Invalid triger mode definition')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
 
 #trigger source
         try:
@@ -501,10 +529,10 @@ class NI6259AI(Device):
                 trigSource = self.trig_source.data()
             else:
                 trigSource = 0
-            print('PXI 6259 Trigger source: ', trigSource)
+            self.debugPrint('PXI 6259 Trigger source: ', trigSource)
         except:
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot resolve Trigger source')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
 
 #clock mode
         try:
@@ -512,7 +540,7 @@ class NI6259AI(Device):
             if(clockMode == 'INTERNAL'):
                 frequency = self.clock_freq.data()
                 if( ( activeChan == 1 and frequency > 1250000 ) or ( activeChan > 1 and frequency > 1000000./activeChan ) ):
-                    print('PXI 6259 Frequency out of limits')
+                    self.debugPrint('PXI 6259 Frequency out of limits')
                     if( activeChan == 1 ):
                         frequency = 1250000.
                     else:
@@ -524,7 +552,7 @@ class NI6259AI(Device):
                 status = NI6259AI.niLib.pxi6259_set_ai_sample_clk(aiConf, c_int(divisions), c_int(3), self.AI_SAMPLE_SELECT_SI_TC, self.AI_SAMPLE_POLARITY_RISING_EDGE)
                 if(status != 0):
                     Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot Set Sample Clock')
-                    raise mdsExceptions.TclFAILED_ESSENTIAL
+                    raise DevBAD_PARAMETER
                 """
                 if nSamples > 0:
                     clockSource = Range(Float64(0), Float64(nSamples * divisions/20000000.) , Float64(divisions/20000000.))
@@ -532,14 +560,14 @@ class NI6259AI(Device):
                     clockSource = Range(Float64(0), Float64(3600), Float64(divisions/20000000.))
                 """
                 clockSource = Range(None, None, Float64(divisions/20000000.))
-                print('PXI 6259 CLOCK: ', clockSource)
+                self.debugPrint('PXI 6259 CLOCK: ', clockSource)
                 self.clock_source.putData(clockSource)
             else:
                 clockSource = self.clock_source.evaluate()
                 status = NI6259AI.niLib.pxi6259_set_ai_sample_clk(aiConf, c_int(16), c_int(3), self.AI_SAMPLE_SELECT_PFI0, self.AI_SAMPLE_POLARITY_RISING_EDGE)
                 if(status != 0):
                     Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot configure device clock')
-                    raise mdsExceptions.TclFAILED_ESSENTIAL
+                    raise DevBAD_PARAMETER
 
             convClk = self.conv_clk.data()
             if ( activeChan == 1 and convClk == 20 ) :
@@ -549,10 +577,10 @@ class NI6259AI(Device):
             status = NI6259AI.niLib.pxi6259_set_ai_convert_clk(aiConf, c_int(convClk), c_int(3), self.AI_CONVERT_SELECT_SI2TC, self.AI_CONVERT_POLARITY_RISING_EDGE)
             if(status != 0):
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot Set Convert Clock')
-                raise mdsExceptions.TclFAILED_ESSENTIAL
+                raise DevBAD_PARAMETER
         except:
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Invalid clock definition')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
 
 #Time management
         if acqMode == 'TRANSIENT REC.':
@@ -561,21 +589,21 @@ class NI6259AI(Device):
 
             except:
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot resolve time or samples management')
-                raise mdsExceptions.TclFAILED_ESSENTIAL
+                raise DevBAD_PARAMETER
 
             if useTime == 'YES':
                 try:
                     startTime = self.start_time.data()
                     endTime = self.end_time.data()
 
-                    print('PXI 6259 startTime = ', startTime)
-                    print('PXI 6259 endTime   = ', endTime)
-                    print('PXI 6259 trigSource   = ', trigSource)
+                    self.debugPrint('PXI 6259 startTime = ', startTime)
+                    self.debugPrint('PXI 6259 endTime   = ', endTime)
+                    self.debugPrint('PXI 6259 trigSource   = ', trigSource)
 
 
                 except:
                     Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot Read Start or End time')
-                    raise mdsExceptions.TclFAILED_ESSENTIAL
+                    raise DevBAD_PARAMETER
 
 
                 startIdx = Data.execute('x_to_i($1, $2)', Dimension(Window(0, None, trigSource), clockSource), startTime)
@@ -589,7 +617,7 @@ class NI6259AI(Device):
                 else:
                     endIdx = -Data.execute('x_to_i($1,$2)', Dimension(Window(0, None, trigSource + endTime), clockSource), trigSource)
 
-                print 'endIdx   = ', Int32(int(endIdx))
+                self.debugPrint 'endIdx   = ', Int32(int(endIdx))
                 self.end_idx.putData(Int32(int(endIdx)))
 
                 if startTime > 0:
@@ -597,10 +625,10 @@ class NI6259AI(Device):
                 else:
                     startIdx = -Data.execute('x_to_i($1,$2)', Dimension(Window(0, None, trigSource + startTime), clockSource), trigSource)
                 """
-                print('PXI 6259 startIdx = ', Int32(int(startIdx + 0.5)))
+                self.debugPrint('PXI 6259 startIdx = ', Int32(int(startIdx + 0.5)))
                 self.start_idx.putData(Int32(int(startIdx + 0.5)))
 
-                print('PXI 6259 endIdx   = ', Int32(int(endIdx + 0.5)))
+                self.debugPrint('PXI 6259 endIdx   = ', Int32(int(endIdx + 0.5)))
                 self.end_idx.putData(Int32(int(endIdx + 0.5)))
 
 
@@ -631,7 +659,7 @@ class NI6259AI(Device):
                     status = NI6259AI.niLib.pxi6259_set_ai_number_of_samples(aiConf, c_int(startIdx + nSamples), 0, 0)
             else:
                 if trigSource > startTime:
-                    print('PXI 6259 Acquire only post trigger')
+                    self.debugPrint('PXI 6259 Acquire only post trigger')
                     nSamples = postTrigger
                     startIdx = 0
                     self.start_idx.putData(Int32(int(0)))
@@ -643,7 +671,7 @@ class NI6259AI(Device):
             postTrigger = nSamples + startIdx
             preTrigger = nSamples - endIdx
             """
-            print('PXI 6259 nSamples   = ', Int32(int(nSamples)))
+            self.debugPrint('PXI 6259 nSamples   = ', Int32(int(nSamples)))
             self.seg_length.putData(Int32(int(nSamples)))
 
 #           status = NI6259AI.niLib.pxi6259_set_ai_number_of_samples(aiConf, c_int(postTrigger), c_int(preTrigger), 0)
@@ -655,12 +683,12 @@ class NI6259AI(Device):
 
         if(status != 0):
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot Set Number of Samples')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
 
         status = NI6259AI.niLib.pxi6259_load_ai_conf(c_int(self.fd), aiConf)
         if(status != 0):
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot load configuration')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
 
         """
         if acqMode == 'TRANSIENT REC.':
@@ -672,24 +700,30 @@ class NI6259AI(Device):
                 return
         """
         self.saveInfo()
-        print("===============================================")
+        self.debugPrint("===============================================")
         return 1
 
 ##########StartStore
     def start_store(self):
-        self.restoreInfo()
+
+        self.debugPrint('================= PXI 6259 start store ===============')
+
+        if self.restoreInfo() != self.DEV_IS_OPEN :
+            Data.execute('DevLogErr($1,$2)', self.getNid(), 'Module not Initialized')
+            raise mdsExceptions.TclFAILED_ESSENTIAL
+
+
         self.worker = self.AsynchStore()
         self.worker.daemon = True
         self.worker.stopReq = False
         chanMap = []
         stopAcq = c_void_p(0)
         NI6259AI.niInterfaceLib.getStopAcqFlag(byref(stopAcq));
-        print(stopAcq)
         try:
             inputMode = self.inputModeDict[self.input_mode.data()]
         except:
             Data.execute('DevLogErr($1,$2)', self.getNid(), 'Invalid Input Mode')
-            raise mdsExceptions.TclFAILED_ESSENTIAL
+            raise DevBAD_PARAMETER
         if(inputMode == self.AI_CHANNEL_TYPE_DIFFERENTIAL):
             numChannels = 16
         else:
@@ -701,7 +735,7 @@ class NI6259AI(Device):
                     chanMap.append(chan)
             except:
                 Data.execute('DevLogErr($1,$2)', self.getNid(), 'Invalid Configuration for channel '+str(chan + 1))
-                raise mdsExceptions.TclFAILED_ESSENTIAL
+                raise DevBAD_PARAMETER
         treePtr = c_void_p(0)
         NI6259AI.niInterfaceLib.openTree(c_char_p(self.getTree().name), c_int(self.getTree().shot), byref(treePtr))
         if(inputMode == self.AI_CHANNEL_TYPE_DIFFERENTIAL):
@@ -710,40 +744,71 @@ class NI6259AI(Device):
             self.worker.configure(self, self.fd, chanMap, self.nonDiffChanMap, treePtr, stopAcq)
         self.saveWorker()
         self.worker.start()
-
+        
         time.sleep(2)
+
+        if self.worker.hasError():
+            raise mdsExceptions.TclFAILED_ESSENTIAL
+
+        self.debugPrint("======================================================")
 
         return 1
 
     def stop_store(self):
-      print("PXI 6259 stop_store")
+
+      self.debugPrint('================= PXI 6259 stop store ================')
+      error = False
+
+      if self.restoreInfo() != self.DEV_IS_OPEN :
+          Data.execute('DevLogErr($1,$2)', self.getNid(), 'Module not Initialized')
+          raise mdsExceptions.TclFAILED_ESSENTIAL
+
       try:
           self.restoreWorker()
-          if self.worker.isAlive():
-              print("PXI 6259 stop_worker")
-              self.worker.stop()
       except:
-          pass
+          Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread not started')
+          raise mdsExceptions.TclFAILED_ESSENTIAL
+
+      if self.worker.isAlive():
+          self.debugPrint("PXI 6259 stop_worker")
+          self.worker.stop()
+          self.worker.join()
+          error = self.worker.hasError()
+      else:
+          Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread not started')
+          error = True
+
+
+      if error :
+          raise mdsExceptions.TclFAILED_ESSENTIAL
+
+      self.debugPrint("======================================================")
 
       return 1
 
     def readConfig(self):
+
       self.restoreInfo()
+
       try:
           NI6259AI.niInterfaceLib.readAiConfiguration(c_int(self.fd))
       except:
           Data.execute('DevLogErr($1,$2)', self.getNid(), 'Cannot read board configuration')
-          raise mdsExceptions.TclFAILED_ESSENTIAL
+          raise DevBAD_PARAMETER
       return 1
 
     def trigger(self):
-      self.restoreInfo()
+
+      if self.restoreInfo() != self.DEV_IS_OPEN  :
+	    Data.execute('DevLogErr($1,$2)', self.getNid(), 'Module not Initialized')
+	    raise mdsExceptions.TclFAILED_ESSENTIAL
+
       try:
             status = NI6259AI.niLib.pxi6259_start_ai(c_int(self.fd))
             if(status != 0):
                 Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot Start Acquisition ')
-                raise mdsExceptions.TclFAILED_ESSENTIAL
+                raise DevBAD_PARAMETER
       except:
           Data.execute('DevLogErr($1,$2)', self.getNid(), 'Exception Cannot Start Acquisition')
-          raise mdsExceptions.TclFAILED_ESSENTIAL
+          raise DevBAD_PARAMETER
       return 1

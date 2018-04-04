@@ -1,7 +1,7 @@
 public fun DevLogErr(in _nid, in _errmsg)
 {
  	public _last_device_error = _errmsg;
-    	write(*, _errmsg);
+    	write(*, "DevLogErr :"//getnci( _nid, "FULLPATH")//" : "// _errmsg);
 	_dispatched = 1;
 	_action_nid = if_error(_doing_nid, _dispatched = 0);
 	
