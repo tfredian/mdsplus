@@ -5,7 +5,6 @@ import mds.Mds.Request;
 import mds.data.descriptor.Descriptor;
 import mds.data.descriptor_apd.List;
 import mds.data.descriptor_s.CString;
-import mds.data.descriptor_s.Missing;
 import mds.data.descriptor_s.Pointer;
 
 public abstract class Shr{
@@ -57,6 +56,11 @@ public abstract class Shr{
             this.addEntryPoint(name);
         }
 
+        public final LibCall<T> addArg(final Descriptor<?> d) {
+            this.args.add(d);
+            return this;
+        }
+
         private final void addEntryPoint(final String name) {
             this.sb.append(this.getImage()).append("->").append(name).append('(');
             this.max += 3 + this.getImage().length() + name.length();
@@ -73,7 +77,7 @@ public abstract class Shr{
         }
 
         public final LibCall<T> descr(final Descriptor<?> d) {
-            if(d == null || d == Missing.NEW) return this.miss(8);
+            if(Descriptor.isMissing(d)) return this.miss(8);// +7 if as_is
             this.args.add(d);
             return this.arg("descr($)");
         }
@@ -145,7 +149,7 @@ public abstract class Shr{
         }
 
         public final LibCall<T> ref(final Descriptor<?> d) {
-            if(d == null || d == Missing.NEW) return this.miss(6);
+            if(Descriptor.isMissing(d)) return this.miss(6);
             this.args.add(d);
             return this.arg("ref($)");
         }
@@ -168,7 +172,7 @@ public abstract class Shr{
         }
 
         public final LibCall<T> val(final Descriptor<?> d) {
-            if(d == null || d == Missing.NEW) return this.miss(6);
+            if(Descriptor.isMissing(d)) return this.miss(6);
             this.args.add(d);
             return this.arg("val($)");
         }
@@ -181,9 +185,9 @@ public abstract class Shr{
         }
 
         public final LibCall<T> xd(final Descriptor<?> d) {
-            if(d == null || d == Missing.NEW) return this.miss(12);
+            if(Descriptor.isMissing(d)) return this.miss(5 + 7);
             this.args.add(d);
-            return this.arg("xd(AS_IS($))");
+            return this.arg("xd(as_is($))");
         }
 
         public final LibCall<T> xd(final String... ex) {
@@ -200,7 +204,7 @@ public abstract class Shr{
         }
 
         public final void add(final String cmd, final Descriptor<?>... argin) {
-            if(this.cmds.length() == 0) this.cmds.append(List.list);
+            if(this.cmds.length() == 0) this.cmds.append("List(*,");
             else this.cmds.append(',');
             this.cmds.append("(").append(cmd).append(";)");
             for(final Descriptor<?> arg : argin)

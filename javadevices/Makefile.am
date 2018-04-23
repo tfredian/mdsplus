@@ -159,8 +159,8 @@ RFXVICONTROLSetup.java \
 REDPYTADCSetup.java \
 JRG_ADC32ASetup.java \
 A3248Setup.java \
-SPIDER_SETUPSetup.java
-
+SPIDER_SETUPSetup.java \
+RFX_RPADCSetup.java
 
 java_DATA = jDevices.jar
 

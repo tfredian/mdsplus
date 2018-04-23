@@ -10,6 +10,7 @@ import mds.data.DATA;
 import mds.data.DTYPE;
 import mds.data.TREE;
 import mds.data.descriptor_a.Int8Array;
+import mds.data.descriptor_r.Function;
 import mds.data.descriptor_s.CString;
 import mds.data.descriptor_s.Missing;
 import mds.data.descriptor_s.NUMBER;
@@ -181,8 +182,7 @@ public abstract class Descriptor<T>{
 
     public static final Descriptor<?> getLocal(final FLAG local, final Descriptor<?> dsc) {
         if(dsc == null || dsc.isLocal()) return dsc;
-        final Descriptor<?> ldsc = dsc.getLocal(local);
-        return ldsc.setLocal();
+        return dsc.getLocal(local);
     }
 
     protected final static Descriptor<?>[] getLocals(final FLAG local, final Descriptor<?>... args) {
@@ -242,6 +242,10 @@ public abstract class Descriptor<T>{
             ((ByteBuffer)this.b.position(pointer)).put((ByteBuffer)data.duplicate().rewind()).rewind();
         }
         this.p = ((ByteBuffer)this.b.duplicate().position(this.pointer() == 0 ? this.b.limit() : this.pointer())).slice().order(this.b.order());
+    }
+
+    public Function as_is() {
+        return Function.AS_IS(this);
     }
 
     /** (3,b) descriptor class code **/
@@ -327,7 +331,9 @@ public abstract class Descriptor<T>{
     }
 
     public Descriptor_A<?> getDataA() throws MdsException {
-        return (Descriptor_A<?>)this.getData().toDescriptor();
+        final Descriptor<?> dsc = this.getData().toDescriptor();
+        if(dsc instanceof Descriptor_A) return (Descriptor_A<?>)dsc;
+        throw new MdsException(MdsException.TdiINVDTYDSC);
     }
 
     public Descriptor<?> getDataD() throws MdsException {
@@ -335,7 +341,9 @@ public abstract class Descriptor<T>{
     }
 
     public Descriptor_S<?> getDataS() throws MdsException {
-        return (Descriptor_S<?>)this.getData().toDescriptor();
+        final Descriptor<?> dsc = this.getData().toDescriptor();
+        if(dsc instanceof Descriptor_S) return (Descriptor_S<?>)dsc;
+        throw new MdsException(MdsException.TdiNOT_NUMBER);
     }
 
     /** Returns the dclass name of the Descriptor **/
@@ -354,7 +362,7 @@ public abstract class Descriptor<T>{
     }
 
     final public Descriptor<?> getLocal() {
-        if(this.isLocal()) return this;
+        if(this.islocal) return this;
         return this.getLocal(null);
     }
 
@@ -364,9 +372,8 @@ public abstract class Descriptor<T>{
      * @throws MdsException
      **/
     public Descriptor<?> getLocal(final FLAG local) {
-        if(this.isLocal()) return this;
-        final Descriptor<?> ldsc = this.getLocal_(local);
-        return ldsc.setLocal();
+        if(this.islocal) return this;
+        return this.getLocal_(local);
     }
 
     public Descriptor<?> getLocal_(final FLAG local) {

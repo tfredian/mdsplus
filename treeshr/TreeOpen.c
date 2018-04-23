@@ -705,6 +705,10 @@ int _TreeSetStackSize(void **dbid, int size)
 }
 
 static char *GetFname(char *tree, int shot)
+/*********************************************
+ allows to define a customized folder mapping.
+ DTYPE_T <expt>_tree_filename(LONG)
+ *********************************************/
 {
   int status = 1;
   static char *ans = 0;
@@ -908,8 +912,14 @@ static int OpenOne(TREE_INFO * info, char *tree, int shot, char *type, int new, 
 	      status = TreeFCREATE;
 	  } else {
 	    fd = MDS_IO_OPEN(resnam, edit_flag ? O_RDWR : O_RDONLY, 0);
-#if (defined(__osf__) || defined(__linux) || defined(__hpux) || defined(__sun) || defined(__sgi) || defined(_AIX) || defined(__APPLE__))
+#ifndef _WIN32
 	    info->mapped = (MDS_IO_SOCKET(fd) == -1);
+ #ifdef __APPLE__
+ /* from python-mmap Issue #11277: fsync(2) is not enough on OS X - a special, OS X specific
+    fcntl(2) is necessary to force DISKSYNC and get around mmap(2) bug */
+            if (info->mapped && fd != -1)
+              (void)fcntl(fd, F_FULLFSYNC);
+ #endif
 #endif
 	    if (fd == -1)
 	      status = edit_flag ? TreeFOPENW : TreeFOPENR;
@@ -1346,6 +1356,7 @@ void TreeFreeDbid(void *dbid)
   PINO_DATABASE *db = (PINO_DATABASE *) dbid;
   if (db) {
     TreeFreeDbid(db->next);
+    CloseTopTree(db, 1);
     free_xd(&db->timecontext.start);
     free_xd(&db->timecontext.end);
     free_xd(&db->timecontext.delta);
@@ -1354,20 +1365,32 @@ void TreeFreeDbid(void *dbid)
   }
 }
 
-EXPORT struct descriptor *TreeFileName(char *tree, int shot)
-{
-  static struct descriptor ans_dsc = { 0, DTYPE_T, CLASS_D, 0 };
-  int fd;
-  char *ans;
-  TREE_INFO dummy_info;
-  int status = OpenOne(&dummy_info, tree, shot, TREE_TREEFILE_TYPE, 0, &ans, 0, &fd);
-  if STATUS_OK {
-    MDS_IO_CLOSE(fd);
-    ans_dsc.pointer = ans;
-    ans_dsc.length = (unsigned short)strlen(ans);
+
+EXPORT int _TreeFileName(void* dbid, char *tree, int shot, struct descriptor_xd* out_ptr){
+  int status;
+  if (tree) {
+    struct descriptor dsc = {0,DTYPE_T,CLASS_S,0};
+    int fd;
+    TREE_INFO dummy_info;
+    status = OpenOne(&dummy_info, tree, shot, TREE_TREEFILE_TYPE, 0, &dsc.pointer, 0, &fd);
+    if STATUS_OK {
+      MDS_IO_CLOSE(fd);
+      dsc.length = (unsigned short)strlen(dsc.pointer);
+      status = MdsCopyDxXd(&dsc,out_ptr);
+      free(dsc.pointer);
+    }
   } else {
-    ans_dsc.pointer = NULL;
-    ans_dsc.length = 0;
+    PINO_DATABASE *dblist = (PINO_DATABASE *) dbid;
+    if (IS_OPEN(dblist)) {
+      TREE_INFO* info = dblist->tree_info;
+      struct descriptor dsc = {(uint16_t)strlen(info->filespec),DTYPE_T,CLASS_S,info->filespec};
+      status = MdsCopyDxXd(&dsc,out_ptr);
+    } else
+      status = TreeNOT_OPEN;
   }
-  return &ans_dsc;
+  return status;
+}
+
+EXPORT int TreeFileName(char *tree, int shot, struct descriptor_xd* out_ptr){
+  return _TreeFileName(*TreeCtx(), tree, shot, out_ptr);
 }

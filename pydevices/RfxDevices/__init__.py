@@ -110,7 +110,6 @@ _mimport('SPIDER_SETUP')
 _mimport('PV_WAVE_SETUP')
 _mimport('CRIO_FAU')
 _mimport('PI_CAM')
-
-
+_mimport('RFX_RPADC')
 
 #print('RfxDevices loaded.')
