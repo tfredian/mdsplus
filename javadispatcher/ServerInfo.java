@@ -159,21 +159,19 @@ import java.io.*;
             startServer(this);
         }
 
+
         public void startServer(ServerInfo si)
         {
             Runtime r = Runtime.getRuntime();
             try
             {
                 if( si.getStartScript() != null)
-                {
-                    Process p = r.exec(si.getStartScript());
-                    //new ServerLogger(si.className, si.address, p);
-                }
+                   r.exec(si.getStartScript());
             }
-            catch(IOException exc)
+            catch(Exception exc)
             {
                 System.out.println("Start " + exc);                        
-            }           
+            }    
         }
         
         public void stopServer()
