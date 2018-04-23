@@ -267,13 +267,13 @@ class NI6259AI(Device):
 
             for chan in range(len(self.chanMap)):
                 try:
-                    #self.debugPrint 'CHANNEL', self.chanMap[chan]+1
-                    #self.debugPrint '/dev/pxi6259.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]])
+                    #self.device.debugPrint 'CHANNEL', self.chanMap[chan]+1
+                    #self.device.debugPrint '/dev/pxi6259.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]])
                     currFd = os.open('/dev/pxi6259.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]]), os.O_RDWR | os.O_NONBLOCK)
                     chanFd.append(currFd)
 
                     chanNid.append( getattr(self.device, 'channel_%d_data_raw'%(self.chanMap[chan]+1)).getNid() )
-                    #self.debugPrint "chanFd "+'channel_%d_data'%(self.chanMap[chan]+1), chanFd[chan], " chanNid ", chanNid[chan]
+                    #self.device.debugPrint "chanFd "+'channel_%d_data'%(self.chanMap[chan]+1), chanFd[chan], " chanNid ", chanNid[chan]
 
                     gain = getattr(self.device, 'channel_%d_range'%(self.chanMap[chan]+1)).data()
                     gain_code = self.device.gainDict[gain]
@@ -285,7 +285,7 @@ class NI6259AI(Device):
                     if( status < 0 ):
                         errno = NI6259AI.niInterfaceLib.getErrno();
                         msg = 'Error (%d) %s' % (errno, os.strerror( errno ))
-                        self.debugPrint (msg)
+                        self.device.debugPrint (msg)
                         Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot read calibration values for Channel %d. Default value assumed ( offset= 0.0, gain = range/65536'%((self.chanMap[chan])) )
                         gainValue = self.device.gainValueDict[gain] * 2.
                         coeff[0] = coeff[2] = coeff[3] = 0
@@ -294,7 +294,7 @@ class NI6259AI(Device):
                     getattr(self.device, 'channel_%d_calib_param'%(self.chanMap[chan]+1)).putData(Float32Array(coeff))
 
                 except Exception as e:
-                    self.debugPrint(e)
+                    self.device.debugPrint(e)
                     Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot open Channel '+ str(self.chanMap[chan]))
                     self.error = self.ACQ_ERROR;
                     return 
@@ -310,7 +310,7 @@ class NI6259AI(Device):
                     segmentSize = c*bufSize
 
                 numSamples  = -1
-                self.debugPrint("PXI 6259 CONTINUOUS ", numSamples)
+                self.device.debugPrint("PXI 6259 CONTINUOUS ", numSamples)
 
             else:
                 NI6259AI.niInterfaceLib.setStopAcqFlag(self.stopAcq);
@@ -319,7 +319,7 @@ class NI6259AI(Device):
                     numSamples = self.device.end_idx.data() - self.device.start_idx.data()
                 except:
                     numSamples = 0
-                    self.debugPrint("PXI 6259 NUM SAMPLES ", numSamples)
+                    self.device.debugPrint("PXI 6259 NUM SAMPLES ", numSamples)
 
 
             status = NI6259AI.niLib.pxi6259_start_ai(c_int(self.fd))
@@ -338,7 +338,7 @@ class NI6259AI(Device):
             chanFd_c = (c_int * len(chanFd) )(*chanFd)
 
             #timeAt0 = trigSource + startTime
-            #self.debugPrint("PXI 6259 TIME AT0 ", numSamples)            
+            #self.device.debugPrint("PXI 6259 TIME AT0 ", numSamples)            
             timeAt0 = startTime
 
             while not self.stopReq:
@@ -357,7 +357,7 @@ class NI6259AI(Device):
 
             for chan in range(len(self.chanMap)):
                 os.close(chanFd[chan])
-            #self.debugPrint 'ASYNCH WORKER TERMINATED'
+            #self.device.debugPrint 'ASYNCH WORKER TERMINATED'
             NI6259AI.niInterfaceLib.stopSave(saveList)
             NI6259AI.niInterfaceLib.freeStopAcqFlag(self.stopAcq)
             self.device.closeInfo()
@@ -758,16 +758,17 @@ class NI6259AI(Device):
 
       self.debugPrint('================= PXI 6259 stop store ================')
       error = False
-
+      """
       if self.restoreInfo() != self.DEV_IS_OPEN :
           Data.execute('DevLogErr($1,$2)', self.getNid(), 'Module not Initialized')
           raise mdsExceptions.TclFAILED_ESSENTIAL
+      """
 
       try:
           self.restoreWorker()
       except:
-          Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread not started')
-          raise mdsExceptions.TclFAILED_ESSENTIAL
+          Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread not created')
+          return
 
       if self.worker.isAlive():
           self.debugPrint("PXI 6259 stop_worker")
@@ -775,8 +776,9 @@ class NI6259AI(Device):
           self.worker.join()
           error = self.worker.hasError()
       else:
-          Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread not started')
-          error = True
+          error = self.worker.hasError()
+          if not error: 
+              Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread stopped')
 
 
       if error :

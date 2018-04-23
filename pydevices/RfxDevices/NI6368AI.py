@@ -194,6 +194,7 @@ class NI6368AI(Device):
 
     def closeInfo(self):
         try:
+            self.debugPrint('CLOSE INFO')
             os.close(NI6368AI.ni6368AiFds[self.getNid()])
             del(NI6368AI.ni6368AiFds[self.getNid()])
             self.ai_fd = -1
@@ -285,12 +286,12 @@ class NI6368AI(Device):
 
             for chan in range(len(self.chanMap)):
                 try:
-                    #self.debugPrint('CHANNEL', self.chanMap[chan]+1
+                    #self.device.debugPrint('CHANNEL', self.chanMap[chan]+1
 
                     currFd = os.open('/dev/pxie-6368.'+str(boardId)+'.ai.'+str(self.hwChanMap[self.chanMap[chan]]), os.O_RDWR | os.O_NONBLOCK)
                     chanFd.append(currFd)
                     chanNid.append( getattr(self.device, 'channel_%d_data_raw'%(self.chanMap[chan]+1)).getNid() )
-                    #self.debugPrint("chanFd "+'channel_%d_data_raw'%(self.chanMap[chan]+1), chanFd[chan], " chanNid ", chanNid[chan]
+                    #self.device.debugPrint("chanFd "+'channel_%d_data_raw'%(self.chanMap[chan]+1), chanFd[chan], " chanNid ", chanNid[chan]
                     gain = getattr(self.device, 'channel_%d_range'%(self.chanMap[chan]+1)).data()
                     gain_code = self.device.gainDict[gain]
                     status = NI6368AI.niInterfaceLib.getCalibrationParams(currFd, gain_code, coeff)
@@ -318,7 +319,7 @@ class NI6368AI(Device):
 
             if( not transientRec ):
                 numSamples  = -1
-                self.debugPrint("PXI 6368 CONTINUOUS ", numSamples)
+                self.device.debugPrint("PXI 6368 CONTINUOUS ", numSamples)
 
             else:
                 NI6368AI.niInterfaceLib.setStopAcqFlag(self.stopAcq);
@@ -328,9 +329,9 @@ class NI6368AI(Device):
                     numSamples = 0
 
 
-            #self.debugPrint("--+++ NUM SAMPLES ", numSamples)
-            #self.debugPrint("--+++ Segment Size ", segmentSize)
-            #self.debugPrint("--+++ sample to skip ", sampleToSkip)
+            #self.device.debugPrint("--+++ NUM SAMPLES ", numSamples)
+            #self.device.debugPrint("--+++ Segment Size ", segmentSize)
+            #self.device.debugPrint("--+++ sample to skip ", sampleToSkip)
 
             NI6368AI.niInterfaceLib.startSave(byref(saveList))
 
@@ -341,7 +342,7 @@ class NI6368AI(Device):
 
             time.sleep(1)
 
-            #self.debugPrint("Start device in acquisition thread %d"%(self.ai_fd)
+            #self.device.debugPrint("Start device in acquisition thread %d"%(self.ai_fd)
             status = NI6368AI.niLib.xseries_start_ai(c_int(self.ai_fd))
             if(status != 0):
                 Data.execute('DevLogErr($1,$2)', self.device.getNid(), 'Cannot Start Acquisition ')
@@ -351,14 +352,14 @@ class NI6368AI(Device):
             #timeAt0 = timesIdx0[trigCount] + startTime;
             timeAt0 = startTime;
 
-            #self.debugPrint(self.stopAcq)
+            #self.device.debugPrint(self.stopAcq)
 
 
             while not self.stopReq:
                 status = NI6368AI.niInterfaceLib.xseriesReadAndSaveAllChannels(c_int(len(self.chanMap)), chanFd_c, c_int(bufSize), c_int(segmentSize), c_int(sampleToSkip), c_int(numSamples), c_float( timeAt0 ), c_float(frequency), chanNid_c, self.device.clock_source.getNid(), self.treePtr, saveList, self.stopAcq)
    ##Check termination
                 trigCount += 1
-                #self.debugPrint("PXI 6368 Trigger count %d num %d num smp %d status %d " %(trigCount , numTrigger, numSamples, status) )
+                #self.device.debugPrint("PXI 6368 Trigger count %d num %d num smp %d status %d " %(trigCount , numTrigger, numSamples, status) )
                 if ( (numSamples > 0 and trigCount == numTrigger)  or ( status < 0 ) ):
                     self.stopReq = True
 
@@ -383,7 +384,7 @@ class NI6368AI(Device):
             print ("OK")
             for chan in range(len(self.chanMap)):
                     os.close(chanFd[chan])
-            self.debugPrint('ASYNCH WORKER TERMINATED')
+            self.device.debugPrint('ASYNCH WORKER TERMINATED')
             NI6368AI.niInterfaceLib.stopSave(saveList)
             NI6368AI.niInterfaceLib.freeStopAcqFlag(self.stopAcq)
             self.device.closeInfo()
@@ -403,9 +404,9 @@ class NI6368AI(Device):
                 try:
                     os.close(chanFd[chan])
                 except:
-                    self.debugPrint('Exception')
+                    self.device.debugPrint('Exception')
                     pass
-            #self.debugPrint('ASYNCH WORKER TERMINATED')
+            #self.device.debugPrint('ASYNCH WORKER TERMINATED')
             NI6368AI.niInterfaceLib.stopSave(saveList)
             NI6368AI.niInterfaceLib.freeStopAcqFlag(self.stopAcq)
             self.device.closeInfo()
@@ -823,16 +824,17 @@ class NI6368AI(Device):
       error = False
       self.debugPrint ("=============== PXI 6368 stop_store ===========")
 
+      """     
       if self.restoreInfo() != self.DEV_IS_OPEN :
           Data.execute('DevLogErr($1,$2)', self.getNid(), 'Module not Initialized')
           raise mdsExceptions.TclFAILED_ESSENTIAL
+      """
 
       try:
           self.restoreWorker()
       except:
           Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread not started')
-          raise mdsExceptions.TclFAILED_ESSENTIAL
-
+          return
 
       if self.worker.isAlive():
           self.debugPrint ("PXI 6368 stop_worker")
@@ -840,8 +842,9 @@ class NI6368AI(Device):
           self.worker.join()
           error = self.worker.hasError()
       else:
-          Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread not started')
-          error = True
+          error = self.worker.hasError()
+          if not error: 
+              Data.execute('DevLogErr($1,$2)', self.getNid(), 'Acquisition thread stopped')
 
       if error :
           raise mdsExceptions.TclFAILED_ESSENTIAL
