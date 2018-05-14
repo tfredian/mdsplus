@@ -170,6 +170,7 @@ class ACQ435ST(MDSplus.Device):
         import os
         import sys
         from MDSplus import Tree,Event,Range
+        import MDSplus
 
         def lcm(a,b):
             from fractions import gcd
@@ -180,9 +181,6 @@ class ACQ435ST(MDSplus.Device):
             for e in arr:
                 ans = lcm(ans, e)
             return int(ans)
-
-#        os.dup2(self.outputfd.fileno(), sys.stdout.fileno())
-#        os.dup2(self.outputfd.fileno(), sys.stderr.fileno())
 
         print("starting streamer for %s %s %s\nat: %s"%(self.tree, self.tree.shot, self.path, datetime.datetime.now()))
 
@@ -257,17 +255,19 @@ class ACQ435ST(MDSplus.Device):
                     break
                 else:
                     buffer = np.right_shift(np.frombuffer(buf, dtype='int32') , 8)
-                    i = 0
-#                    coeff = (0.00000119209/2.0)*0.00137093615
-#                    coeff = 0.00000119209/2.0
+                    chan = 0
                     for c in chans:
                         if c.on:
-                            b = buffer[i::32*decim[i]]
-#                            b = np.where(b & 0x400000, b | 0xFF000000, b)
-                            c.makeSegment(dims[i].begin, dims[i].ending, dims[i], b)
-                            dims[i] = Range(dims[i].begin + seg_length*dt, dims[i].ending + seg_length*dt, dt*decim[i])
-                        i += 1
-                    segment += 1
+                            b = buffer[chan::32*decim[chan]]
+                            begin = dims[chan].begin.data()
+                            ending = dims[chan].ending.data()
+                            c.makeSegment(begin, ending, dims[chan], b)
+                            if chan == 0:
+#                                print (segment, dims[chan], dims[chan].begin, dims[chan].ending)
+#                                print(c.getSegmentLimits(segment))
+                            dims[chan] = Range(dims[chan].begin + seg_length*dt, dims[chan].ending + seg_length*dt, dt*decim[chan])
+                            if chan == 0:
+                        chan += 1
                     segment += 1
                     Event.setevent(event_name)
         if self.log_output.on:
