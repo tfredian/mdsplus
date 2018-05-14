@@ -262,11 +262,10 @@ class ACQ435ST(MDSplus.Device):
                             begin = dims[chan].begin.data()
                             ending = dims[chan].ending.data()
                             c.makeSegment(begin, ending, dims[chan], b)
-                            if chan == 0:
+#                            if chan == 0:
 #                                print (segment, dims[chan], dims[chan].begin, dims[chan].ending)
 #                                print(c.getSegmentLimits(segment))
                             dims[chan] = Range(dims[chan].begin + seg_length*dt, dims[chan].ending + seg_length*dt, dt*decim[chan])
-                            if chan == 0:
                         chan += 1
                     segment += 1
                     Event.setevent(event_name)
