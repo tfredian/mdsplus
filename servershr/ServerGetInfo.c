@@ -60,43 +60,61 @@ doing.
 #include "servershrp.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <signal.h>
+#include <setjmp.h>
+
+jmp_buf return_to_top;
 
 extern int ServerConnect();
 extern int GetAnswerInfoTS();
 
+void sigint_handler(int signum __attribute__ ((unused)))
+{
+  longjmp(return_to_top, 1);
+}
+
 EXPORT char *ServerGetInfo(int full __attribute__ ((unused)), char *server){
-  char *cmd = "MdsServerShr->ServerInfo:dsc()";
-  char *ans;
-  char *ansret;
-  short len = 0;
-  void *mem = 0;
-  int sock = ServerConnect(server);
-  if (sock >= 0) {
-    int status = SendArg(sock,(unsigned char)0,(char)DTYPE_CSTRING,(unsigned char)1,(short)strlen(cmd),0,0,cmd);
-    if STATUS_OK {
-      char dtype;
-      char ndims;
-      int dims[8];
-      int numbytes;
-      char *reply;
-      status = GetAnswerInfoTS(sock, &dtype, &len, &ndims, dims, &numbytes, (void **)&reply, &mem, 10);
-      if (STATUS_OK && (dtype == DTYPE_CSTRING))
-	ans = reply;
-      else {
-	ans = "Invalid response from server";
+  signal(SIGINT, sigint_handler);
+  int sock = -1;
+  if (sigsetjmp(return_to_top,0) == 0)
+  {
+    char *cmd = "MdsServerShr->ServerInfo:dsc()";
+    char *ans;
+    char *ansret;
+    short len = 0;
+    void *mem = 0;
+    sock = ServerConnect(server);
+    if (sock >= 0) {
+      int status = SendArg(sock,(unsigned char)0,(char)DTYPE_CSTRING,(unsigned char)1,(short)strlen(cmd),0,0,cmd);
+      if STATUS_OK {
+	  char dtype;
+	  char ndims;
+	  int dims[8];
+	  int numbytes;
+	  char *reply;
+	  status = GetAnswerInfoTS(sock, &dtype, &len, &ndims, dims, &numbytes, (void **)&reply, &mem, 10);
+	  if (STATUS_OK && (dtype == DTYPE_CSTRING))
+	    ans = reply;
+	  else {
+	    ans = "Invalid response from server";
+	    len = strlen(ans);
+	  }
+	} else {
+	ans = "No response from server";
 	len = strlen(ans);
       }
     } else {
-      ans = "No response from server";
+      ans = "Error connecting to server";
       len = strlen(ans);
     }
+    ansret = strncpy((char *)malloc(len + 1), ans, len);
+    if (mem)
+      free(mem);
+    ansret[len] = 0;
+    return (ansret);
   } else {
-    ans = "Error connecting to server";
-    len = strlen(ans);
+    if (sock >= 0) ServerDisconnect(sock);
+    return strdup("");
   }
-  ansret = strncpy((char *)malloc(len + 1), ans, len);
-  if (mem)
-    free(mem);
-  ansret[len] = 0;
-  return (ansret);
 }
