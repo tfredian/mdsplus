@@ -1,7 +1,7 @@
-#ifndef _TREESHR_HOOKS_H
-#define _TREESHR_HOOKS_H
+#pragma once
 
 typedef enum {
+  /* original hooks */
   OpenTree,
   OpenTreeEdit,
   RetrieveTree,
@@ -12,7 +12,15 @@ typedef enum {
   GetData,
   GetNci,
   PutData,
-  PutNci
+  PutNci,
+  /* hook extensions */
+  MakeSegment,
+  MakeTimestampedSegment,
+  UpdateSegment,
+  PutSegment,
+  GetSegment,
+  GetSegmentRecord,
+  PutRow,
+  PutTimestampedSegment
 } TreeshrHookType;
 
-#endif
