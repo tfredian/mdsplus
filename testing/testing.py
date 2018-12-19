@@ -144,6 +144,7 @@ class testing(object):
 ts = testing()
 def check_arch(file_name):
     module_name = os.path.basename(file_name)
+    print("PYTHONPATH=%s" % os.environ["PYTHONPATH"])
     if not ts.check_unittest_version(module_name):
         ts.skip_test(module_name,'Unfit unittest version < 2.7')
     try:
