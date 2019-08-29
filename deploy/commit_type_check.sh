@@ -12,7 +12,10 @@
 git log $1..HEAD --no-merges --decorate=short --pretty=format:"%<(80,trunc)%s%n%ae" |
 awk -v EMAILMSG="$2" -F: '{ IGNORECASE=1
                TITLE=$0
-               switch ($1) {
+	       gsub("[\r\n]","",TITLE)
+	       COMMIT_TYPE=$1
+	       gsub(" ","",COMMIT_TYPE)
+               switch (COMMIT_TYPE) {
                case "Feature":
 	       case "Revert \"Feature":
                  VERSION="MINOR"
@@ -44,7 +47,9 @@ awk -v EMAILMSG="$2" -F: '{ IGNORECASE=1
                getline
                EMAIL=$0
                if (OK != "1") {
-                 system("mail -s \"" TITLE "\" "  EMAIL " < " EMAILMSG )
+	         MAILIT="mail -s \"" TITLE "\" "  EMAIL " < " EMAILMSG
+		 gsub("[\n]","",MAILIT)
+                 system(MAILIT)
                }
             }
             END {
