@@ -259,16 +259,6 @@ int TreeGetSegmentInfo(int nid, int idx, char *dtype, char *dimct, int *dims, in
   return _TreeGetSegmentInfo(*TreeCtx(), nid, idx, dtype, dimct, dims, next_row);
 }
 
-int _TreeSetXNci(void *dbid, int nid, const char *xnciname, struct descriptor *value);
-int TreeSetXNci(int nid, const char *xnciname, struct descriptor *value){
-  return _TreeSetXNci(*TreeCtx(), nid, xnciname, value);
-}
-
-int _TreeGetXNci(void *dbid, int nid, const char *xnciname, struct descriptor_xd *value);
-int TreeGetXNci(int nid, const char *xnciname, struct descriptor_xd *value){
-  return _TreeGetXNci(*TreeCtx(), nid, xnciname, value);
-}
-
 int TreeGetSegments(int nid, struct descriptor *start, struct descriptor *end, struct descriptor_xd *out){
   return _TreeGetSegments(*TreeCtx(), nid, start, end, out);
 }
@@ -296,6 +286,133 @@ int _TreeSetSegmentScale(void *dbid, int nid, struct descriptor *value);
 int TreeSetSegmentScale(int nid, struct descriptor *value) {
   return _TreeSetSegmentScale(*TreeCtx(), nid, value);
 }
+
+int _TreeMakeXNciSegment(void *dbid, int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor *dimension, struct descriptor_a *initialValue, int idx, int rows_filled);
+/* write new segment with prefilled rows range of valid data can be defined by rows_filled
+ */
+
+int TreeMakeXNciSegment(int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor *dimension, struct descriptor_a *initialValue, int idx, int rows_filled){
+  return _TreeMakeXNciSegment(*TreeCtx(), nid, xnciname, start, end, dimension, initialValue, idx, rows_filled);
+}
+
+//int _TreeBeginXNciSegment(void *dbid, int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor *dimension, struct descriptor_a *initialValue, int idx){
+/* write new EMPTY segment so data can be added row by row with _TreePutSegment
+ * like _TreeMakeSegment but rows_filled will be initialized with 0
+ */
+//  return _TreeMakeXNciSegment(dbid, nid, xnciname, start, end, dimension, initialValue, idx, 0);
+//}
+//int TreeBeginXNciSegment(int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor *dimension, struct descriptor_a *initialValue, int idx){
+//  return _TreeBeginXNciSegment(*TreeCtx(), nid, xnciname, start, end, dimension, initialValue, idx);
+//}
+
+//int _TreeSetXNciRowsFilled(void *dbid, int nid, const char *xnciname, int rows_filled);
+/* allows to correct the rows filled property of a segmented node
+ * e.g. after it has been written to using beginSegment instead of makeSegment
+ */
+//int TreeSetXNciRowsFilled(int nid, const char *xnciname, int rows_filled){
+//  return _TreeSetXNciRowsFilled(*TreeCtx(), nid, xnciname, rows_filled);
+//}
+
+//int _TreeMakeXNciTimestampedSegment(void *dbid, int nid, xnciname, int64_t * timestamps, struct descriptor_a *initialValue, int idx, int rows_filled);
+/* write new timestamped (int64_t) segment with prefilled rows range of valid data can be defined by rows_filled
+ */
+//int TreeMakeXNciTimestampedSegment(int nid, const char *xnciname, int64_t * timestamps, struct descriptor_a *initialValue, int idx, int rows_filled){
+//  return _TreeMakeXNciTimestampedSegment(*TreeCtx(), nid, xnciname, timestamps, initialValue, idx, rows_filled);
+//}
+//int _TreeBeginXNciTimestampedSegment(void *dbid, int nid, const char *xnciname, struct descriptor_a *initialValue, int idx){
+/* write new EMPTY timestamped (int64_t) segment so data can be added row by row
+ * like _TreeMakeSegment but rows_filled will be initialized with 0
+ */
+//  return _TreeMakeXNciTimestampedSegment(dbid, nid, xnciname, NULL, initialValue, idx, 0);
+//}
+//int TreeBeginXNciTimestampedSegment(int nid, const char *xnciname, struct descriptor_a *initialValue, int idx){
+//  return _TreeBeginXNciTimestampedSegment(*TreeCtx(), nid, xnciname, initialValue, idx);
+//}
+
+//int _TreeUpdateXNciSegment(void *dbid, int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor *dimension, int idx);
+/* allows to correct the dimension and limits of a segment without touchng the data part
+ */
+//int TreeUpdateXNciSegment(int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor *dimension, int idx){
+//  return _TreeUpdateXNciSegment(*TreeCtx(), nid, xnciname, start, end, dimension, idx);
+//}
+
+//int _TreePutXNciSegment(void *dbid, int nid, const char *xnciname, const int startIdx, struct descriptor_a *data);
+//int TreePutXNciSegment(const int nid, const char *xnciname, const int startIdx, struct descriptor_a *data){
+//  return _TreePutXNciSegment(*TreeCtx(), nid, xnciname, startIdx, data);
+//}
+
+//int _TreeGetXNciSegmentTimesXd(void *dbid, int nid, const char *xnciname, int *nsegs, struct descriptor_xd *start_list, struct descriptor_xd *end_list);
+//int TreeGetXNciSegmentTimesXd(int nid, const char *xnciname, int *nsegs, struct descriptor_xd *start_list, struct descriptor_xd *end_list){
+//  return _TreeGetXNciSegmentTimesXd(*TreeCtx(), nid, xnciname, nsegs, start_list, end_list);
+//}
+
+//int _TreeGetXNciSegmentTimes(void *dbid, int nid, const char *xnciname, int *nsegs, int64_t ** times);
+//int TreeGetXNciSegmentTimes(int nid, const char *xnciname, int *nsegs, int64_t ** times){
+//  return _TreeGetXNciSegmentTimes(*TreeCtx(), nid, xnciname, nsegs, times);
+//}
+
+//int _TreeGetXNciNumSegments(void *dbid, int nid, const char *xnciname, int *num);
+/* returns the number of segments stored in the node
+ */
+//int TreeGetXNciNumSegments(int nid, const char *xnciname, int *num){
+//  return _TreeGetXNciNumSegments(*TreeCtx(), nid, xnciname, num);
+//}
+
+int TreeGetXNciSegment(int nid, const char *xnciname, int idx, struct descriptor_xd *segment, struct descriptor_xd *dim){
+/* returns data and dimension of the requested segment idx
+ * if segment is NULL loading the data part will be skipped for better performance
+ */
+  return _TreeGetXNciSegment(*TreeCtx(), nid, xnciname, idx, segment, dim);
+}
+
+//int _TreeGetXNciSegmentLimits(void *dbid, int nid, const char *xnciname, int idx, struct descriptor_xd *retStart, struct descriptor_xd *retEnd);
+//int TreeGetXNciSegmentLimits(int nid, const char *xnciname, int idx, struct descriptor_xd *retStart, struct descriptor_xd *retEnd){
+//  return _TreeGetXNciSegmentLimits(*TreeCtx(), nid, xnciname, idx, retStart, retEnd);
+//}
+
+//int _TreeGetXNciSegmentInfo(void *dbid, int nid, const char *xnciname, int idx, char *dtype, char *dimct, int *dims, int *next_row);
+//int TreeGetXNciSegmentInfo(int nid, const char *xnciname, int idx, char *dtype, char *dimct, int *dims, int *next_row){
+//  return _TreeGetXNciSegmentInfo(*TreeCtx(), nid, xnciname, idx, dtype, dimct, dims, next_row);
+//}
+
+//int TreeGetXNciSegments(int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor_xd *out){
+//  return _TreeGetXNciSegments(*TreeCtx(), nid, xnciname, start, end, out);
+//}
+
+//int TreeGetXNciSegmentedRecord(int nid, const char *xnciname, struct descriptor_xd *data){
+//  return _TreeGetXNciSegmentedRecord(*TreeCtx(), nid, xnciname, data);
+//}
+
+//int _TreePutXNciRow(void *dbid, int nid, const char *xnciname, int bufsize, int64_t * timestamp, struct descriptor_a *data);
+//int TreePutXNciRow(int nid, const char *xnciname, int bufsize, int64_t * timestamp, struct descriptor_a *data){
+//  return _TreePutXNciRow(*TreeCtx(), nid, xnciname, bufsize, timestamp, data);
+//}
+
+//int _TreePutXNciTimestampedSegment(void *dbid, int nid, const char *xnciname, int64_t * timestamp, struct descriptor_a *data);
+//int TreePutXNciTimestampedSegment(int nid, const char *xnciname, int64_t * timestamp, struct descriptor_a *data){
+//  return _TreePutXNciTimestampedSegment(*TreeCtx(), nid, xnciname, timestamp, data);
+//}
+
+//int _TreeGetXNciSegmentScale(void *dbid, int nid, const char *xnciname, struct descriptor_xd *value);
+//int TreeGetXNciSegmentScale(int nid, const char *xnciname, struct descriptor_xd *value) {
+//  return _TreeGetXNciSegmentScale(*TreeCtx(), nid, xnciname, value);
+//}
+
+//int _TreeSetXNciSegmentScale(void *dbid, int nid, const char *xnciname, struct descriptor *value);
+//int TreeSetXNciSegmentScale(int nid, const char *xnciname, struct descriptor *value) {
+//  return _TreeSetXNciSegmentScale(*TreeCtx(), nid, xnciname, value);
+//}
+
+int _TreeSetXNci(void *dbid, int nid, const char *xnciname, struct descriptor *value);
+int TreeSetXNci(int nid, const char *xnciname, struct descriptor *value){
+  return _TreeSetXNci(*TreeCtx(), nid, xnciname, value);
+}
+
+int _TreeGetXNci(void *dbid, int nid, const char *xnciname, struct descriptor_xd *value);
+int TreeGetXNci(int nid, const char *xnciname, struct descriptor_xd *value){
+  return _TreeGetXNci(*TreeCtx(), nid, xnciname, value);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 /////////read/write properties ///////////////////////////////////////
@@ -539,6 +656,7 @@ inline static int begin_finish(vars_t* vars){
   return TreePutNci(vars->tinfo, vars->nidx, &vars->local_nci, 0);
 }
 
+
 #ifndef _WIN32
 static int saved_uic = 0;
 static void init_saved_uic() {
@@ -605,11 +723,29 @@ inline static int begin_segment_header(vars_t* vars,struct descriptor_a *initial
     return TreeFAILURE;
   return TreeSUCCESS;
 }
+static int get_xnci_info(vars_t* vars, const char *xnciname, int *length, int64_t *offset,struct descriptor_xd *value );
 
+#define IF_NO_XNCI_SEGMENT_HEADER		\
+  int xnci_length; \
+  if (IS_NOT_OK(get_xnci_info(vars, xnciname, &xnci_length, &vars->attr.facility_offset[SEGMENTED_RECORD_FACILITY],NULL)) \
+    || (xnci_length > 0) || IS_NOT_OK(get_segment_header(vars->tinfo, vars->attr.facility_offset[SEGMENTED_RECORD_FACILITY], &vars->shead)))    
 
-/* See if the node currently has an *sindex record.
- * If not, make an empty segment index and flag that a new one needs to be written.
- */
+inline static int begin_xnci_segment_header(vars_t* vars, const char *xnciname, struct descriptor_a *initialValue){
+  IF_NO_XNCI_SEGMENT_HEADER {
+    memset(&vars->shead, 0, sizeof(vars->shead));
+    vars->attr.facility_offset[SEGMENTED_RECORD_FACILITY] = -1;
+    vars->shead.index_offset = -1;
+    vars->shead.idx = -1;
+    vars->attr_update = 0;
+  } else if (initialValue->dtype != vars->shead.dtype ||
+	    (initialValue->class == CLASS_A &&
+	    (initialValue->dimct != vars->shead.dimct ||
+	    (initialValue->dimct > 1
+	     && memcmp(vars->shead.dims, ((A_COEFF_TYPE *)initialValue)->m, (initialValue->dimct - 1) * sizeof(int))))))
+    return TreeFAILURE;
+  return TreeSUCCESS;
+}
+
 #define IF_NO_SEGMENT_INDEX \
 if ((vars->shead.index_offset == -1) \
  || IS_NOT_OK(get_segment_index(vars->tinfo, vars->shead.index_offset, &vars->sindex)))
@@ -874,10 +1010,121 @@ inline static int open_header_read(vars_t*vars){
   return status;
 }
 
+inline static int open_xnci_header_read(vars_t*vars, const char *xnciname){
+  int status;
+  RETURN_IF_NOT_OK(open_datafile_read(vars));
+  IF_NO_EXTENDED_NCI   return TreeNOSEGMENTS;
+  IF_NO_XNCI_SEGMENT_HEADER return TreeNOSEGMENTS;
+  return status;
+}
+
 inline static int open_index_read(vars_t*vars){
   int status;
   RETURN_IF_NOT_OK(open_header_read(vars));
   IF_NO_SEGMENT_INDEX return TreeFAILURE;
+  return status;
+}
+
+inline static int open_xnci_index_read(vars_t*vars, const char *xnciname){
+  int status;
+  RETURN_IF_NOT_OK(open_xnci_header_read(vars,xnciname));
+  IF_NO_SEGMENT_INDEX return TreeFAILURE;
+  return status;
+}
+
+static int get_xnci_info(vars_t *vars, const char *xnciname, int *length, int64_t *offset,struct descriptor_xd *value )
+{
+  int status = 0;
+  if (!xnciname || strlen(xnciname) < 1 || strlen(xnciname) > NAMED_ATTRIBUTE_NAME_SIZE)
+    return TreeFAILURE;
+  RETURN_IF_NOT_OK(open_datafile_read(vars));
+    NAMED_ATTRIBUTES_INDEX index;
+    char *attnames = "attributenames";
+    int getnames = 0;
+    struct _namelist {
+      char name[NAMED_ATTRIBUTE_NAME_SIZE + 1];
+      struct _namelist *next;
+    } *namelist = 0;
+    size_t longestattname = 0;
+    int numnames = 0;
+    size_t i;
+    size_t len = strlen(xnciname);
+    if (len == strlen(attnames)) {
+      for (i = 0; i < len; i++) {
+	if (tolower(xnciname[i]) != attnames[i])
+	  break;
+      }
+      if (i == len)
+	getnames = 1;
+    }
+    if (((vars->local_nci.flags2 & NciM_EXTENDED_NCI) == 0) ||
+	((TreeGetExtendedAttributes(vars->tinfo, RfaToSeek(vars->local_nci.DATA_INFO.DATA_LOCATION.rfa), &vars->attr) & 1) == 0)) {
+      status = TreeFAILURE;
+    } else if (vars->attr.facility_offset[NAMED_ATTRIBUTES_FACILITY] == -1
+	   ||  IS_NOT_OK(get_named_attributes_index(vars->tinfo, vars->attr.facility_offset[NAMED_ATTRIBUTES_FACILITY],&index))) {
+      status = TreeFAILURE;
+    } else {
+      int found_index = -1;
+      while (found_index == -1) {
+	unsigned int i, j;
+	for (i = 0; i < NAMED_ATTRIBUTES_PER_INDEX; i++) {
+	  if (getnames == 1) {
+	    if (index.attribute[i].name[0] != 0) {
+	      size_t len = strlen(index.attribute[i].name);
+	      struct _namelist *p = malloc(sizeof(struct _namelist));
+	      memcpy(p->name, index.attribute[i].name, sizeof(p->name));
+	      p->next = namelist;
+	      namelist = p;
+	      longestattname = (len > longestattname) ? len : longestattname;
+	      numnames++;
+	    }
+	  } else {
+	    for (j = 0; j < len; j++) {
+	      if (tolower(xnciname[j]) != tolower(index.attribute[i].name[j]))
+	        break;
+	    }
+	    if (j == len && index.attribute[i].name[j] == 0)
+	      break;
+	  }
+	}
+	if (i < NAMED_ATTRIBUTES_PER_INDEX)
+	  found_index = i;
+	else if (index.previous_offset != -1) {
+	  if ((get_named_attributes_index(vars->tinfo, index.previous_offset, &index) & 1) == 0) {
+	    break;
+	  }
+	} else
+	  break;
+      }
+      if (found_index != -1) {
+	*offset = index.attribute[found_index].offset;
+	*length = index.attribute[found_index].length;
+	status = TreeSUCCESS;
+      } else if (getnames == 1) {
+	if (namelist == 0) {
+	  status = TreeFAILURE;
+	} else {
+	  char *names = malloc(longestattname * numnames);
+	  DESCRIPTOR_A(name_array, (short)longestattname, DTYPE_T, names,
+	               (unsigned int)(longestattname * numnames));
+	  struct _namelist *p, *pnext;
+	  char *np;
+	  for (p = namelist, np = names; p; p = pnext, np += longestattname) {
+	    size_t i;
+	    pnext = p->next;
+	    memcpy(np, p->name, longestattname);
+	    for (i = 1; i < longestattname; i++)
+	      if (np[i] == '\0')
+	        np[i] = ' ';
+	    free(p);
+	  }
+	  if (value != NULL)
+	    MdsCopyDxXd((struct descriptor *)&name_array, value);
+	  free(names);
+	}
+      } else
+	status = TreeFAILURE;
+    }
   return status;
 }
 
@@ -928,6 +1175,27 @@ int _TreeMakeSegment(void *dbid, int nid, struct descriptor *start, struct descr
 		      (struct descriptor *)initValIn, NULL, {dimension}};
   TreeCallHookFun("TreeNidDataHook","MakeSegmentFull",vars->tinfo->treenam,
 		  vars->tinfo->shot,*vars->nid_ptr,&signal,NULL);
+  status = begin_finish(vars);
+end: ;
+  CLEANUP_NCI_POP;
+  return status;
+}
+
+int _TreeMakeXNciSegment(void *dbid, int nid, const char *xnciname, struct descriptor *start, struct descriptor *end, struct descriptor *dimension, struct descriptor_a *initValIn, int idx, int rows_filled){
+  INIT_WRITE_VARS;
+  CLEANUP_NCI_PUSH;
+  struct descriptor_a* initialValue = initValIn;
+  GOTO_END_ON_ERROR(open_datafile_write0(vars));
+  GOTO_END_ON_ERROR(check_input(&initialValue));
+  GOTO_END_ON_ERROR(open_datafile_write1(vars));
+  set_compress(vars);
+  begin_local_nci(vars, initialValue);
+  begin_extended_nci(vars);
+  GOTO_END_ON_ERROR(begin_xnci_segment_header(vars,xnciname,initialValue));
+  begin_segment_index(vars);
+  GOTO_END_ON_ERROR(begin_sinfo(vars,initialValue,check_compress_dim));
+  GOTO_END_ON_ERROR(putdata_initialvalue(vars,initialValue));
+  GOTO_END_ON_ERROR(putdim_dim(vars,start,end,dimension));
   status = begin_finish(vars);
 end: ;
   CLEANUP_NCI_POP;
@@ -1676,98 +1944,17 @@ end: ;
   return status;
 }
 
-int _TreeGetXNci(void *dbid, int nid, const char *xnciname, struct descriptor_xd *value)
-{
-  if (!xnciname || strlen(xnciname) < 1 || strlen(xnciname) > NAMED_ATTRIBUTE_NAME_SIZE)
-    return TreeFAILURE;
+
+int _TreeGetXNci(void *dbid, int nid, const char *xnciname, struct descriptor_xd *value) {
   INIT_VARS;
-  RETURN_IF_NOT_OK(open_datafile_read(vars));
-    NAMED_ATTRIBUTES_INDEX index;
-    char *attnames = "attributenames";
-    int getnames = 0;
-    struct _namelist {
-      char name[NAMED_ATTRIBUTE_NAME_SIZE + 1];
-      struct _namelist *next;
-    } *namelist = 0;
-    size_t longestattname = 0;
-    int numnames = 0;
-    size_t i;
-    size_t len = strlen(xnciname);
-    if (len == strlen(attnames)) {
-      for (i = 0; i < len; i++) {
-	if (tolower(xnciname[i]) != attnames[i])
-	  break;
-      }
-      if (i == len)
-	getnames = 1;
-    }
-    if (((vars->local_nci.flags2 & NciM_EXTENDED_NCI) == 0) ||
-	((TreeGetExtendedAttributes(vars->tinfo, RfaToSeek(vars->local_nci.DATA_INFO.DATA_LOCATION.rfa), &vars->attr) & 1) == 0)) {
-      status = TreeFAILURE;
-    } else if (vars->attr.facility_offset[NAMED_ATTRIBUTES_FACILITY] == -1
-	   ||  IS_NOT_OK(get_named_attributes_index(vars->tinfo, vars->attr.facility_offset[NAMED_ATTRIBUTES_FACILITY],&index))) {
-      status = TreeFAILURE;
-    } else {
-      int found_index = -1;
-      while (found_index == -1) {
-	unsigned int i, j;
-	for (i = 0; i < NAMED_ATTRIBUTES_PER_INDEX; i++) {
-	  if (getnames == 1) {
-	    if (index.attribute[i].name[0] != 0) {
-	      size_t len = strlen(index.attribute[i].name);
-	      struct _namelist *p = malloc(sizeof(struct _namelist));
-	      memcpy(p->name, index.attribute[i].name, sizeof(p->name));
-	      p->next = namelist;
-	      namelist = p;
-	      longestattname = (len > longestattname) ? len : longestattname;
-	      numnames++;
-	    }
-	  } else {
-	    for (j = 0; j < len; j++) {
-	      if (tolower(xnciname[j]) != tolower(index.attribute[i].name[j]))
-	        break;
-	    }
-	    if (j == len && index.attribute[i].name[j] == 0)
-	      break;
-	  }
-	}
-	if (i < NAMED_ATTRIBUTES_PER_INDEX)
-	  found_index = i;
-	else if (index.previous_offset != -1) {
-	  if ((get_named_attributes_index(vars->tinfo, index.previous_offset, &index) & 1) == 0) {
-	    break;
-	  }
-	} else
-	  break;
-      }
-      if (found_index != -1) {
-	status =
-	    TreeGetDsc(vars->tinfo, *(int*)vars->nid_ptr, index.attribute[found_index].offset,
-	               index.attribute[found_index].length, value);
-      } else if (getnames == 1) {
-	if (namelist == 0) {
-	  status = TreeFAILURE;
-	} else {
-	  char *names = malloc(longestattname * numnames);
-	  DESCRIPTOR_A(name_array, (short)longestattname, DTYPE_T, names,
-	               (unsigned int)(longestattname * numnames));
-	  struct _namelist *p, *pnext;
-	  char *np;
-	  for (p = namelist, np = names; p; p = pnext, np += longestattname) {
-	    size_t i;
-	    pnext = p->next;
-	    memcpy(np, p->name, longestattname);
-	    for (i = 1; i < longestattname; i++)
-	      if (np[i] == '\0')
-	        np[i] = ' ';
-	    free(p);
-	  }
-	  MdsCopyDxXd((struct descriptor *)&name_array, value);
-	  free(names);
-	}
-      } else
-	status = TreeFAILURE;
-    }
+  int64_t offset;
+  int length = 0;
+  status = get_xnci_info(vars, xnciname, &length, &offset, value);
+  if (status & 1 && length > 0) {
+    status =TreeGetDsc(vars->tinfo, *(int *)vars->nid_ptr, offset, length, value);
+    //  } else {
+    //get signal from segments resampled by time context
+  }
   return status;
 }
 
@@ -2147,6 +2334,19 @@ inline static int get_segment(vars_t* vars) {
   vars->sinfo = &vars->sindex.segment[vars->idx % SEGMENTS_PER_INDEX];
   return status;
 }
+inline static int get_xnci_segment(vars_t* vars, const char *xnciname) {
+  INIT_TREESUCCESS;
+  RETURN_IF_NOT_OK(open_xnci_index_read(vars, xnciname));
+  if (vars->idx == -1) vars->idx = vars->shead.idx;
+  while (STATUS_OK && vars->idx < vars->sindex.first_idx && vars->sindex.previous_offset > 0)
+    status = get_segment_index(vars->tinfo, vars->sindex.previous_offset, &vars->sindex);
+  if STATUS_NOT_OK
+    return status;
+  if (vars->idx < vars->sindex.first_idx || vars->idx >= vars->sindex.first_idx + SEGMENTS_PER_INDEX)
+    return TreeFAILURE;
+  vars->sinfo = &vars->sindex.segment[vars->idx % SEGMENTS_PER_INDEX];
+  return status;
+}
 
 int _TreeGetSegmentLimits(void *dbid, int nid, int idx, struct descriptor_xd *retStart, struct descriptor_xd *retEnd){
   INIT_VARS;vars->idx=idx;
@@ -2157,6 +2357,13 @@ int _TreeGetSegmentLimits(void *dbid, int nid, int idx, struct descriptor_xd *re
 int _TreeGetSegment(void *dbid, int nid, int idx, struct descriptor_xd *segment, struct descriptor_xd *dim){
   INIT_VARS;vars->idx=idx;
   RETURN_IF_NOT_OK(get_segment(vars));
+  status = read_segment(dbid, vars->tinfo, nid, &vars->shead, vars->sinfo, vars->idx, segment, dim);
+  return status;
+}
+
+int _TreeGetXNciSegment(void *dbid, int nid, const char *xnciname, int idx, struct descriptor_xd *segment, struct descriptor_xd *dim){
+  INIT_VARS;vars->idx=idx;
+  RETURN_IF_NOT_OK(get_xnci_segment(vars, xnciname));
   status = read_segment(dbid, vars->tinfo, nid, &vars->shead, vars->sinfo, vars->idx, segment, dim);
   return status;
 }

@@ -188,7 +188,13 @@ extern int TREE_BLOCKID;
   extern EXPORT int TreeMakeSegment(int nid, struct descriptor *start, struct descriptor *end,
 				    struct descriptor *dim, struct descriptor_a *initialData,
 				    int idx, int filled);
+  extern EXPORT int TreeMakeXNciSegment(int nid, const char *xnciname, struct descriptor *start, struct descriptor *end,
+				    struct descriptor *dim, struct descriptor_a *initialData,
+				    int idx, int filled);
   extern EXPORT int _TreeMakeSegment(void *dbid, int nid, struct descriptor *start,
+				     struct descriptor *end, struct descriptor *dim,
+				     struct descriptor_a *initialData, int idx, int filled);
+  extern EXPORT int _TreeMakeXNciSegment(void *dbid, int nid, const char *xnciname, struct descriptor *start,
 				     struct descriptor *end, struct descriptor *dim,
 				     struct descriptor_a *initialData, int idx, int filled);
   extern EXPORT int TreePutSegment(int nid, const int rowidx, struct descriptor_a *data);
@@ -232,6 +238,10 @@ extern int TREE_BLOCKID;
   extern EXPORT int TreeGetSegment(int nid, int segidx, struct descriptor_xd *data,
 				   struct descriptor_xd *dim);
   extern EXPORT int _TreeGetSegment(void *dbid, int nid, int segidx, struct descriptor_xd *data,
+				    struct descriptor_xd *dim);
+  extern EXPORT int TreeGetXNciSegment(int nid, const char *xnciname, int segidx, struct descriptor_xd *data,
+				   struct descriptor_xd *dim);
+  extern EXPORT int _TreeGetXNciSegment(void *dbid, int nid, const char *xnciname, int segidx, struct descriptor_xd *data,
 				    struct descriptor_xd *dim);
   extern EXPORT int TreeGetSegments(int nid, struct descriptor *start, struct descriptor *end,
 				    struct descriptor_xd *retSegments);
